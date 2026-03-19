@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модерация сообщения об ошибке | Админ-панель</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap&subset=cyrillic" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/admin_form.css') }}">
+</head>
+<body>
+<!-- Десктопный сайдбар -->
+<div class="sidebar">
+    <div class="sidebar-brand">Админ-панель</div>
+    <div class="sidebar-user">
+        <div class="user-name">{{ current_user.get_display_name() }}</div>
+        <div class="user-email">{{ current_user.email }}</div>
+    </div>
+    <ul class="sidebar-nav">
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.dashboard') }}" class="sidebar-nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                Главная
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.places_list') }}" class="sidebar-nav-link {% if active_page == 'places' %}active{% endif %}">
+                Редактировать места
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.suggestions') }}" class="sidebar-nav-link {% if active_page == 'suggestions' %}active{% endif %}">
+                Предложения мест
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.reports') }}" class="sidebar-nav-link {% if active_page == 'reports' %}active{% endif %}">
+                Сообщения об ошибках
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-nav-link text-danger">
+                Выйти
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Бургер-кнопка для мобильных -->
+<button class="navbar-toggler" type="button" aria-label="Toggle navigation" id="mobile-menu-toggle">
+    <span class="navbar-toggler-icon"></span>
+</button>
+
+
+<!-- Мобильное меню -->
+<div class="navbar-mobile-content" id="mobile-menu">
+
+    <div class="mobile-user-info">
+        <div class="mobile-user-name">{{ current_user.get_display_name() }}</div>
+        <div class="mobile-user-email">{{ current_user.email }}</div>
+    </div>
+    <ul class="mobile-nav-links">
+        <li><a href="{{ url_for('admin.dashboard') }}" class="mobile-nav-link">Главная</a></li>
+        <li><a href="{{ url_for('admin.places_list') }}" class="mobile-nav-link">Редактировать места</a></li>
+        <li><a href="{{ url_for('admin.suggestions') }}" class="mobile-nav-link">Предложения мест</a></li>
+        <li><a href="{{ url_for('admin.reports') }}" class="mobile-nav-link">Сообщения об ошибках</a></li>
+    </ul>
+    <a href="{{ url_for('auth.logout') }}" class="mobile-logout-link">Выйти</a>
+</div>
+
+<div class="main-content">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb" id="breadcrumb"></ol>
+    </nav>
+    <!-- Уведомления -->
+    <div id="notification-area"></div>
+
+    <!-- Заголовок страницы -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            Модерация сообщения № <span id="report-id">{{ report_id }}</span>
+        </h2>
+        <span class="badge-status" id="report-status-badge">на рассмотрении</span>
+    </div>
+
+    <!-- БЛОК 1: Сообщение пользователя + информация о решении -->
+    <div class="report-card" id="report-card">
+        <div class="section-title">
+            Сообщение пользователя
+        </div>
+        <div id="report-content">
+            <div class="text-center py-5">
+                <i class="fas fa-spinner fa-spin fa-3x text-muted"></i>
+                <p class="mt-2">Загрузка информации об обращении...</p>
+            </div>
+        </div>
+        <div id="resolution-info" style="display: none;" class="mt-4 p-3 bg-light border rounded"></div>
+    </div>
+
+    <!-- БЛОК 2: Редактирование места (скрывается для resolved) -->
+    <div class="place-card" id="place-edit-card">
+        <div class="section-title">
+            Редактирование места
+        </div>
+        <form id="place-edit-form">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="place_title" class="form-label fw-bold">Название</label>
+                    <input type="text" class="form-control form-control-custom" id="place_title" name="title">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="place_short_title" class="form-label fw-bold">Короткое название</label>
+                    <input type="text" class="form-control form-control-custom" id="place_short_title" name="short_title">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="place_slug" class="form-label fw-bold">URL-адрес (slug)</label>
+                <div class="input-group">
+                    <span class="input-group-text">{{ request.host }}/place/</span>
+                    <input type="text" class="form-control form-control-custom" id="place_slug" name="slug" required>
+                </div>
+                <div class="form-text">Генерируется автоматически. Можно изменить вручную.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="place_address" class="form-label fw-bold">Адрес</label>
+                <input type="text" class="form-control form-control-custom" id="place_address" name="address">
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="place_timetable" class="form-label fw-bold">Режим работы</label>
+                    <input type="text" class="form-control form-control-custom" id="place_timetable" name="timetable">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="place_phone" class="form-label fw-bold">Телефон</label>
+                    <input type="text" class="form-control form-control-custom" id="place_phone" name="phone">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="place_description" class="form-label fw-bold">Краткое описание</label>
+                <textarea class="form-control form-control-custom" id="place_description" name="description" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="place_body_text" class="form-label fw-bold">Полное описание</label>
+                <textarea class="form-control form-control-custom" id="place_body_text" name="body_text" rows="5"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="place_foreign_url" class="form-label fw-bold">Сайт / Соцсети</label>
+                <input type="url" class="form-control form-control-custom" id="place_foreign_url" name="foreign_url">
+            </div>
+
+            <!-- Координаты -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="place_lat" class="form-label fw-bold">Широта</label>
+                    <input type="text" class="form-control form-control-custom" id="place_lat" name="lat">
+                </div>
+                <div class="col-md-6">
+                    <label for="place_lon" class="form-label fw-bold">Долгота</label>
+                    <input type="text" class="form-control form-control-custom" id="place_lon" name="lon">
+                </div>
+            </div>
+
+            <!-- Категории -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Категории</label>
+                <div id="place-categories-container" class="border p-3 rounded" style="max-height: 280px; overflow-y: auto; background: var(--primary-soft);">
+                    <div class="text-center text-muted">Загрузка категорий...</div>
+                </div>
+            </div>
+
+            <!-- Фотографии -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">Фотографии</label>
+
+                <div id="place-photos-grid" class="photo-grid mb-2"></div>
+
+                <div class="mt-2 mb-3">
+                    <label for="place_main_photo_url" class="form-label fw-bold">Главное фото (URL)</label>
+                    <input type="text" class="form-control form-control-custom" id="place_main_photo_url" name="main_photo_url" placeholder="Выберите фото выше или введите URL">
+                </div>
+
+                <div class="mt-2 mb-3">
+                    <label for="place_photos_add_url" class="form-label">Добавить фото по URL</label>
+                    <div class="input-group">
+                        <input type="url" class="form-control form-control-custom" id="place_photos_add_url" placeholder="https://...">
+                        <button class="btn-custom-outline" type="button" id="add-photo-url-btn">Добавить</button>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <label class="form-label fw-bold">Загрузить новые фотографии</label>
+                    <div class="file-upload-area" id="place-file-upload-area">
+                        <div class="upload-placeholder">
+                            <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <div class="upload-text">Перетащите фото сюда или нажмите для выбора</div>
+                            <div class="upload-hint">Можно загрузить несколько файлов (JPG, PNG, GIF, WebP)</div>
+                            <div class="upload-hint">Максимальный размер файла: 10MB</div>
+                        </div>
+                        <div id="place-file-preview" class="photo-grid mt-3"></div>
+                    </div>
+                    <input type="file" id="place-photos-file" multiple accept="image/*" style="display: none;">
+                </div>
+            </div>
+
+
+
+            <input type="hidden" id="place_coords" name="coords">
+            <input type="hidden" id="place_categories" name="categories">
+            <input type="hidden" id="place_photos" name="photos">
+        </form>
+    </div>
+
+    <!-- БЛОК 3: Действия модератора (скрывается для resolved) -->
+    <div class="action-card" id="action-card">
+        <div class="section-title">
+           Действия модератора
+        </div>
+
+        <div class="mb-4">
+            <label for="resolution_comment" class="form-label fw-bold">Комментарий к обращению</label>
+            <textarea class="form-control form-control-custom" id="resolution_comment" rows="3"
+                      placeholder="Будет виден пользователю при отметке «Решено»"></textarea>
+            <div class="form-text">Если вы отмечаете обращение как решённое, укажите, что именно было исправлено.</div>
+        </div>
+
+        <div class="d-flex gap-3 justify-content-end">
+            <button class="btn-custom-primary btn-action" id="update-place-btn">
+                <i class="fas fa-database btn-icon"></i> Изменить в базе
+            </button>
+            <button class="btn-custom-primary btn-action" id="resolve-btn">
+                <i class="fas fa-check-circle btn-icon"></i> Отметить как решённое
+            </button>
+            <a href="{{ url_for('admin.reports') }}" class="btn-custom-outline btn-action">
+                <i class="fas fa-times btn-icon"></i> Отмена
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для подтверждения отметки решённым -->
+<div class="modal fade" id="resolveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Отметить как решённое
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите закрыть обращение?</p>
+                <p class="text-muted">Данные места не будут изменены. Статус сообщения станет «решено».</p>
+                <div class="mb-3">
+                    <label for="resolve-comment" class="form-label fw-bold">Комментарий (будет виден пользователю)</label>
+                    <textarea class="form-control form-control-custom" id="resolve-comment" rows="2"
+                              placeholder="Например: информация обновлена, спасибо!"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-custom-outline" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn-custom-primary" id="confirm-resolve-btn">
+                    Отметить как решённое
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const reportId = {{ report_id }};
+    let allCategories = [];
+    let selectedCategoryIds = new Set();
+    let placePhotos = [];
+    let placeMainPhoto = '';
+    let placeUploadedFiles = [];
+
+    $(document).ready(function() {
+        const $toggle = $('#mobile-menu-toggle');
+        const $menu = $('#mobile-menu');
+
+        function openMenu() {
+            $toggle.attr('aria-expanded', 'true');
+            $menu.addClass('show');
+            $('body').css('overflow', 'hidden');
+        }
+
+        function closeMenu() {
+            $toggle.attr('aria-expanded', 'false');
+            $menu.removeClass('show');
+            $('body').css('overflow', '');
+        }
+
+        $toggle.on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if ($menu.hasClass('show')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+
+        // Закрытие при клике вне меню
+        $(document).on('click', function(e) {
+            if ($menu.hasClass('show') &&
+                !$menu.is(e.target) &&
+                $menu.has(e.target).length === 0 &&
+                !$toggle.is(e.target) &&
+                $toggle.has(e.target).length === 0) {
+                closeMenu();
+            }
+        });
+
+        // Закрытие по Esc
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape' && $menu.hasClass('show')) {
+                closeMenu();
+            }
+        });
+
+        loadReportData();
+        loadCategories();
+        buildBreadcrumbs();
+
+        $('#update-place-btn').click(updatePlace);
+        $('#resolve-btn').click(function() {
+            const comment = $('#resolution_comment').val();
+            $('#resolve-comment').val(comment);
+            $('#resolveModal').modal('show');
+        });
+        $('#confirm-resolve-btn').click(resolveReport);
+        $('#add-photo-url-btn').click(addPhotoByUrl);
+
+        // Генерация slug из названия
+        $('#place_title').on('input', function() {
+            if (!$('#place_slug').is(':focus')) {
+                const slug = generateSlug($(this).val());
+                $('#place_slug').val(slug);
+            }
+        });
+
+        initFileUpload();
+    });
+
+    // ========== ЗАГРУЗКА ДАННЫХ ==========
+    function loadReportData() {
+        $.ajax({
+            url: `/api/admin/reports/${reportId}`,
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    renderReport(response.report);
+                    populatePlaceForm(response.report);
+                    buildBreadcrumbs(response.report.status);
+                    // В зависимости от статуса скрываем/показываем блоки
+                    toggleModerationBlocks(response.report.status, response.report);
+                } else {
+                    showNotification('Ошибка загрузки данных', 'danger');
+                }
+            },
+            error: function() {
+                showNotification('Ошибка сервера', 'danger');
+            }
+        });
+    }
+
+    function renderReport(report) {
+        // Обновляем бейдж статуса
+        let statusClass = '';
+        let statusText = '';
+        if (report.status === 'pending') {
+            statusClass = 'badge-pending';
+            statusText = 'На рассмотрении';
+        } else if (report.status === 'resolved') {
+            statusClass = 'badge-resolved';
+            statusText = 'Решено';
+        } else {
+            statusClass = 'bg-secondary';
+            statusText = escapeHtml(report.status);
+        }
+        $('#report-status-badge').attr('class', 'badge-status ' + statusClass).text(statusText);
+
+        let html = `
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <strong class="text-secondary">Тема:</strong>
+                    <div class="fs-5 fw-semibold mt-1">${escapeHtml(report.subject)}</div>
+                </div>
+                <div class="mb-3">
+                    <strong class="text-secondary">Автор:</strong>
+                    <div class="mt-1">
+                        <i class="fas fa-user me-1"></i> ${escapeHtml(report.user_username || 'Неизвестно')}
+                        <span class="text-muted ms-2">${escapeHtml(report.user_email || '')}</span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <strong class="text-secondary">Дата:</strong>
+                    <div class="mt-1">${new Date(report.created_at).toLocaleString()}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <strong class="text-secondary">Место:</strong>
+                    <div class="mt-1">
+                        <a href="/place/${report.place_id}" target="_blank" class="text-reset text-decoration-none fw-bold">
+                            ${escapeHtml(report.place_title)}
+                        </a>
+                    </div>
+                    <div class="text-muted small mt-1">
+                        <i class="fas fa-map-marker-alt me-1"></i> ${escapeHtml(report.place_address || 'Адрес не указан')}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr class="my-3">
+        <div class="mb-2">
+            <strong class="text-secondary">Сообщение пользователя:</strong>
+        </div>
+        <div class="p-3 bg-light rounded border">
+            ${escapeHtml(report.message).replace(/\n/g, '<br>')}
+        </div>
+    `;
+        $('#report-content').html(html);
+    }
+
+    // Функция для скрытия/показа блоков в зависимости от статуса
+    function toggleModerationBlocks(status, report) {
+        if (status === 'resolved') {
+            // Скрываем блок редактирования места и блок действий
+            $('#place-edit-card').hide();
+            $('#action-card').hide();
+
+            // Если есть комментарий модератора, показываем его
+            if (report.resolution_comment || report.resolved_by_username) {
+                let resolutionHtml = '<div class="section-title"> Информация о решении</div>';
+                if (report.resolution_comment) {
+                    resolutionHtml += `<p><strong>Комментарий модератора:</strong><br>${escapeHtml(report.resolution_comment)}</p>`;
+                }
+                if (report.resolved_by_username) {
+                    resolutionHtml += `<p class="mb-0"><strong>Кто закрыл:</strong> ${escapeHtml(report.resolved_by_username)}</p>`;
+                }
+                if (report.updated_at) {
+                    resolutionHtml += `<p class="text-muted small mb-0">Дата решения: ${new Date(report.updated_at).toLocaleString()}</p>`;
+                }
+                $('#resolution-info').html(resolutionHtml).show();
+            }
+        } else {
+            // Для pending показываем всё
+            $('#place-edit-card').show();
+            $('#action-card').show();
+            $('#resolution-info').hide();
+        }
+    }
+
+    // ========== ЗАПОЛНЕНИЕ ФОРМЫ ==========
+    function populatePlaceForm(report) {
+        // Основные поля
+        $('#place_title').val(report.place_title || '');
+        $('#place_short_title').val(report.place_short_title || '');
+        $('#place_slug').val(report.place_slug || generateSlug(report.place_title || ''));
+        $('#place_address').val(report.place_address || '');
+        $('#place_timetable').val(report.place_timetable || '');
+        $('#place_phone').val(report.place_phone || '');
+        $('#place_description').val(report.place_description || '');
+        $('#place_body_text').val(report.place_body_text || '');
+        $('#place_foreign_url').val(report.place_foreign_url || '');
+        $('#place_is_closed').prop('checked', report.place_is_closed || false);
+
+        // Координаты
+        if (report.place_coords) {
+            let coords = report.place_coords;
+            if (typeof coords === 'string') {
+                try { coords = JSON.parse(coords); } catch (e) { coords = null; }
+            }
+            if (coords && typeof coords === 'object') {
+                $('#place_lat').val(coords.lat || '');
+                $('#place_lon').val(coords.lon || '');
+            }
+        }
+
+        // Категории
+        if (report.place_categories) {
+            window.placeCategoriesSlugs = report.place_categories;
+        }
+
+        // ===== ФОТОГРАФИИ: нормализация в строки =====
+        if (report.place_photos) {
+            let raw = report.place_photos;
+            if (typeof raw === 'string') {
+                try { raw = JSON.parse(raw); } catch (e) { raw = []; }
+            }
+            if (Array.isArray(raw)) {
+                placePhotos = raw.map(item => {
+                    if (typeof item === 'string') return item;
+                    if (item && typeof item === 'object' && item.url) return item.url;
+                    return null;
+                }).filter(url => url && typeof url === 'string');
+            } else {
+                placePhotos = [];
+            }
+        } else {
+            placePhotos = [];
+        }
+
+        placeMainPhoto = report.place_main_photo_url || (placePhotos.length > 0 ? placePhotos[0] : '');
+        $('#place_main_photo_url').val(placeMainPhoto);
+        renderPhotosGrid();
+    }
+
+    // ========== КАТЕГОРИИ ==========
+    function loadCategories() {
+        $.ajax({
+            url: '/api/admin/categories',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    allCategories = response.categories;
+                    renderPlaceCategories();
+                } else {
+                    showNotification('Ошибка загрузки категорий', 'danger');
+                }
+            }
+        });
+    }
+
+    function renderPlaceCategories() {
+        let html = '';
+        allCategories.forEach(cat => {
+            const checked = window.placeCategoriesSlugs && window.placeCategoriesSlugs.includes(cat.slug);
+            if (checked) selectedCategoryIds.add(cat.id);
+            html += `
+                    <div class="form-check mb-2">
+                        <input class="form-check-input place-category-checkbox" type="checkbox"
+                               value="${cat.id}" id="place_cat_${cat.id}" ${checked ? 'checked' : ''}>
+                        <label class="form-check-label" for="place_cat_${cat.id}">
+                            ${cat.name} <span class="text-muted small">(${cat.places_count || 0})</span>
+                        </label>
+                    </div>
+                `;
+        });
+        $('#place-categories-container').html(html);
+
+        $('.place-category-checkbox').change(function() {
+            const id = parseInt($(this).val());
+            if ($(this).is(':checked')) {
+                selectedCategoryIds.add(id);
+            } else {
+                selectedCategoryIds.delete(id);
+            }
+        });
+    }
+
+    // ========== ФОТОГРАФИИ ==========
+    function renderPhotosGrid() {
+        let html = '';
+        placePhotos.forEach((photo, index) => {
+            const isSelected = (photo === placeMainPhoto);
+            html += `
+                    <div class="photo-item ${isSelected ? 'selected' : ''}" data-url="${photo}" onclick="selectMainPhoto('${photo}', this)">
+                        <img src="${photo}" alt="Фото" onerror="this.src='/static/img/no-image.png'; this.onerror=null;">
+                        <button type="button" class="remove-btn" onclick="removePhoto('${photo}', event)">&times;</button>
+                    </div>
+                `;
+        });
+        $('#place-photos-grid').html(html);
+    }
+
+    window.selectMainPhoto = function(url, element) {
+        $('.photo-item').removeClass('selected');
+        $(element).addClass('selected');
+        placeMainPhoto = url;
+        $('#place_main_photo_url').val(url);
+    };
+
+    window.removePhoto = function(url, event) {
+        event.stopPropagation();
+        placePhotos = placePhotos.filter(p => p !== url);
+        if (placeMainPhoto === url) {
+            placeMainPhoto = placePhotos.length > 0 ? placePhotos[0] : '';
+            $('#place_main_photo_url').val(placeMainPhoto);
+        }
+        renderPhotosGrid();
+    };
+
+    function addPhotoByUrl() {
+        const url = $('#place_photos_add_url').val().trim();
+        if (url && !placePhotos.includes(url)) {
+            placePhotos.push(url);
+            if (!placeMainPhoto) {
+                placeMainPhoto = url;
+                $('#place_main_photo_url').val(url);
+            }
+            renderPhotosGrid();
+            $('#place_photos_add_url').val('');
+        }
+    }
+
+    // ========== ЗАГРУЗКА ФАЙЛОВ ==========
+    function initFileUpload() {
+        const fileInput = $('#place-photos-file')[0];
+        const uploadArea = $('#place-file-upload-area')[0];
+        if (!uploadArea) return;
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect();
+            }
+        });
+
+        $(fileInput).on('change', handleFileSelect);
+    }
+
+    function handleFileSelect() {
+        const fileInput = $('#place-photos-file')[0];
+        const files = Array.from(fileInput.files);
+        for (const file of files) {
+            if (file.size > 10 * 1024 * 1024) {
+                showNotification(`Файл ${file.name} слишком большой (максимум 10MB)`, 'danger');
+                return;
+            }
+        }
+        files.forEach(file => {
+            if (!placeUploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                placeUploadedFiles.push(file);
+                uploadPhoto(file);
+            }
+        });
+    }
+
+    function uploadPhoto(file) {
+        const formData = new FormData();
+        formData.append('photo', file);
+        formData.append('suggestion_id', 0);
+
+        $.ajax({
+            url: '/api/admin/suggestions/upload-photo',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    placePhotos.push(response.url);
+                    if (!placeMainPhoto) {
+                        placeMainPhoto = response.url;
+                        $('#place_main_photo_url').val(response.url);
+                    }
+                    renderPhotosGrid();
+                    showNotification('Фото загружено', 'success');
+                } else {
+                    showNotification(response.error || 'Ошибка загрузки', 'danger');
+                }
+            },
+            error: function() {
+                showNotification('Ошибка сервера при загрузке', 'danger');
+            }
+        });
+    }
+
+    function buildBreadcrumbs(status) {
+        const reportId = {{ report_id }};
+        let breadcrumbHtml = '<li class="breadcrumb-item"><a href="/admin">Главная</a></li>';
+        breadcrumbHtml += '<li class="breadcrumb-item"><a href="/admin/reports">Сообщения об ошибках</a></li>';
+
+        if (status) {
+            let statusText = status === 'pending' ? 'На рассмотрении' : (status === 'resolved' ? 'Решённые' : status);
+            let statusFilter = status;
+            breadcrumbHtml += `<li class="breadcrumb-item"><a href="/admin/reports?status=${statusFilter}">${statusText}</a></li>`;
+        }
+
+        breadcrumbHtml += `<li class="breadcrumb-item active" aria-current="page">ID ${reportId}</li>`;
+        $('#breadcrumb').html(breadcrumbHtml);
+    }
+
+    // ========== КНОПКА «ИЗМЕНИТЬ В БАЗЕ» ==========
+    function collectFormData() {
+        const coords = {
+            lat: parseFloat($('#place_lat').val()) || null,
+            lon: parseFloat($('#place_lon').val()) || null
+        };
+        return {
+            title: $('#place_title').val(),
+            short_title: $('#place_short_title').val(),
+            slug: $('#place_slug').val(),
+            address: $('#place_address').val(),
+            timetable: $('#place_timetable').val(),
+            phone: $('#place_phone').val(),
+            description: $('#place_description').val(),
+            body_text: $('#place_body_text').val(),
+            foreign_url: $('#place_foreign_url').val(),
+            coords: (coords.lat && coords.lon) ? coords : null,
+            is_closed: $('#place_is_closed').is(':checked'),
+            categories: allCategories
+                .filter(cat => selectedCategoryIds.has(cat.id))
+                .map(cat => cat.slug),
+            photos: placePhotos,
+            main_photo_url: placeMainPhoto
+        };
+    }
+
+    function updatePlace() {
+
+        const updates = collectFormData();
+
+        $.ajax({
+            url: `/api/admin/reports/${reportId}/update-place`,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ updates: updates }),
+            success: function(response) {
+                if (response.success) {
+                    showNotification('Место обновлено в базе. Статус обращения не изменён.', 'success');
+                } else {
+                    showNotification(response.error || 'Ошибка обновления', 'danger');
+                }
+            },
+            error: function(xhr) {
+                let msg = 'Ошибка сервера';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    msg = xhr.responseJSON.error;
+                }
+                showNotification(msg, 'danger');
+            }
+        });
+    }
+
+    // ========== КНОПКА «ОТМЕТИТЬ КАК РЕШЁННОЕ» ==========
+    function resolveReport() {
+        const comment = $('#resolve-comment').val();
+
+        $.ajax({
+            url: `/api/admin/reports/${reportId}/resolve`,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                update_place: false,
+                resolution_comment: comment
+            }),
+            success: function(response) {
+                if (response.success) {
+                    showNotification('✅ Обращение отмечено как решённое', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/admin/reports';
+                    }, 1500);
+                } else {
+                    showNotification(response.error || 'Ошибка', 'danger');
+                }
+            },
+            error: function() {
+                showNotification('Ошибка сервера', 'danger');
+            }
+        });
+    }
+
+    // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+    function generateSlug(title) {
+        return title
+            .toLowerCase()
+            .replace(/[^a-zа-яё0-9\s-]/gi, '')
+            .replace(/\s+/g, '-')
+            .replace(/--+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .substring(0, 100);
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function showNotification(message, type) {
+        // Очистить предыдущие уведомления
+        $('#notification-area').empty();
+
+        // Создать элемент уведомления
+        const $alert = $('<div>')
+            .addClass('custom-notification')
+            .css({
+                position: 'fixed',
+                top: '20px',
+                right: '20px',
+                padding: '15px 25px',
+                backgroundColor: type === 'success' ? '#2e6b3e' : '#dc3545',
+                color: 'white',
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                zIndex: 9999,
+                fontSize: '14px',
+                fontWeight: '500'
+            })
+            .html('<i class="fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle') + ' me-2"></i>' + message);
+
+        $('#notification-area').append($alert);
+
+        // Автоматически скрыть через 3 секунды
+        setTimeout(() => {
+            $alert.fadeOut(500, function() { $(this).remove(); });
+        }, 3000);
+    }
+</script>
+</body>
+</html>

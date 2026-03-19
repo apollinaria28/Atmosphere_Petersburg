@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Атмосфера Петербурга | Тест: куда направиться</title>
+
+    <meta name="description" content="Не знаете, куда пойти в Петербурге? Находите интересные места, стройте маршруты и открывайте город по-новому.">
+    <meta name="keywords" content="тест Питер, тест места питера, тест спб, места Санкт-Петербург, куда сходить в Петербурге, интересные места СПб, прогулки по Петербургу, 
+    маршруты по СПб, что посмотреть в Санкт-Петербурге, кафе Петербург, парки СПб, достопримечательности Петербурга, куда пойти в Питере, Питер, куда сходить спб, спб, куда идти, улицы питера, куда пойти питер, места">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+
+    <!-- Все необходимые CSS-библиотеки -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Ваши стили -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='test.css') }}">
+</head>
+<body>
+
+<!-- Оверлей для мобильного меню -->
+<div class="navbar-mobile-overlay"></div>
+
+<!-- Шапка без фона -->
+<header class="navbar-section">
+    <nav class="navbar navbar-expand-lg navbar-desktop">
+        <div class="container">
+            <!-- Бургер-меню для мобильных -->
+            <button class="navbar-toggler" type="button" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Десктопное меню -->
+            <div class="navbar-desktop-content">
+                <div class="navbar-left">
+                    <a href="/" class="nav-link {% if active_page == 'index' %}active{% endif %}">
+                        Главная
+                        {% if active_page == 'index' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    <a href="/places" class="nav-link {% if active_page == 'places' %}active{% endif %}">
+                        Места
+                        {% if active_page == 'places' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+
+                    <!-- Избранное -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/favorites" class="nav-link {% if active_page == 'favorites' %}active{% endif %}">
+                        Избранное
+                        {% if active_page == 'favorites' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'favorites' %}active{% endif %}">
+                        Избранное
+                        {% if active_page == 'favorites' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Уже посещал -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/visited" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Уже посещал
+                        {% if active_page == 'visited' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Уже посещал
+                        {% if active_page == 'visited' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Маршруты -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/routes" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                       Маршруты
+                        {% if active_page == 'routes' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Маршруты
+                        {% if active_page == 'routes' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Предложить место -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/suggest" class="nav-link {% if active_page == 'suggest' %}active{% endif %}">
+                        Предложить место
+                        {% if active_page == 'suggest' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'suggest' %}active{% endif %}">
+                        Предложить место
+                        {% if active_page == 'suggest' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="navbar-right">
+                    <div class="user-menu">
+                        {% if current_user.is_authenticated %}
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center p-1" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if current_user.avatar_url %}
+                                <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-circle">
+                                {% else %}
+                                <div class="avatar-circle-sm">
+                                    {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                </div>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li class="dropdown-header px-3 py-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if current_user.avatar_url %}
+                                        <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-sm me-2">
+                                        {% else %}
+                                        <div class="avatar-circle-xs me-2">
+                                            {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ current_user.username }}</div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Личный кабинет</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Выйти</a></li>
+                            </ul>
+                        </div>
+                        {% else %}
+                        <div class="auth-links">
+                            <a href="/login" class="btn-login">Войти</a>
+                            <a href="/register" class="btn-register">Регистрация</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Мобильное меню -->
+            <div class="navbar-mobile-content" id="navbarMobileContent">
+                <div class="mobile-menu-container">
+                    {% if current_user.is_authenticated %}
+                    <!-- Информация о пользователе -->
+                    <div class="mobile-user-info">
+                        <div class="mobile-user-avatar">
+                            {% if current_user.avatar_url %}
+                            <img src="{{ current_user.avatar_url }}" alt="Аватар" class="mobile-avatar-icon">
+                            {% else %}
+                            <div class="mobile-avatar-circle">
+                                {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="mobile-user-name">
+                            {{ current_user.username }}
+                        </div>
+                        <a href="/profile" class="mobile-profile-link">
+                            <i class="fas fa-user me-2"></i>Личный кабинет
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Основные ссылки меню -->
+                    <div class="mobile-nav-links">
+                        <a href="/" class="mobile-nav-link">
+                            <span class="mobile-link-text">Главная</span>
+                        </a>
+                        <a href="/places" class="mobile-nav-link">
+                            <span class="mobile-link-text">Места</span>
+                        </a>
+
+                        <!-- Избранное -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/favorites" class="mobile-nav-link">
+                            <span class="mobile-link-text">Избранное</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Избранное</span>
+                        </a>
+                        {% endif %}
+
+                        <!-- Уже посещал -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/visited" class="mobile-nav-link">
+                            <span class="mobile-link-text">Уже посещал</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Уже посещал</span>
+                        </a>
+                        {% endif %}
+
+                        {% if current_user.is_authenticated %}
+                        <a href="/routes" class="mobile-nav-link">
+                            <span class="mobile-link-text">Маршруты</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Маршруты</span>
+                        </a>
+                        {% endif %}
+
+                        <!-- Предложить место -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/suggest" class="mobile-nav-link">
+                            <span class="mobile-link-text">Предложить место</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Предложить место</span>
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Кнопки входа/выхода -->
+                    <div class="mobile-auth-section">
+                        {% if current_user.is_authenticated %}
+                        <a href="/logout" class="mobile-logout-link">
+                            <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                        </a>
+                        {% else %}
+                        <div class="mobile-auth-buttons">
+                            <a href="/login" class="mobile-login-btn">Войти</a>
+                            <a href="/register" class="mobile-register-btn">Регистрация</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="test-container">
+
+    <!-- Шапка теста -->
+    <div class="test-header" id="testHeader">
+        <h1>Ответьте на несколько вопросов</h1>
+        <p class="mb-0">и система подберет подходящие места для вас</p>
+    </div>
+
+
+    <!-- Контейнер вопроса -->
+    <div class="question-container" id="questionContainer">
+        <div class="test-navigation" id="testNav" style="display: none;">
+            <button class="btn btn-back" onclick="goBack()" id="backButton">
+                <i class="fas fa-arrow-left"></i> Назад
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>Загружаем тест...</p>
+        </div>
+
+        <!-- Вопрос будет вставлен сюда -->
+        <div id="questionContent" style="display: none;"></div>
+    </div>
+
+    <!-- Контейнер результатов -->
+    <div class="results-container" id="resultsContainer" style="display: none;">
+        <h2 class="mb-4">Вот что мы подобрали для вас:</h2>
+        <div id="placesList"></div>
+        <div class="text-center mt-4">
+            <button class="btn btn-lg btn-next" onclick="restartTest()">
+                <i class="fas fa-redo"></i> Пройти тест заново
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно: требуется авторизация -->
+<div id="authModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:16px; padding:40px 32px; max-width:400px; width:90%; text-align:center; box-shadow:0 8px 40px rgba(0,0,0,0.18);">
+        <div style="font-size:48px; margin-bottom:16px;">🔒</div>
+        <h3 style="margin-bottom:8px; font-family:'Montserrat',sans-serif; font-weight:600;">Нужна авторизация</h3>
+        <p style="color:#666; margin-bottom:28px; line-height:1.5;">Чтобы получить результаты теста, войдите в аккаунт или зарегистрируйтесь — это займёт меньше минуты.</p>
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+            <a href="/login" class="btn btn-primary" style="min-width:120px; border-radius:8px;">Войти</a>
+            <a href="/register" class="btn btn-outline-primary" style="min-width:120px; border-radius:8px;">Регистрация</a>
+        </div>
+        <button onclick="closeAuthModal()" style="margin-top:20px; background:none; border:none; color:#999; cursor:pointer; font-size:13px;">Остаться на странице</button>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    let currentState = {};
+    let questionHistory = [];
+    let stateHistory = [];          // стек сохранённых состояний и вопросов
+    let currentQuestionData = null; // данные текущего вопроса
+
+    // Начинаем тест при загрузке страницы
+    $(document).ready(function() {
+        startTest();
+    });
+
+    function startTest() {
+        $('#loading').show();
+        $('#questionContent').hide();
+        $('#progressContainer').hide();
+
+        $.ajax({
+            url: '/api/test/start',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    currentState = response.state;
+                    showQuestion(response.question);
+                } else {
+                    alert('Ошибка: ' + response.error);
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Ошибка при загрузке теста: ' + error);
+            }
+        });
+    }
+
+    function showQuestion(questionData, skipHistoryPush = false) {
+
+        // 1️⃣ Проверка данных
+        if (!questionData || !questionData.question) {
+            alert('Ошибка: некорректные данные вопроса');
+            return;
+        }
+
+        // 2️⃣ ИЗВЛЕКАЕМ ВСЕ ДАННЫЕ СРАЗУ
+        const question = questionData.question;
+        const options = questionData.options || [];
+        const pathId = questionData.path_id || 1;
+        const allowMultiple = question.allow_multiple || false;
+
+        // 3️⃣ Скрываем загрузку, показываем контент
+        $('#loading').hide();
+        $('#progressContainer').show();
+        $('#questionContent').show();
+
+        // 4️⃣ Обновляем прогресс
+        updateProgress(question.seq);
+
+        // 5️⃣ Сохраняем историю (только если не пропущено)
+        if (!skipHistoryPush) {
+            questionHistory.push({
+                seq: question.seq,
+                questionId: question.id,
+                pathId: pathId
+            });
+        }
+
+        // Строим HTML вопроса
+        let html = `
+            <div class="question-text">${question.text || question.question_text}</div>
+            <div id="optionsList">
+        `;
+
+        // Проверяем, есть ли варианты
+        if (options.length === 0) {
+            html += `<div class="alert alert-warning">Нет доступных вариантов ответа</div>`;
+        } else {
+            options.forEach((option, index) => {
+                const optionId = option.id || index;
+                const optionText = option.option_text || option.text || `Вариант ${index + 1}`;
+
+                html += `
+                    <div class="option-card" onclick="selectOption(${optionId}, ${allowMultiple})"
+                         id="option-${optionId}">
+                        <input type="${allowMultiple ? 'checkbox' : 'radio'}"
+                               class="option-checkbox"
+                               name="option"
+                               value="${optionId}"
+                               id="input-${optionId}"
+                               ${allowMultiple ? '' : 'onchange="selectOption(' + optionId + ', false)"'}>
+                        <label class="option-text" for="input-${optionId}">
+                            ${optionText}
+                        </label>
+                    </div>
+                `;
+            });
+        }
+
+        html += `</div>`;
+
+        // Кнопка далее
+        html += `
+            <div class="text-center mt-4">
+                <button class="btn btn-lg btn-next" onclick="submitAnswer()" id="nextButton" disabled>
+                    Далее <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        `;
+
+        $('#questionContent').html(html);
+
+        currentQuestionData = questionData; // сохраняем для кнопки "Назад"
+        if (question.seq !== 1 && stateHistory.length > 0 && questionHistory.length > 1) {
+            $('#testNav').show();
+        } else {
+            $('#testNav').hide();
+        }
+    }
+
+    function selectOption(optionId, allowMultiple) {
+
+        const optionCard = $(`#option-${optionId}`);
+        const checkbox = $(`#input-${optionId}`);
+
+        if (allowMultiple) {
+            // Для multiple choice - переключаем чекбокс
+            checkbox.prop('checked', !checkbox.prop('checked'));
+            optionCard.toggleClass('selected', checkbox.prop('checked'));
+        } else {
+            // Для single choice - выбираем только один
+            $('.option-card').removeClass('selected');
+            $('input[name="option"]').prop('checked', false);
+
+            checkbox.prop('checked', true);
+            optionCard.addClass('selected');
+
+            // Автоматически отправляем ответ
+            setTimeout(() => {
+                submitAnswer();
+            }, 300);
+        }
+
+        // Активируем кнопку "Далее" если есть выбранные варианты
+        const hasSelection = $('input[name="option"]:checked').length > 0 ||
+            ($('input[type="checkbox"]:checked').length > 0 && allowMultiple);
+        $('#nextButton').prop('disabled', !hasSelection);
+
+    }
+
+    function submitAnswer() {
+        if (questionHistory.length === 0) {
+            alert('Ошибка: история вопросов пуста');
+            return;
+        }
+
+        const lastQuestion = questionHistory[questionHistory.length - 1];
+        const questionId = lastQuestion.questionId;
+        const pathId = lastQuestion.pathId;
+
+        if (!pathId) {
+            alert('Ошибка: pathId не найден. Пожалуйста, перезагрузите страницу.');
+            return;
+        }
+
+        let selectedOptionIds = [];
+
+        // Собираем выбранные варианты
+        $('input[name="option"]:checked').each(function() {
+            selectedOptionIds.push(parseInt($(this).val()));
+        });
+
+
+        if (selectedOptionIds.length === 0) {
+            alert('Пожалуйста, выберите вариант ответа');
+            return;
+        }
+
+        $('.option-card').css('opacity', '0.6');
+        $('#nextButton').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Загрузка...');
+
+        // Сохраняем текущее состояние и вопрос перед отправкой
+        stateHistory.push({
+            state: JSON.parse(JSON.stringify(currentState)),
+            questionData: currentQuestionData
+        })
+
+        $.ajax({
+            url: '/api/test/answer',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                state: currentState,
+                path_id: pathId,
+                question_id: questionId,
+                option_ids: selectedOptionIds
+            }),
+            success: function(response) {
+                if (!response.success && response.error === 'unauthorized') {
+                    showAuthModal();
+                    return;
+                }
+                if (response.success) {
+                    currentState = response.state;
+
+                    if (response.finished) {
+                        showResults(response.places);
+                    } else {
+                        showQuestion(response.question);
+                    }
+                } else {
+                    alert('Ошибка: ' + response.error);
+                    location.reload();
+                }
+            },
+            error: function(xhr, status, error) {
+                if (xhr.status === 401) {
+                    showAuthModal();
+                } else {
+                    alert('Ошибка при отправке ответа: ' + error);
+                    location.reload();
+                }
+            }
+        });
+    }
+
+    function showResults(places) {
+        $('#questionContainer').hide();
+        $('#resultsContainer').show();
+        $('#progressContainer').hide();
+
+        let html = '';
+
+        if (places.length === 0) {
+            html = `
+            <div class="alert alert-info">
+                <h4>К сожалению, по вашим критериям ничего не найдено</h4>
+                <p>Попробуйте пройти тест ещё раз и выбрать другие варианты</p>
+            </div>
+        `;
+        } else {
+            places.forEach(place => {
+                let categories = '';
+                let categoriesList = place.categories_list || place.categories || [];
+
+                if (categoriesList && categoriesList.length > 0) {
+                    if (typeof categoriesList === 'string') {
+                        try {
+                            categoriesList = JSON.parse(categoriesList);
+                        } catch(e) {
+                            categoriesList = [];
+                        }
+                    }
+
+                    categoriesList.forEach(cat => {
+                        if (typeof cat === 'string') {
+                            categories += `<span class="place-category">${cat}</span>`;
+                        }
+                    });
+                }
+
+                // Фото места (если есть)
+                const photoUrl = place.photo_url || place.main_photo_url || '';
+                const hasPhoto = photoUrl && photoUrl.trim() !== '';
+
+                // Новый HTML с фото слева
+                html += `
+            <div class="place-card">
+                <div class="place-card-inner">
+                    <!-- Левая часть: фото -->
+                    <div class="place-photo-container">
+                        ${hasPhoto ?
+                    `<img src="${photoUrl}" alt="${place.title || 'Место'}" class="place-photo" onerror="this.style.display='none';">` :
+                    `<div class="place-photo-placeholder">
+                                <i class="fas fa-image"></i>
+                                <span>Фото отсутствует</span>
+                             </div>`
+                }
+                    </div>
+
+                    <!-- Правая часть: информация -->
+                    <div class="place-info">
+                        <h3 class="place-title">${place.title || 'Без названия'}</h3>
+
+                        <!-- ${categories ? `<div class="place-categories">${categories}</div>` : ''} -->
+
+                        ${place.description ?
+                    `<p class="place-description">${place.description.substring(0, 150)}...</p>` :
+                    `<p class="place-description text-muted">Описание отсутствует</p>`
+                }
+
+                        <div class="place-details">
+                            ${place.address ?
+                    `<div class="place-address">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>${place.address}</span>
+                                </div>` : ''
+                }
+
+                            ${place.timetable ?
+                    `<div class="place-timetable">
+                                    <i class="far fa-clock"></i>
+                                    <span>${place.timetable}</span>
+                                </div>` : ''
+                }
+                        </div>
+
+                        <div class="place-actions">
+                            <a href="/place/${place.id}?from=test" class="btn btn-primary">
+                                Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+            });
+        }
+
+        $('#placesList').html(html);
+    }
+
+    function updateProgress(currentSeq) {
+        // Примерная логика прогресса
+        const totalQuestions = 12;
+        const progress = Math.min((currentSeq / totalQuestions) * 100, 100);
+
+        $('#progressBar').css('width', progress + '%');
+        $('#questionCounter').text(`Вопрос ${currentSeq} из ${totalQuestions}`);
+    }
+
+    function goBack() {
+        if (stateHistory.length === 0) {
+            alert('Нет предыдущих шагов');
+            return;
+        }
+
+        // Восстанавливаем предыдущее состояние и вопрос
+        const prev = stateHistory.pop();
+        currentState = prev.state;
+        currentQuestionData = prev.questionData;
+
+        // Удаляем последний элемент из истории вопросов
+        questionHistory.pop();
+
+        // Показываем вопрос БЕЗ добавления в историю
+        showQuestion(currentQuestionData, true);
+    }
+
+    function showAuthModal() {
+        // Восстанавливаем карточки и кнопку
+        $('.option-card').css('opacity', '1');
+        $('#nextButton').prop('disabled', false).html('Далее <i class="fas fa-arrow-right"></i>');
+        // Откатываем последний элемент stateHistory (он был добавлен до ajax)
+        stateHistory.pop();
+
+        const modal = document.getElementById('authModal');
+        modal.style.display = 'flex';
+    }
+
+    function closeAuthModal() {
+        document.getElementById('authModal').style.display = 'none';
+    }
+
+    // Закрытие модалки по клику на фон
+    document.getElementById('authModal').addEventListener('click', function(e) {
+        if (e.target === this) closeAuthModal();
+    });
+
+    function restartTest() {
+        currentState = {};
+        questionHistory = [];
+        stateHistory = [];          // ← ДОБАВЬТЕ ЭТУ СТРОКУ
+        currentQuestionData = null;
+        $('#resultsContainer').hide();
+        $('#questionContainer').show();
+        $('#progressContainer').hide();
+        startTest();
+    }
+
+    // Управление мобильным меню - исправленная версия
+    $(document).ready(function() {
+        let isMenuOpen = false;
+        const $toggler = $('.navbar-toggler');
+        const $mobileMenu = $('.navbar-mobile-content');
+        const $overlay = $('.navbar-mobile-overlay');
+
+        // Функция открытия меню
+        function openMenu() {
+            if (isMenuOpen) return;
+
+            isMenuOpen = true;
+            $toggler.attr('aria-expanded', 'true');
+            $('body').css('overflow', 'hidden');
+
+            // Показываем оверлей
+            $overlay.css('display', 'block');
+            setTimeout(() => {
+                $overlay.css('opacity', '1');
+            }, 10);
+
+            // Показываем меню
+            $mobileMenu.css('display', 'block');
+            setTimeout(() => {
+                $mobileMenu.addClass('show');
+            }, 10);
+        }
+
+        // Функция закрытия меню
+        function closeMenu() {
+            if (!isMenuOpen) return;
+
+            isMenuOpen = false;
+            $toggler.attr('aria-expanded', 'false');
+
+            // Скрываем меню
+            $mobileMenu.removeClass('show');
+            setTimeout(() => {
+                $mobileMenu.css('display', 'none');
+            }, 300);
+
+            // Скрываем оверлей
+            $overlay.css('opacity', '0');
+            setTimeout(() => {
+                $overlay.css('display', 'none');
+                $('body').css('overflow', '');
+            }, 300);
+        }
+
+        // Обработчик клика на бургер
+        $toggler.click(function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (!isMenuOpen) {
+                openMenu();
+            } else {
+                closeMenu();
+            }
+        });
+
+        // Закрытие при клике на оверлей
+        $overlay.click(function() {
+            closeMenu();
+        });
+
+        // Закрытие при клике на ссылки в меню
+        $(document).on('click', '.mobile-nav-link, .mobile-logout-link, .mobile-profile-link, .mobile-login-btn, .mobile-register-btn', function(e) {
+            if ($(e.target).closest('.mobile-auth-section').length) {
+                // Даем время на выполнение клика перед закрытием
+                setTimeout(() => {
+                    closeMenu();
+                }, 100);
+            } else {
+                closeMenu();
+            }
+        });
+
+        // Закрытие при нажатии ESC
+        $(document).keydown(function(e) {
+            if (e.key === 'Escape' && isMenuOpen) {
+                closeMenu();
+            }
+        });
+
+        // Отслеживание скролла для фона навбара
+        $(window).scroll(function() {
+            if ($(window).scrollTop() > 50) {
+                $('.navbar').addClass('scrolled');
+            } else {
+                $('.navbar').removeClass('scrolled');
+            }
+        });
+
+        // Инициализация при загрузке
+        if ($(window).scrollTop() > 50) {
+            $('.navbar').addClass('scrolled');
+        }
+    });
+</script>
+</body>
+</html>

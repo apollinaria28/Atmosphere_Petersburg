@@ -1,0 +1,510 @@
+/* profile_rep_sug_about.css — адаптивные стили для страниц списков предложений и отчётов */
+/* Бейдж статуса расположен справа от заголовка (в одной строке) с отступом mb-1 */
+/* Кнопка "Подробнее" не изменялась, на всех мобильных размерах выровнена вправо */
+
+:root {
+    --primary-green: #3E3F38;
+    --primary-hover: #2c2d28;
+    --text-dark: #212529;
+    --text-muted: #6c757d;
+    --border-light: #e9ecef;
+    --card-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    --card-shadow-hover: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+/* ===== ОСНОВНЫЕ СТИЛИ ===== */
+body {
+    font-family: 'Montserrat', sans-serif;
+    color: var(--text-dark);
+}
+
+/* ===== КНОПКИ ===== */
+.btn-primary {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    transition: all 0.2s;
+}
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+.btn-outline-primary {
+    color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+.btn-outline-primary:hover {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: #fff;
+}
+
+/* Кнопка "назад" */
+.back-link {
+    color: var(--primary-green) !important;
+    text-decoration: none;
+    font-size: 1rem;
+    padding-left: 0;
+    transition: color 0.2s;
+    display: inline-flex;
+    align-items: center;
+}
+.back-link i {
+    color: var(--primary-green);
+    transition: color 0.2s;
+    font-size: 1rem;
+}
+.back-link:hover,
+.back-link:hover i {
+    color: var(--primary-hover) !important;
+}
+
+/* ===== ЗАГОЛОВОК И КНОПКА ДЕЙСТВИЯ ===== */
+.d-flex.justify-content-between.align-items-center.mb-4 {
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.d-flex.justify-content-between.align-items-center.mb-4 h2 {
+    margin-bottom: 0;
+    font-size: calc(1.3rem + 0.6vw);
+    font-weight: 600;
+    line-height: 1.2;
+}
+.d-flex.justify-content-between.align-items-center.mb-4 .btn {
+    white-space: nowrap;
+}
+
+/* ===== ФИЛЬТРЫ ===== */
+/* Контейнер фильтров (col-md-4) */
+.col-md-4 {
+    /* базовые стили */
+}
+
+/* Группа кнопок фильтра */
+.btn-group {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+/* Большие и средние экраны (от 601px) — кнопки в строку без переноса */
+@media (min-width: 601px) {
+    .btn-group {
+        flex-direction: row;
+        flex-wrap: nowrap;
+    }
+    .btn-group .status-filter {
+        flex: 0 1 auto;          /* ширина по содержимому */
+        white-space: nowrap;     /* текст не переносится */
+    }
+}
+
+/* Маленькие экраны (до 600px) — кнопки в колонку */
+@media (max-width: 600px) {
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    .btn-group .status-filter {
+        width: 100%;             /* растягиваются на всю ширину */
+        white-space: normal;      /* разрешаем перенос текста */
+        text-align: center;
+    }
+}
+
+/* Базовые стили кнопок фильтра */
+.btn-group .status-filter {
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 30px !important;
+    border: 1px solid var(--border-light);
+    background-color: transparent;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+.btn-group .status-filter:hover {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+    color: var(--text-dark);
+}
+.btn-group .status-filter.active {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: white !important;
+}
+.btn-group .status-filter.active:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+
+/* Убираем стандартные скругления от Bootstrap .btn-group */
+.btn-group > .btn:not(:first-child) {
+    border-top-left-radius: 30px !important;
+    border-bottom-left-radius: 30px !important;
+}
+.btn-group > .btn:not(:last-child) {
+    border-top-right-radius: 30px !important;
+    border-bottom-right-radius: 30px !important;
+}
+
+/* ===== КАРТОЧКИ (list-group) ===== */
+.list-group-item {
+    border-radius: 16px;
+    margin-bottom: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--card-shadow);
+    transition: box-shadow 0.2s, transform 0.2s;
+    background-color: #fff;
+}
+.list-group-item:hover {
+    box-shadow: var(--card-shadow-hover);
+}
+
+/* Контейнер для заголовка и бейджей */
+.list-group-item .d-flex.align-items-center.flex-wrap.gap-2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+/* Заголовок карточки */
+.list-group-item h5 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+    flex: 1 1 auto;           /* занимает доступное пространство */
+    word-break: break-word;
+}
+
+/* Обёртка для бейджей (если она добавлена) */
+.badge-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-left: auto;        /* прижимает блок к правому краю */
+}
+
+/* Если обёртка не добавлена, то бейджи идут сразу после h5 */
+.list-group-item .badge {
+    flex: 0 0 auto;
+}
+
+/* Бейджи */
+.badge {
+    font-weight: 500;
+    padding: 0.4em 1em;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+.badge.bg-warning,
+.badge.bg-pending {
+    background-color: #FFF3CD !important;
+    color: #856404 !important;
+}
+.badge.bg-success,
+.badge.bg-approved,
+.badge.bg-resolved {
+    background-color: #D4EDDA !important;
+    color: #155724 !important;
+}
+.badge.bg-danger,
+.badge.bg-rejected {
+    background-color: #F8D7DA !important;
+    color: #721C24 !important;
+}
+.badge.bg-info {
+    background-color: #D1ECF1 !important;
+    color: #0C5460 !important;
+}
+
+/* Описание */
+.list-group-item .text-muted.small {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Мета-информация (дата, место) */
+.list-group-item .small {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+.list-group-item .small i {
+    width: 1rem;
+    text-align: center;
+    margin-right: 0.25rem;
+}
+.list-group-item .small a {
+    color: var(--primary-green);
+    text-decoration: none;
+}
+.list-group-item .small a:hover {
+    text-decoration: underline;
+}
+
+/* Кнопка "Подробнее" в карточке */
+.list-group-item .btn-outline-primary {
+    padding: 0.3rem 1rem;
+    font-size: 0.9rem;
+    border-radius: 30px;
+    white-space: nowrap;
+}
+
+/* ===== ПАГИНАЦИЯ ===== */
+.pagination {
+    margin-top: 2rem;
+}
+.page-link {
+    color: var(--primary-green);
+    border: none;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    margin: 0 0.2rem;
+    background-color: transparent;
+    transition: all 0.2s;
+}
+.page-link:hover {
+    background-color: #f8f9fa;
+    color: var(--primary-hover);
+}
+.page-item.active .page-link {
+    background-color: var(--primary-green);
+    color: white;
+    border-color: var(--primary-green);
+}
+.page-item.disabled .page-link {
+    color: #ced4da;
+    pointer-events: none;
+}
+
+/* ===== МОДАЛЬНОЕ ОКНО ===== */
+.modal-header.bg-info {
+    background-color: #D1ECF1 !important;
+    color: #0C5460 !important;
+}
+.modal-header.bg-info .btn-close {
+    filter: invert(1) grayscale(100%) brightness(0.5);
+}
+.modal-footer .btn-primary {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+.modal-footer .btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+
+/* ===== АДАПТАЦИЯ КОНТЕЙНЕРОВ И КАРТОЧЕК ===== */
+
+/* Очень широкие экраны (от 1441px) */
+@media (min-width: 1441px) {
+    .container {
+        max-width: 1400px;
+    }
+    .list-group-item {
+        padding: 2rem;
+    }
+    .list-group-item h5 {
+        font-size: 1.5rem;
+    }
+    .list-group-item .text-muted.small {
+        font-size: 1rem;
+    }
+    .badge {
+        font-size: 0.9rem;
+    }
+}
+
+/* До 1024px */
+@media (max-width: 1024px) {
+    .list-group-item {
+        padding: 1.25rem;
+    }
+    .list-group-item h5 {
+        font-size: 1.2rem;
+    }
+}
+
+/* До 768px (планшеты вертикально, крупные телефоны) */
+@media (max-width: 768px) {
+    .d-flex.justify-content-between.align-items-center.mb-4 {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.75rem;
+    }
+    .d-flex.justify-content-between.align-items-center.mb-4 .btn {
+        width: 100%;
+        text-align: center;
+    }
+    .list-group{
+        margin-bottom: 25px;
+    }
+    .list-group-item {
+        padding: 1rem;
+    }
+    .list-group-item h5 {
+        font-size: 1.1rem;
+    }
+    .list-group-item .text-muted.small {
+        font-size: 0.9rem;
+        margin-top: 10px;
+    }
+    .list-group-item .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.75rem;
+    }
+    /* Контейнер для кнопки "Подробнее" — выравнивание вправо */
+    .list-group-item .ms-3 {
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+        margin-left: 0 !important;
+    }
+    .list-group-item .btn-outline-primary {
+        width: 30%;
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.3em 0.8em;
+    }
+}
+
+/* До 576px (маленькие телефоны) — уменьшаем кнопку и прижимаем вправо */
+@media (max-width: 576px) {
+    .list-group-item .ms-3 {
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+        margin-left: 0 !important;
+    }
+    .list-group-item .btn-outline-primary {
+        width: 30%;
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+    .list-group{
+        margin-bottom: 25px;
+    }
+    .list-group-item {
+        padding: 0.75rem;
+    }
+    .list-group-item h5 {
+        font-size: 1rem;
+    }
+    .list-group-item .text-muted.small {
+        font-size: 0.85rem;
+        margin-top: 10px;
+
+    }
+    .list-group-item .small {
+        font-size: 0.8rem;
+    }
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.2em 0.6em;
+    }
+    .pagination .page-link {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* До 500px */
+@media (max-width: 500px) {
+    .list-group{
+        margin-bottom: 25px;
+    }
+    .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    .list-group-item .flex-wrap {
+        gap: 0.5rem;
+    }
+    .badge {
+        font-size: 0.65rem;
+    }
+}
+
+/* До 425px */
+@media (max-width: 425px) {
+    .list-group{
+        margin-bottom: 25px;
+    }
+    .list-group-item {
+        padding: 0.5rem;
+    }
+    .list-group-item h5 {
+        font-size: 1rem;
+    }
+    .list-group-item .text-muted.small {
+        font-size: 0.8rem;
+        margin-top: 10px;
+    }
+    .back-link {
+        font-size: 0.9rem;
+    }
+    .badge {
+        font-size: 0.6rem;
+        padding: 0.2em 0.5em;
+    }
+}
+
+/* До 375px */
+@media (max-width: 375px) {
+    .list-group{
+        margin-bottom: 25px;
+    }
+    .list-group-item h5 {
+        font-size: 0.9rem;
+    }
+    .list-group-item .text-muted.small {
+        font-size: 0.75rem;
+    }
+    .list-group-item .small {
+        font-size: 0.7rem;
+    }
+}
+
+/* До 360px */
+@media (max-width: 360px) {
+    .list-group{
+        margin-bottom: 25px;
+    }
+    .badge {
+        font-size: 0.55rem;
+        padding: 0.15em 0.4em;
+    }
+    .list-group-item .btn-outline-primary {
+        width: 30%;
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+/* ===== ДОПОЛНИТЕЛЬНО: СТИЛИ ДЛЯ ПУСТОГО СОСТОЯНИЯ ===== */
+.alert-info {
+    background-color: #f8f9fa;
+    border-color: var(--border-light);
+    color: var(--text-muted);
+    border-radius: 16px;
+    padding: 2rem;
+}
+.alert-info h5 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+.alert-info .btn-primary {
+    margin-top: 1rem;
+}

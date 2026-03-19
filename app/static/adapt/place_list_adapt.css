@@ -1,0 +1,206 @@
+/* === Дополнительная адаптация для страницы списка мест (places_list) === */
+
+/* Очень маленькие экраны (до 400px) */
+@media (max-width: 400px) {
+    .filter-card .input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .filter-card .input-group .form-control-custom {
+        border-radius: 15px !important;
+        margin-bottom: 0.5rem;
+        width: 100%;
+    }
+    .filter-card .input-group .btn-custom-primary {
+        border-radius: 15px !important;
+        width: 100%;
+    }
+}
+
+/* Маленькие экраны (до 575px) */
+@media (max-width: 575px) {
+    .filter-card {
+        padding: 1rem;
+    }
+    .filter-card .row {
+        margin: 0;
+    }
+    .filter-card .col-md-8,
+    .filter-card .col-md-4 {
+        padding: 0;
+    }
+    /* Кнопка сброса */
+    .btn-custom-outline.w-100 {
+        margin-top: 0.5rem;
+    }
+
+    /* Таблица */
+    .table-custom th,
+    .table-custom td {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+    .place-photo, .no-photo {
+        width: 40px;
+        height: 40px;
+    }
+    .btn-icon-only {
+        width: 30px;
+        height: 30px;
+    }
+    .btn-icon-only i {
+        font-size: 14px;
+    }
+
+    /* Пагинация */
+    .pagination-custom .page-link {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.85rem;
+    }
+    #pagination-info {
+        font-size: 0.8rem;
+    }
+}
+
+/* Для экранов 576–768 (планшеты вертикально) */
+@media (min-width: 576px) and (max-width: 768px) {
+    .filter-card {
+        padding: 1.2rem;
+    }
+    .table-custom th,
+    .table-custom td {
+        padding: 0.6rem;
+        font-size: 0.9rem;
+    }
+    .place-photo, .no-photo {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+
+/* Для экранов 768–992 (небольшие ноутбуки) */
+@media (min-width: 768px) and (max-width: 992px) {
+    .filter-card {
+        padding: 1.2rem;
+    }
+    .table-custom th,
+    .table-custom td {
+        padding: 0.75rem;
+        font-size: 0.95rem;
+    }
+}
+
+/* Для больших экранов (1440 и выше) – центрируем контент */
+@media (min-width: 1440px) {
+    .main-content {
+        max-width: 1400px;
+        margin-right: auto;
+    }
+}
+
+/* Превращаем таблицу в карточки на мобильных устройствах (до 768px) */
+@media (max-width: 768px) {
+    /* Сбрасываем табличное отображение */
+    .table-custom,
+    .table-custom thead,
+    .table-custom tbody,
+    .table-custom tr,
+    .table-custom th,
+    .table-custom td {
+        display: block;
+    }
+
+    /* Прячем шапку таблицы */
+    .table-custom thead {
+        display: none;
+    }
+
+    /* Каждая строка становится карточкой с отступом снизу */
+    .table-custom tr {
+        margin-bottom: 1.5rem;          /* увеличен отступ между карточками */
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1rem;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    /* Ячейки располагаем вертикально, увеличиваем отступы между ними */
+    .table-custom td {
+        border: none;
+        padding: 0.75rem 0;              /* увеличен вертикальный padding (было 0.5rem) */
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;                     /* отступ между псевдоэлементом и содержимым */
+    }
+
+    /* Добавляем подписи к ячейкам (оставляем как есть) */
+    .table-custom td:nth-of-type(1)::before {
+        content: "ID:";
+        font-weight: 600;
+        min-width: 70px;
+    }
+    .table-custom td:nth-of-type(2)::before {
+        content: "Фото:";
+        font-weight: 600;
+        min-width: 70px;
+    }
+    .table-custom td:nth-of-type(3)::before {
+        content: "Название:";
+        font-weight: 600;
+        min-width: 70px;
+    }
+    .table-custom td:nth-of-type(4)::before {
+        content: "Адрес:";
+        font-weight: 600;
+        min-width: 70px;
+    }
+    .table-custom td:nth-of-type(5)::before {
+        content: "Обновлено:";
+        font-weight: 600;
+        min-width: 70px;
+    }
+    .table-custom td:nth-of-type(6)::before {
+        content: "Действия:";
+        font-weight: 600;
+        min-width: 70px;
+    }
+
+    /* Корректируем отображение фото и иконок */
+    .table-custom td:nth-of-type(2) .place-photo,
+    .table-custom td:nth-of-type(2) .no-photo {
+        margin-left: 0;
+    }
+
+    .table-custom td:nth-of-type(6) .action-buttons {
+        display: inline-flex;
+        gap: 0.5rem;
+    }
+}
+
+/* Дополнительная адаптация для очень маленьких экранов (до 575px) */
+@media (max-width: 575px) {
+    .table-custom tr {
+        padding: 0.75rem;
+    }
+    .table-custom td {
+        font-size: 0.85rem;
+        padding: 0.6rem 0;               /* немного уменьшен padding, но всё ещё больше исходного */
+    }
+    .table-custom td::before {
+        min-width: 60px;
+        font-size: 0.85rem;
+    }
+    .place-photo, .no-photo {
+        width: 35px;
+        height: 35px;
+    }
+    .btn-icon-only {
+        width: 35px;
+        height: 35px;
+    }
+    .btn-icon-only i {
+        font-size: 14px;
+    }
+}

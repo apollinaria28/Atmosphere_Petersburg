@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сообщение об ошибке| Атмосфера Петербурга</title>
+
+    <meta name="description" content="Не знаете, куда пойти в Петербурге? Находите интересные места, стройте маршруты и открывайте город по-новому.">
+    <meta name="keywords" content="места Санкт-Петербург, куда сходить в Петербурге, интересные места СПб, прогулки по Петербургу, 
+    маршруты по СПб, что посмотреть в Санкт-Петербурге, кафе Петербург, парки СПб, достопримечательности Петербурга, куда пойти в Питере, Питер, куда сходить спб, спб, куда идти, улицы питера, куда пойти питер, места">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap&subset=cyrillic" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='profile/edit.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='profile/profile_rep_sug_view.css') }}">
+
+    
+</head>
+<body>
+<!-- Оверлей для мобильного меню -->
+<div class="navbar-mobile-overlay"></div>
+
+<!-- Шапка без фона -->
+<header class="navbar-section">
+    <nav class="navbar navbar-expand-lg navbar-desktop">
+        <div class="container">
+            <!-- Бургер-меню для мобильных -->
+            <button class="navbar-toggler" type="button" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Десктопное меню -->
+            <div class="navbar-desktop-content">
+                <div class="navbar-left">
+                    <a href="/" class="nav-link {% if active_page == 'index' %}active{% endif %}">
+                        Главная
+                        {% if active_page == 'index' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    <a href="/places" class="nav-link {% if active_page == 'places' %}active{% endif %}">
+                        Места
+                        {% if active_page == 'places' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+
+                    <!-- Избранное -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/favorites" class="nav-link {% if active_page == 'favorites' %}active{% endif %}">
+                        Избранное
+                        {% if active_page == 'favorites' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'favorites' %}active{% endif %}">
+                        Избранное
+                        {% if active_page == 'favorites' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Уже посещал -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/visited" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Уже посещал
+                        {% if active_page == 'visited' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Уже посещал
+                        {% if active_page == 'visited' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Маршруты -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/routes" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                       Маршруты
+                        {% if active_page == 'routes' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Маршруты
+                        {% if active_page == 'routes' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Предложить место -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/suggest" class="nav-link {% if active_page == 'suggest' %}active{% endif %}">
+                        Предложить место
+                        {% if active_page == 'suggest' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'suggest' %}active{% endif %}">
+                        Предложить место
+                        {% if active_page == 'suggest' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="navbar-right">
+                    <div class="user-menu">
+                        {% if current_user.is_authenticated %}
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center p-1" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if current_user.avatar_url %}
+                                <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-circle">
+                                {% else %}
+                                <div class="avatar-circle-sm">
+                                    {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                </div>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li class="dropdown-header px-3 py-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if current_user.avatar_url %}
+                                        <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-sm me-2">
+                                        {% else %}
+                                        <div class="avatar-circle-xs me-2">
+                                            {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ current_user.username }}</div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Личный кабинет</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Выйти</a></li>
+                            </ul>
+                        </div>
+                        {% else %}
+                        <div class="auth-links">
+                            <a href="/login" class="btn-login">Войти</a>
+                            <a href="/register" class="btn-register">Регистрация</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Мобильное меню -->
+            <div class="navbar-mobile-content" id="navbarMobileContent">
+                <div class="mobile-menu-container">
+                    {% if current_user.is_authenticated %}
+                    <!-- Информация о пользователе -->
+                    <div class="mobile-user-info">
+                        <div class="mobile-user-avatar">
+                            {% if current_user.avatar_url %}
+                            <img src="{{ current_user.avatar_url }}" alt="Аватар" class="mobile-avatar-icon">
+                            {% else %}
+                            <div class="mobile-avatar-circle">
+                                {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="mobile-user-name">
+                            {{ current_user.username }}
+                        </div>
+                        <a href="/profile" class="mobile-profile-link">
+                            <i class="fas fa-user me-2"></i>Личный кабинет
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Основные ссылки меню -->
+                    <div class="mobile-nav-links">
+                        <a href="/" class="mobile-nav-link">
+                            <span class="mobile-link-text">Главная</span>
+                        </a>
+                        <a href="/places" class="mobile-nav-link">
+                            <span class="mobile-link-text">Места</span>
+                        </a>
+
+                        <!-- Избранное -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/favorites" class="mobile-nav-link">
+                            <span class="mobile-link-text">Избранное</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Избранное</span>
+                        </a>
+                        {% endif %}
+
+                        <!-- Уже посещал -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/visited" class="mobile-nav-link">
+                            <span class="mobile-link-text">Уже посещал</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Уже посещал</span>
+                        </a>
+                        {% endif %}
+
+                        {% if current_user.is_authenticated %}
+                        <a href="/routes" class="mobile-nav-link">
+                            <span class="mobile-link-text">Маршруты</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Маршруты</span>
+                        </a>
+                        {% endif %}
+
+                        <!-- Предложить место -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/suggest" class="mobile-nav-link">
+                            <span class="mobile-link-text">Предложить место</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Предложить место</span>
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Кнопки входа/выхода -->
+                    <div class="mobile-auth-section">
+                        {% if current_user.is_authenticated %}
+                        <a href="/logout" class="mobile-logout-link">
+                            <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                        </a>
+                        {% else %}
+                        <div class="mobile-auth-buttons">
+                            <a href="/login" class="mobile-login-btn">Войти</a>
+                            <a href="/register" class="mobile-register-btn">Регистрация</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+
+<div class="container mt-4">
+    <a href="{{ url_for('profile.profile_reports_page') }}" class="btn btn-link back-link ps-0 mb-3">
+        <i class="fas fa-arrow-left me-2"></i>К списку сообщений
+    </a>
+    <div id="report-detail" data-id="{{ report_id }}">
+        <!-- Динамическая загрузка -->
+    </div>
+</div>
+
+<!-- Модальное окно редактирования обращения -->
+<div class="modal-overlay" id="editReportModal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Редактировать обращение</h5>
+            <button type="button" class="modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="editReportForm">
+                <div class="mb-3">
+                    <label for="edit_subject" class="form-label required">Тема</label>
+                    <input type="text" class="form-control" id="edit_subject" required>
+                </div>
+                <div class="mb-3">
+                    <label for="edit_message" class="form-label required">Сообщение</label>
+                    <textarea class="form-control" id="edit_message" rows="4" required></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelModalBtn">Отмена</button>
+            <button type="button" class="btn btn-primary" id="saveReportBtn">Сохранить изменения</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============ УПРАВЛЕНИЕ МОБИЛЬНЫМ МЕНЮ ============
+        let isMenuOpen = false;
+        const toggler = document.querySelector('.navbar-toggler');
+        const mobileMenu = document.querySelector('.navbar-mobile-content');
+        const overlay = document.querySelector('.navbar-mobile-overlay');
+
+        if (toggler && mobileMenu && overlay) {
+            function openMenu() {
+                if (isMenuOpen) return;
+                isMenuOpen = true;
+                toggler.setAttribute('aria-expanded', 'true');
+                document.body.style.overflow = 'hidden';
+                overlay.style.display = 'block';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+                mobileMenu.style.display = 'block';
+                setTimeout(() => mobileMenu.classList.add('show'), 10);
+            }
+
+            function closeMenu() {
+                if (!isMenuOpen) return;
+                isMenuOpen = false;
+                toggler.setAttribute('aria-expanded', 'false');
+                mobileMenu.classList.remove('show');
+                setTimeout(() => mobileMenu.style.display = 'none', 300);
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    document.body.style.overflow = '';
+                }, 300);
+            }
+
+            toggler.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!isMenuOpen) {
+                    openMenu();
+                } else {
+                    closeMenu();
+                }
+            });
+
+            overlay.addEventListener('click', closeMenu);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && isMenuOpen) {
+                    closeMenu();
+                }
+            });
+        }
+
+        // Добавляем стили для анимаций (можно вынести в отдельный CSS-файл, но добавим динамически)
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            .notification-content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .notification-content i {
+                font-size: 20px;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ============ ОСНОВНАЯ ЛОГИКА СТРАНИЦЫ ============
+        const reportId = {{ report_id }};
+        let currentReport = null; // для хранения данных текущего обращения
+
+        // Функция загрузки данных
+        function loadReport() {
+            fetch(`/api/reports/${reportId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        currentReport = data.report; // сохраняем
+                        renderReport(currentReport);
+                    } else {
+                        alert('Ошибка загрузки: ' + data.error);
+                    }
+                });
+        }
+
+        // Функция отображения данных
+        function renderReport(r) {
+            let statusClass = r.status === 'pending' ? 'bg-warning' : 'bg-success';
+            let statusText = r.status === 'pending' ? 'На рассмотрении' : 'Исправлено';
+            let html = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3>${escapeHtml(r.subject)}</h3>
+                        <p class="text-muted">Отправлено: ${new Date(r.created_at).toLocaleString('ru-RU')}</p>
+                        <span class="badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="card-body">
+                        <h5>Информация о месте:</h5>
+                        <p><strong>Название:</strong> <a href="/place/${r.place_id}">${escapeHtml(r.place_title)}</a></p>
+                        <p><strong>Адрес:</strong> ${escapeHtml(r.place_address) || 'не указан'}</p>
+                        <hr>
+                        <h5>Ваше сообщение:</h5>
+                        <p>${escapeHtml(r.message).replace(/\n/g, '<br>')}</p>
+                        ${r.status === 'resolved' ? `
+                            <div class="alert alert-success mt-3">
+                                <h6>Ответ модератора:</h6>
+                                <p>${escapeHtml(r.resolution_comment) || 'Комментарий отсутствует'}</p>
+                                <small>Модератор: ${escapeHtml(r.resolved_by_username) || 'Неизвестно'}, ${new Date(r.updated_at).toLocaleString('ru-RU')}</small>
+                            </div>
+                        ` : ''}
+                        ${r.status === 'pending' ? `
+                            <div class="mt-4">
+                                <a href="#" class="btn btn-primary" onclick="editReport()">Редактировать</a>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            document.getElementById('report-detail').innerHTML = html;
+        }
+
+        // Функция экранирования HTML
+        function escapeHtml(unsafe) {
+            if (!unsafe) return unsafe;
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Глобальная функция для вызова из ссылки "Редактировать"
+        window.editReport = function() {
+            if (!currentReport) return;
+            // Заполняем поля модалки текущими значениями
+            document.getElementById('edit_subject').value = currentReport.subject || '';
+            document.getElementById('edit_message').value = currentReport.message || '';
+            // Показываем модалку
+            document.getElementById('editReportModal').style.display = 'flex';
+        };
+
+        // Закрытие модалки
+        function closeModal() {
+            document.getElementById('editReportModal').style.display = 'none';
+        }
+
+        // Обработчики закрытия
+        document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+        document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('editReportModal');
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Сохранение изменений
+        document.getElementById('saveReportBtn').addEventListener('click', function() {
+            const subject = document.getElementById('edit_subject').value.trim();
+            const message = document.getElementById('edit_message').value.trim();
+            if (!subject || !message) {
+                alert('Заполните все поля');
+                return;
+            }
+
+            fetch(`/api/reports/${reportId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({subject: subject, message: message})
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        closeModal();
+                        // Обновляем данные на странице (перезагружаем)
+                        loadReport();
+                    } else {
+                        alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                    }
+                })
+                .catch(err => {
+                    alert('Ошибка сети: ' + err.message);
+                });
+        });
+
+        // Загружаем данные при старте
+        loadReport();
+    });
+</script>

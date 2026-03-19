@@ -1,0 +1,493 @@
+/* ========== ПОДКЛЮЧЕНИЕ ШРИФТОВ ========== */
+/* Kreadon Medium — для заголовков */
+@font-face {
+    font-family: 'Kreadon';
+    src: url('/static/fonts/Kreadon-Medium.woff2') format('woff2'),
+    url('/static/fonts/Kreadon-Medium.woff') format('woff'),
+    url('/static/fonts/Kreadon-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Montserrat Regular — для основного текста */
+@font-face {
+    font-family: 'Montserrat';
+    src: url('/static/fonts/Montserrat-Regular.woff2') format('woff2'),
+    url('/static/fonts/Montserrat-Regular.woff') format('woff'),
+    url('/static/fonts/Montserrat-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ========== CSS-ПЕРЕМЕННЫЕ (ЦВЕТА, ТЕНИ, СКРУГЛЕНИЯ) ========== */
+:root {
+    --primary-color: #425660;
+    --secondary-color: #3E3F38;        /* использован вместо синего */
+    --success-color: #28a745;
+    --danger-color: #e74c3c;
+    --warning-color: #f39c12;
+    --light-color: #FDFAFA;
+    --dark-color: #333333;
+    --text-color: #333;
+    --text-light: #666;
+    --border-color: #eaeaea;
+    --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.05);
+    --shadow-medium: 0 8px 25px rgba(0, 0, 0, 0.1);
+    --border-radius: 12px;
+}
+
+/* ========== БАЗОВЫЕ СТИЛИ ========== */
+/* Скрываем скроллбар в WebKit-браузерах (Chrome, Safari, Edge) */
+html::-webkit-scrollbar {
+    display: none;
+}
+
+html {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-weight: 400;
+    background-color: #FDFAFA;
+    color: #333;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Заголовки h1, h2 — используют шрифт Kreadon Medium */
+h1, h2 {
+    font-family: 'Kreadon Medium', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-weight: 500 !important;
+}
+
+/* Конкретные классы заголовков (для повышения специфичности) */
+.hero-section .hero-content .hero-title,
+.container .section-title,
+.test-section .section-title {
+    font-family: 'Kreadon Medium', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-weight: 500 !important;
+}
+
+/* ========== СБРОС ОБВОДОК И ТЕНЕЙ ПРИ ФОКУСЕ ========== */
+/* Кнопки, ссылки, интерактивные элементы */
+button:focus, button:active, button:focus-visible,
+.btn:focus, .btn:active, .btn:focus-visible,
+a:focus, a:active, a:focus-visible,
+.btn-primary,
+[role="button"]:focus, [role="button"]:active, [role="button"]:focus-visible,
+.place-visited:focus, .place-visited:active, .place-visited:focus-visible,
+.place-heart:focus, .place-heart:active, .place-heart:focus-visible,
+.navbar-toggler:focus, .navbar-toggler:active, .navbar-toggler:focus-visible,
+.dropdown-toggle:focus, .dropdown-toggle:active, .dropdown-toggle:focus-visible,
+.btn-outline-primary:focus, .btn-outline-primary:active, .btn-outline-primary:focus-visible,
+.btn-outline-primary:hover {
+    outline: none !important;
+    box-shadow: none !important;
+    transform: none !important; /* для .btn-outline-primary */
+    border-color: transparent !important;
+}
+
+/* Поля ввода */
+input:focus, textarea:focus, select:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+.notification-content{
+    background-color: #3E3F38 !important; 
+}
+.notification{
+    background-color: #3E3F38 !important; 
+}
+/* ========== КОНТЕЙНЕРЫ ========== */
+.container {
+    width: 100%;
+    /* padding-left: 15px;  – закомментировано, чтобы не перебивать адаптивные отступы */
+    /* padding-right: 15px; */
+}
+
+.container-fluid {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+/* ========== ССЫЛКИ ========== */
+a {
+    color: #425660;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+a:hover {
+    color: #45433b;
+    text-decoration: none;
+}
+
+/* ========== КНОПКИ ========== */
+.btn {
+    font-weight: 500;
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: #3E3F38;
+    color: #FDFAFA;
+    border: 1px solid #3E3F38;
+}
+
+.btn-primary:hover {
+    /*background-color: #34424a;*/
+    color: #FDFAFA;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 86, 96, 0.2);
+    background-color: #494948!important;
+    
+}
+
+.btn-outline-primary {
+    background-color: transparent;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid #3E3F38;
+    color: #3E3F38;
+    background: transparent;
+    transition: all 0.3s;
+    text-decoration: none;
+}
+
+.btn-outline-primary:hover {
+    background: #3E3F38;
+    color: #FDFAFA;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(62, 63, 56, 0.2);
+}
+
+.btn-secondary {
+    color: #FDFAFA;
+}
+
+.btn-secondary:hover {
+    background-color: #2d2f2a; /* темный оттенок #3E3F38 */
+    color: #FDFAFA;
+    transform: translateY(-2px);
+}
+
+/* ========== ФОРМЫ ========== */
+.form-control {
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    color: #333;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    border-color: rgba(62, 63, 56, 0.9);
+    /*box-shadow: 0 0 0 0.2rem rgba(66, 86, 96, 0.25);*/
+    outline: none;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #3E3F38;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* ========== НАВИГАЦИЯ ========== */
+.navbar {
+    padding: 15px 0;
+    background-color: transparent;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+}
+
+.nav-link:hover {
+    color: #425660;
+}
+
+/* ========== АЛЕРТЫ ========== */
+.alert {
+    border-radius: var(--border-radius);
+    border: none;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+}
+
+.alert-success {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #214524;
+}
+
+.alert-danger {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: #721c24;
+}
+
+.alert-warning {
+    background-color: rgba(243, 156, 18, 0.1);
+    color: #856404;
+}
+
+.alert-info {
+    background-color: rgba(66, 86, 96, 0.1);
+    color: #1a2b1c;
+}
+
+/* ========== БЕЙДЖИ ========== */
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.badge-primary {
+    background-color: #425660;
+    color: #FDFAFA;
+}
+
+.badge-secondary {
+    background-color: #3E3F38;
+    color: #FDFAFA;
+}
+
+/* ========== РАЗДЕЛИТЕЛИ ========== */
+hr {
+    border: none;
+    border-top: 1px solid #eaeaea;
+    margin: 30px 0;
+}
+
+/* ========== КНОПКА "НАЗАД" (ФИКСИРОВАННАЯ) ========== */
+.back-btn {
+    position: fixed;
+    top: 100px;
+    left: 30px;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #3E3F38 !important;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    cursor: pointer;
+}
+
+.back-btn:hover {
+    transform: none;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #1f2020 !important;
+}
+
+/* ========== ЗАГРУЗКА (СПИННЕР) ========== */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+    color: #425660;
+}
+
+/* ========== СЕКЦИИ ========== */
+.section {
+    padding: 60px 0;
+}
+
+.section-title {
+    color: #41525c;
+    /*margin-bottom: 20px;*/
+    position: relative;
+    /*padding-bottom: 15px;*/
+}
+
+/* ========== СЕТКА ========== */
+.row {
+    margin-left: -15px;
+    margin-right: -15px;
+}
+
+.row > * {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* ========== ЦВЕТА И ФОНЫ (утилиты) ========== */
+.text-primary {
+    color: var(--primary-color) !important;
+}
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+.bg-light {
+    background-color: var(--light-color) !important;
+}
+.text-light {
+    color: var(--light-color) !important;
+}
+.text-muted {
+    color: #666 !important;
+}
+
+/* ========== ТЕНИ ========== */
+.shadow-sm {
+    box-shadow: var(--shadow-light) !important;
+}
+.shadow {
+    box-shadow: var(--shadow-medium) !important;
+}
+
+/* ========== СКРУГЛЕНИЯ ========== */
+.rounded {
+    border-radius: 8px !important;
+}
+.rounded-lg {
+    border-radius: 12px !important;
+}
+.rounded-pill {
+    border-radius: 50px !important;
+}
+
+/* ========== ОТСТУПЫ ========== */
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mt-5 { margin-top: 3rem; }
+.mt-6 { margin-top: 6rem; }
+.mt-7 { margin-top: 5rem; }
+.mt-10 { margin-top: 8rem; }
+
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mb-5 { margin-bottom: 3rem; }
+.mb-6 { margin-bottom: 6rem; }
+.mb-7 { margin-bottom: 5rem; }
+.mb-8 { margin-bottom: 2rem; }
+
+/* ========== FLEX УТИЛИТЫ ========== */
+.d-flex { display: flex; }
+.flex-column { flex-direction: column; }
+.justify-content-center { justify-content: center; }
+.justify-content-between { justify-content: space-between; }
+.align-items-center { align-items: center; }
+.flex-wrap { flex-wrap: wrap; }
+
+/* ========== ПОЗИЦИОНИРОВАНИЕ ========== */
+.position-relative { position: relative; }
+.position-absolute { position: absolute; }
+.position-fixed { position: fixed; }
+
+/* ========== ТЕКСТ ========== */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+.text-uppercase { text-transform: uppercase; }
+
+/* ========== ВИДИМОСТЬ ========== */
+.d-none { display: none; }
+.d-block { display: block; }
+.d-inline-block { display: inline-block; }
+
+/* ========== ШИРИНЫ ========== */
+.w-100 { width: 100%; }
+.w-50 { width: 50%; }
+.w-25 { width: 25%; }
+
+/* ========== АНИМАЦИИ ========== */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+.slide-in-down {
+    animation: slideInDown 0.5s ease-out;
+}
+
+/* ========== АДАПТИВНОСТЬ ========== */
+@media (max-width: 768px) {
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.75rem; }
+    h3 { font-size: 1.5rem; }
+
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .section {
+        padding: 40px 0;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    .back-btn {
+        width: 40px;
+        height: 40px;
+        top: 15px;
+        left: 15px;
+    }
+}
+
+@media (max-width: 576px) {
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+}

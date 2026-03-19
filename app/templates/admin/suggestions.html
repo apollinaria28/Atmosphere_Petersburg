@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модерация предложений | Админ-панель</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap&subset=cyrillic" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/admin.css') }}">
+</head>
+<body>
+<!-- Десктопный сайдбар -->
+<div class="sidebar">
+    <div class="sidebar-brand">Админ-панель</div>
+    <div class="sidebar-user">
+        <div class="user-name">{{ current_user.get_display_name() }}</div>
+        <div class="user-email">{{ current_user.email }}</div>
+    </div>
+    <ul class="sidebar-nav">
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.dashboard') }}" class="sidebar-nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                Главная
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.places_list') }}" class="sidebar-nav-link {% if active_page == 'places' %}active{% endif %}">
+                Редактировать места
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.suggestions') }}" class="sidebar-nav-link {% if active_page == 'suggestions' %}active{% endif %}">
+                Предложения мест
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.reports') }}" class="sidebar-nav-link {% if active_page == 'reports' %}active{% endif %}">
+                Сообщения об ошибках
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-nav-link text-danger">
+                Выйти
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Бургер-кнопка для мобильных -->
+<button class="navbar-toggler" type="button" aria-label="Toggle navigation" id="mobile-menu-toggle">
+    <span class="navbar-toggler-icon"></span>
+</button>
+
+
+<!-- Мобильное меню -->
+<div class="navbar-mobile-content" id="mobile-menu">
+
+    <div class="mobile-user-info">
+        <div class="mobile-user-name">{{ current_user.get_display_name() }}</div>
+        <div class="mobile-user-email">{{ current_user.email }}</div>
+    </div>
+    <ul class="mobile-nav-links">
+        <li><a href="{{ url_for('admin.dashboard') }}" class="mobile-nav-link">Главная</a></li>
+        <li><a href="{{ url_for('admin.places_list') }}" class="mobile-nav-link">Редактировать места</a></li>
+        <li><a href="{{ url_for('admin.suggestions') }}" class="mobile-nav-link">Предложения мест</a></li>
+        <li><a href="{{ url_for('admin.reports') }}" class="mobile-nav-link">Сообщения об ошибках</a></li>
+    </ul>
+    <a href="{{ url_for('auth.logout') }}" class="mobile-logout-link">Выйти</a>
+</div>
+
+<div class="main-content">
+    <h1 class="mb-4">Модерация предложений мест</h1>
+
+    <!-- Фильтры -->
+    <div class="filter-card">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-custom-outline active" data-status="pending">На модерации</button>
+                    <button type="button" class="btn btn-custom-outline" data-status="approved">Одобренные</button>
+                    <button type="button" class="btn btn-custom-outline" data-status="rejected">Отклоненные</button>
+                    <button type="button" class="btn btn-custom-outline" data-status="all">Все</button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="input-group">
+                    <input type="text" id="search-input" class="form-control form-control-custom" placeholder="Поиск...">
+                    <button class="btn btn-custom-primary" id="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список -->
+    <!-- Список предложений (без внешней карточки) -->
+    <div id="loading-spinner" class="text-center py-5">
+        <div class="spinner-border" style="color:#3E3F38;"></div>
+        <p class="mt-3">Загружаем предложения...</p>
+    </div>
+    <div id="suggestions-list" style="display:none;">
+        <div id="no-suggestions" class="text-center py-5" style="display:none;">
+            <i class="fas fa-inbox fa-3x text-muted"></i>
+            <h4 class="mt-2">Нет предложений</h4>
+        </div>
+        <div id="suggestions-container"></div>
+    </div>
+    <nav id="pagination" class="mt-4 pagination-custom" style="display:none;">
+        <ul class="pagination justify-content-center"></ul>
+    </nav>
+</div>>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let currentStatus = 'pending', currentPage = 1, perPage = 10, searchQuery = '';
+
+    $(document).ready(function() {
+        const $toggle = $('#mobile-menu-toggle');
+        const $menu = $('#mobile-menu');
+
+        function openMenu() {
+            $toggle.attr('aria-expanded', 'true');
+            $menu.addClass('show');
+            $('body').css('overflow', 'hidden');
+        }
+
+        function closeMenu() {
+            $toggle.attr('aria-expanded', 'false');
+            $menu.removeClass('show');
+            $('body').css('overflow', '');
+        }
+
+        $toggle.on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if ($menu.hasClass('show')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+
+        // Закрытие при клике вне меню
+        $(document).on('click', function(e) {
+            if ($menu.hasClass('show') &&
+                !$menu.is(e.target) &&
+                $menu.has(e.target).length === 0 &&
+                !$toggle.is(e.target) &&
+                $toggle.has(e.target).length === 0) {
+                closeMenu();
+            }
+        });
+
+        // Закрытие по Esc
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape' && $menu.hasClass('show')) {
+                closeMenu();
+            }
+        });
+
+
+        loadSuggestions();
+        $('[data-status]').click(function() {
+            $('[data-status]').removeClass('active');
+            $(this).addClass('active');
+            currentStatus = $(this).data('status');
+            currentPage = 1;
+            loadSuggestions();
+        });
+        $(document).on('click', '.page-link', function(e) {
+            e.preventDefault();
+            const page = $(this).data('page');
+            if (page) { currentPage = page; loadSuggestions(); }
+        });
+        $('#search-btn').click(function() {
+            searchQuery = $('#search-input').val().trim();
+            currentPage = 1;
+            loadSuggestions();
+        });
+        $('#search-input').keypress(function(e) { if (e.which === 13) $('#search-btn').click(); });
+    });
+
+    function loadSuggestions() {
+        $('#loading-spinner').show(); $('#suggestions-list').hide(); $('#pagination').hide();
+        $.ajax({
+            url: '/api/admin/suggestions',
+            method: 'GET',
+            data: { status: currentStatus, page: currentPage, per_page: perPage, search: searchQuery },
+            success: function(response) {
+                if (response.success) {
+                    displaySuggestions(response.suggestions);
+                    displayPagination(response.pagination);
+                    updateStats(response.stats);
+                }
+            },
+            complete: function() { $('#loading-spinner').hide(); $('#suggestions-list').show(); }
+        });
+    }
+
+    function displaySuggestions(suggestions) {
+        const container = $('#suggestions-container');
+        if (suggestions.length === 0) { $('#no-suggestions').show(); container.empty(); return; }
+        $('#no-suggestions').hide(); container.empty();
+
+        suggestions.forEach(s => {
+            let statusClass = s.status === 'pending' ? 'badge-pending' : (s.status === 'approved' ? 'badge-approved' : 'badge-rejected');
+            let statusText = s.status === 'pending' ? 'На модерации' : (s.status === 'approved' ? 'Одобрено' : 'Отклонено');
+            let photosCount = s.user_photos ? s.user_photos.length : 0;
+
+            container.append(`
+                    <div class="card-custom mb-3 p-3" style="cursor:pointer;" onclick="window.location.href='/admin/suggestions/${s.id}'">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h4 class="mb-2 fw-semibold">${escapeHtml(s.user_title || 'Без названия')}</h4>
+                                <p class="text-muted mt-2 mb-3">${escapeHtml(s.user_description ? s.user_description.substring(0,150)+'…' : '')}</p>
+                                <small><i class="fas fa-user me-1"></i>${escapeHtml(s.user_username || s.user_email || 'Аноним')}  <i class="fas fa-calendar ms-3 me-1"></i>${new Date(s.created_at).toLocaleDateString()}</small>
+
+                            </div>
+                            <div><span class="badge-status ${statusClass}">${statusText}</span></div>
+                        </div>
+                    </div>
+                `);
+        });
+    }
+
+    function displayPagination(p) {
+        if (p.total_pages <= 1) { $('#pagination').hide(); return; }
+        $('#pagination').show();
+        let html = '<ul class="pagination">';
+        html += p.has_prev ? `<li class="page-item"><a class="page-link" href="#" data-page="${p.page-1}">&laquo;</a></li>` : '<li class="page-item disabled"><span class="page-link">&laquo;</span></li>';
+        for (let i=1; i<=p.total_pages; i++) {
+            html += `<li class="page-item ${i===p.page?'active':''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+        }
+        html += p.has_next ? `<li class="page-item"><a class="page-link" href="#" data-page="${p.page+1}">&raquo;</a></li>` : '<li class="page-item disabled"><span class="page-link">&raquo;</span></li>';
+        html += '</ul>';
+        $('#pagination ul').html(html);
+    }
+
+    function updateStats(stats) {
+        $('#pending-count').text(stats.pending || 0);
+        $('#approved-count').text(stats.approved || 0);
+        $('#rejected-count').text(stats.rejected || 0);
+    }
+
+    function escapeHtml(t) { return t ? String(t).replace(/[&<>"]/g, function(m){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[m] }) : ''; }
+</script>
+</body>
+</html>

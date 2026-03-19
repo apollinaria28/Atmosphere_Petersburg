@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    container_name: spb_postgres
+    environment:
+      POSTGRES_USER: apollinaria
+      POSTGRES_PASSWORD: love*betty28
+      POSTGRES_DB: spb_places
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+

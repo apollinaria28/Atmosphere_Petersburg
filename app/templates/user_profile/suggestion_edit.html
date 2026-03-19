@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактирование предложения | Атмосфера Петербурга</title>
+
+    <meta name="description" content="Не знаете, куда пойти в Петербурге? Находите интересные места, стройте маршруты и открывайте город по-новому.">
+    <meta name="keywords" content="места Санкт-Петербург, куда сходить в Петербурге, интересные места СПб, прогулки по Петербургу, 
+    маршруты по СПб, что посмотреть в Санкт-Петербурге, кафе Петербург, парки СПб, достопримечательности Петербурга, куда пойти в Питере, Питер, куда сходить спб, спб, куда идти, улицы питера, куда пойти питер, места">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='profile/profile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='profile/edit.css') }}">
+</head>
+<body>
+<!-- Оверлей для мобильного меню -->
+<div class="navbar-mobile-overlay"></div>
+
+<!-- Шапка без фона -->
+<header class="navbar-section">
+    <nav class="navbar navbar-expand-lg navbar-desktop">
+        <div class="container">
+            <!-- Бургер-меню для мобильных -->
+            <button class="navbar-toggler" type="button" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Десктопное меню -->
+            <div class="navbar-desktop-content">
+                <div class="navbar-left">
+                    <a href="/" class="nav-link {% if active_page == 'index' %}active{% endif %}">
+                        Главная
+                        {% if active_page == 'index' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    <a href="/places" class="nav-link {% if active_page == 'places' %}active{% endif %}">
+                        Места
+                        {% if active_page == 'places' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+
+                    <!-- Избранное -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/favorites" class="nav-link {% if active_page == 'favorites' %}active{% endif %}">
+                        Избранное
+                        {% if active_page == 'favorites' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'favorites' %}active{% endif %}">
+                        Избранное
+                        {% if active_page == 'favorites' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Уже посещал -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/visited" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Уже посещал
+                        {% if active_page == 'visited' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Уже посещал
+                        {% if active_page == 'visited' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Маршруты -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/routes" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                       Маршруты
+                        {% if active_page == 'routes' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Маршруты
+                        {% if active_page == 'routes' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Предложить место -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/suggest" class="nav-link {% if active_page == 'suggest' %}active{% endif %}">
+                        Предложить место
+                        {% if active_page == 'suggest' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'suggest' %}active{% endif %}">
+                        Предложить место
+                        {% if active_page == 'suggest' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="navbar-right">
+                    <div class="user-menu">
+                        {% if current_user.is_authenticated %}
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center p-1" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if current_user.avatar_url %}
+                                <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-circle">
+                                {% else %}
+                                <div class="avatar-circle-sm">
+                                    {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                </div>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li class="dropdown-header px-3 py-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if current_user.avatar_url %}
+                                        <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-sm me-2">
+                                        {% else %}
+                                        <div class="avatar-circle-xs me-2">
+                                            {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ current_user.username }}</div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Личный кабинет</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Выйти</a></li>
+                            </ul>
+                        </div>
+                        {% else %}
+                        <div class="auth-links">
+                            <a href="/login" class="btn-login">Войти</a>
+                            <a href="/register" class="btn-register">Регистрация</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Мобильное меню -->
+            <div class="navbar-mobile-content" id="navbarMobileContent">
+                <div class="mobile-menu-container">
+                    {% if current_user.is_authenticated %}
+                    <!-- Информация о пользователе -->
+                    <div class="mobile-user-info">
+                        <div class="mobile-user-avatar">
+                            {% if current_user.avatar_url %}
+                            <img src="{{ current_user.avatar_url }}" alt="Аватар" class="mobile-avatar-icon">
+                            {% else %}
+                            <div class="mobile-avatar-circle">
+                                {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="mobile-user-name">
+                            {{ current_user.username }}
+                        </div>
+                        <a href="/profile" class="mobile-profile-link">
+                            <i class="fas fa-user me-2"></i>Личный кабинет
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Основные ссылки меню -->
+                    <div class="mobile-nav-links">
+                        <a href="/" class="mobile-nav-link">
+                            <span class="mobile-link-text">Главная</span>
+                        </a>
+                        <a href="/places" class="mobile-nav-link">
+                            <span class="mobile-link-text">Места</span>
+                        </a>
+
+                        <!-- Избранное -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/favorites" class="mobile-nav-link">
+                            <span class="mobile-link-text">Избранное</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Избранное</span>
+                        </a>
+                        {% endif %}
+
+                        <!-- Уже посещал -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/visited" class="mobile-nav-link">
+                            <span class="mobile-link-text">Уже посещал</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Уже посещал</span>
+                        </a>
+                        {% endif %}
+
+                        {% if current_user.is_authenticated %}
+                        <a href="/routes" class="mobile-nav-link">
+                            <span class="mobile-link-text">Маршруты</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Маршруты</span>
+                        </a>
+                        {% endif %}
+
+                        <!-- Предложить место -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/suggest" class="mobile-nav-link">
+                            <span class="mobile-link-text">Предложить место</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Предложить место</span>
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Кнопки входа/выхода -->
+                    <div class="mobile-auth-section">
+                        {% if current_user.is_authenticated %}
+                        <a href="/logout" class="mobile-logout-link">
+                            <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                        </a>
+                        {% else %}
+                        <div class="mobile-auth-buttons">
+                            <a href="/login" class="mobile-login-btn">Войти</a>
+                            <a href="/register" class="mobile-register-btn">Регистрация</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="container mt-4">
+    <a href="{{ url_for('profile.suggestion_detail_page', suggestion_id=suggestion_id) }}" class="back-link">
+        <i class="fas fa-arrow-left me-2"></i>Вернуться к предложению
+    </a>
+    <h2>Редактирование предложения</h2>
+    <form id="editSuggestionForm" enctype="multipart/form-data">
+        <!-- Поля будут заполнены динамически через JavaScript -->
+    </form>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const suggestionId = {{ suggestion_id }};
+
+        // Глобальные переменные (доступны во всех функциях)
+        let selectedCategoryIds = [];
+        let allCategories = [];
+        let newFiles = []; // новые файлы для загрузки
+
+        // ---------- Загрузка данных предложения и построение формы ----------
+        function loadSuggestion() {
+            fetch(`/api/suggestions/${suggestionId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert('Ошибка загрузки данных: ' + data.error);
+                        return;
+                    }
+
+                    const s = data.suggestion;
+
+                    // Парсим фотографии
+                    let photos = s.user_photos;
+                    if (typeof photos === 'string') {
+                        try { photos = JSON.parse(photos); } catch(e) { photos = []; }
+                    } else if (!Array.isArray(photos)) {
+                        photos = [];
+                    }
+                    s.user_photos = photos;
+                    window.currentPhotos = photos.slice(); // копия для возможного использования
+
+                    // Категории пользователя
+                    selectedCategoryIds = s.user_categories ? s.user_categories.map(c => c.id) : [];
+
+                    // Формируем HTML формы
+                    const formHtml = `
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="user_title" class="form-label required">Название</label>
+                                    <input type="text" class="form-control" id="user_title" value="${escapeHtml(s.user_title) || ''}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="user_description" class="form-label required">Описание</label>
+                                    <textarea class="form-control" id="user_description" rows="3" required>${escapeHtml(s.user_description) || ''}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="user_address" class="form-label required">Адрес</label>
+                                    <input type="text" class="form-control" id="user_address" value="${escapeHtml(s.user_address) || ''}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="user_timetable" class="form-label">Режим работы</label>
+                                    <input type="text" class="form-control" id="user_timetable" value="${escapeHtml(s.user_timetable) || ''}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="user_phone" class="form-label">Телефон</label>
+                                    <input type="text" class="form-control" id="user_phone" value="${escapeHtml(s.user_phone) || ''}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="user_foreign_url" class="form-label">Сайт/соцсети</label>
+                                    <input type="url" class="form-control" id="user_foreign_url" value="${escapeHtml(s.user_foreign_url) || ''}">
+                                </div>
+
+                                <!-- Категории -->
+                                <div class="mb-3">
+                                    <label class="form-label">Категории</label>
+                                    <div class="categories-search-container">
+                                        <div class="category-select-trigger" id="categoryTrigger">
+                                            <span id="selectedCategoriesText">${selectedCategoryIds.length ? 'Выбрано категорий: ' + selectedCategoryIds.length : 'Выберите категории'}</span>
+                                            <span class="dropdown-arrow">▼</span>
+                                        </div>
+                                        <div class="categories-dropdown" id="categoriesDropdown" style="display: none;">
+                                            <div class="categories-dropdown-header">
+                                                <input type="text" id="category-filter" placeholder="Поиск категорий...">
+                                            </div>
+                                            <div class="categories-list" id="categoriesList"></div>
+                                            <div class="categories-dropdown-footer">
+                                                <button type="button" id="applyCategoriesBtn">Применить</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="selected-categories" id="selectedCategoriesContainer"></div>
+                                    <input type="hidden" id="categoryIdsInput" value="${selectedCategoryIds.join(',')}">
+                                </div>
+
+                                <!-- Фотографии -->
+                                <div class="mb-3">
+                                    <label class="form-label">Фотографии</label>
+                                    <div id="existing-photos" class="existing-photos row mb-2"></div>
+                                    <div class="file-upload-area" id="fileUploadArea">
+                                        <div class="upload-placeholder">
+                                            <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                                            <div class="upload-text">Перетащите файлы сюда</div>
+                                            <div class="upload-hint">или нажмите для выбора</div>
+                                        </div>
+                                        <input type="file" id="user_photos" accept="image/*" multiple style="display: none;">
+                                        <div class="file-preview" id="filePreview"></div>
+                                    </div>
+                                    <small class="text-muted">Можно выбрать несколько файлов. Загруженные файлы будут добавлены к существующим.</small>
+                                </div>
+
+                                <!-- Ссылки на фото -->
+                                <div class="mb-3">
+                                    <label for="user_photos_url" class="form-label">Или укажите ссылки на фото (через запятую)</label>
+                                    <textarea id="user_photos_url" rows="2" class="form-control" placeholder="https://example.com/photo1.jpg, https://example.com/photo2.jpg"></textarea>
+                                    <small class="text-muted">Если у вас уже есть фото в интернете</small>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                                <a href="/profile/suggestion/${suggestionId}" class="btn btn-secondary"> Отмена</a>
+                            </div>
+                        </div>
+                    `;
+
+                    document.getElementById('editSuggestionForm').innerHTML = formHtml;
+
+                    // Загружаем категории для селекта
+                    fetch('/api/categories')
+                        .then(res => res.json())
+                        .then(catData => {
+                            if (catData.success) {
+                                allCategories = catData.categories;
+                                renderCategoriesDropdown();
+                                renderSelectedTags();
+                            }
+                        });
+
+                    // Отображаем существующие фото
+                    if (s.user_photos.length) {
+                        let photosHtml = '';
+                        s.user_photos.forEach(photo => {
+                            photosHtml += `
+                                <div class="col-md-3 mb-3" data-photo-url="${photo}">
+                                    <div class="existing-photo-wrapper">
+                                        <img src="${photo}" alt="Фото" onerror="this.onerror=null; this.src='/static/placeholder.jpg';">
+                                        <button type="button" class="btn-delete-photo" onclick="deletePhoto('${photo}')">&times;</button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        document.getElementById('existing-photos').innerHTML = photosHtml;
+                    }
+                    // Инициализация компонентов
+                    initCategoryDropdown();
+                    initFileUpload();
+                    initFormSubmit(suggestionId);
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Ошибка сети при загрузке формы: ' + err.message);
+                });
+        }
+
+        // ============ УПРАВЛЕНИЕ МОБИЛЬНЫМ МЕНЮ ============
+        let isMenuOpen = false;
+        const toggler = document.querySelector('.navbar-toggler');
+        const mobileMenu = document.querySelector('.navbar-mobile-content');
+        const overlay = document.querySelector('.navbar-mobile-overlay');
+
+        if (toggler && mobileMenu && overlay) {
+            function openMenu() {
+                if (isMenuOpen) return;
+                isMenuOpen = true;
+                toggler.setAttribute('aria-expanded', 'true');
+                document.body.style.overflow = 'hidden';
+                overlay.style.display = 'block';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+                mobileMenu.style.display = 'block';
+                setTimeout(() => mobileMenu.classList.add('show'), 10);
+            }
+
+            function closeMenu() {
+                if (!isMenuOpen) return;
+                isMenuOpen = false;
+                toggler.setAttribute('aria-expanded', 'false');
+                mobileMenu.classList.remove('show');
+                setTimeout(() => mobileMenu.style.display = 'none', 300);
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    document.body.style.overflow = '';
+                }, 300);
+            }
+
+            toggler.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!isMenuOpen) {
+                    openMenu();
+                } else {
+                    closeMenu();
+                }
+            });
+
+            overlay.addEventListener('click', closeMenu);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && isMenuOpen) {
+                    closeMenu();
+                }
+            });
+        }
+
+        // Добавляем стили для анимаций (можно вынести в отдельный CSS-файл, но добавим динамически)
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            .notification-content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .notification-content i {
+                font-size: 20px;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ---------- Функции для работы с категориями ----------
+        function renderCategoriesDropdown(filterText = '') {
+            const list = document.getElementById('categoriesList');
+            if (!list) return;
+            let html = '';
+            allCategories.forEach(cat => {
+                if (filterText && !cat.name.toLowerCase().includes(filterText.toLowerCase())) return;
+                const checked = selectedCategoryIds.includes(cat.id) ? 'selected' : '';
+                html += `
+                    <div class="category-dropdown-option ${checked}" data-category-id="${cat.id}">
+                        <span class="category-checkbox">${checked ? '✓' : ''}</span>
+                        <span class="category-name">${escapeHtml(cat.name)}</span>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+
+            document.querySelectorAll('.category-dropdown-option').forEach(opt => {
+                opt.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(opt.dataset.categoryId);
+                    const checkbox = opt.querySelector('.category-checkbox');
+                    if (selectedCategoryIds.includes(id)) {
+                        selectedCategoryIds = selectedCategoryIds.filter(v => v !== id);
+                        checkbox.textContent = '';
+                        opt.classList.remove('selected');
+                    } else {
+                        selectedCategoryIds.push(id);
+                        checkbox.textContent = '✓';
+                        opt.classList.add('selected');
+                    }
+                });
+            });
+        }
+
+        function renderSelectedTags() {
+            const container = document.getElementById('selectedCategoriesContainer');
+            const hiddenInput = document.getElementById('categoryIdsInput');
+            if (!container) return;
+            if (selectedCategoryIds.length === 0) {
+                container.innerHTML = '';
+                hiddenInput.value = '';
+                document.getElementById('selectedCategoriesText').innerText = 'Выберите категории';
+                return;
+            }
+
+            let tagsHtml = '';
+            const selectedCats = allCategories.filter(c => selectedCategoryIds.includes(c.id));
+            selectedCats.forEach(cat => {
+                tagsHtml += `
+                    <span class="selected-category-tag" data-category-id="${cat.id}">
+                        ${escapeHtml(cat.name)}
+                        <span class="remove-btn" onclick="removeCategoryTag(${cat.id})">&times;</span>
+                    </span>
+                `;
+            });
+            container.innerHTML = tagsHtml;
+            hiddenInput.value = selectedCategoryIds.join(',');
+            document.getElementById('selectedCategoriesText').innerText = `Выбрано категорий: ${selectedCategoryIds.length}`;
+        }
+
+        window.removeCategoryTag = function(catId) {
+            selectedCategoryIds = selectedCategoryIds.filter(id => id !== catId);
+            renderSelectedTags();
+            const opt = document.querySelector(`.category-dropdown-option[data-category-id="${catId}"]`);
+            if (opt) {
+                opt.classList.remove('selected');
+                opt.querySelector('.category-checkbox').textContent = '';
+            }
+        };
+
+        function initCategoryDropdown() {
+            const trigger = document.getElementById('categoryTrigger');
+            const dropdown = document.getElementById('categoriesDropdown');
+            const filter = document.getElementById('category-filter');
+            const applyBtn = document.getElementById('applyCategoriesBtn');
+
+            if (!trigger || !dropdown) return;
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isActive = trigger.classList.contains('active');
+                if (isActive) {
+                    trigger.classList.remove('active');
+                    dropdown.style.display = 'none';
+                } else {
+                    trigger.classList.add('active');
+                    dropdown.style.display = 'flex';
+                    if (filter) filter.focus();
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+                    trigger.classList.remove('active');
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            if (filter) {
+                filter.addEventListener('input', (e) => {
+                    renderCategoriesDropdown(e.target.value);
+                });
+            }
+
+            if (applyBtn) {
+                applyBtn.addEventListener('click', () => {
+                    renderSelectedTags();
+                    trigger.classList.remove('active');
+                    dropdown.style.display = 'none';
+                });
+            }
+        }
+
+        // ---------- Функции для работы с файлами ----------
+        function renderFilePreviews() {
+            const preview = document.getElementById('filePreview');
+            if (!preview) return;
+
+            preview.querySelectorAll('img').forEach(img => {
+                if (img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+            });
+            preview.innerHTML = '';
+
+            newFiles.forEach((file, index) => {
+                const url = URL.createObjectURL(file);
+                preview.insertAdjacentHTML('beforeend', `
+                    <div class="file-preview-item" data-index="${index}">
+                        <img src="${url}" alt="preview">
+                        <button type="button" class="remove-btn" onclick="removeNewFile(${index})">&times;</button>
+                        <div class="file-name">${file.name}</div>
+                    </div>
+                `);
+            });
+        }
+
+        window.removeNewFile = function(index) {
+            const img = document.querySelector(`.file-preview-item[data-index="${index}"] img`);
+            if (img && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+            newFiles = newFiles.filter((_, i) => i !== index);
+            renderFilePreviews();
+        };
+
+        window.deletePhoto = function(photoUrl) {
+            if (!confirm('Удалить фотографию?')) return;
+            fetch(`/api/suggestions/${suggestionId}/photo`, {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({photo_url: photoUrl})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const photoDiv = document.querySelector(`[data-photo-url="${photoUrl}"]`);
+                    if (photoDiv) photoDiv.remove();
+                    if (window.currentPhotos) {
+                        window.currentPhotos = window.currentPhotos.filter(p => p !== photoUrl);
+                    }
+                } else {
+                    alert('Ошибка удаления: ' + data.error);
+                }
+            })
+            .catch(err => alert('Ошибка сети при удалении: ' + err.message));
+        };
+
+        function initFileUpload() {
+            const area = document.getElementById('fileUploadArea');
+            const fileInput = document.getElementById('user_photos');
+            if (!area || !fileInput) return;
+
+            area.addEventListener('click', () => fileInput.click());
+
+            area.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                area.classList.add('dragover');
+            });
+            area.addEventListener('dragleave', () => {
+                area.classList.remove('dragover');
+            });
+            area.addEventListener('drop', (e) => {
+                e.preventDefault();
+                area.classList.remove('dragover');
+                const files = Array.from(e.dataTransfer.files);
+                handleFiles(files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(Array.from(e.target.files));
+                fileInput.value = '';
+            });
+
+            function handleFiles(files) {
+                files = files.filter(f => f.type.startsWith('image/'));
+                const uniqueNewFiles = files.filter(newFile => 
+                    !newFiles.some(existing => existing.name === newFile.name && existing.size === newFile.size)
+                );
+                if (uniqueNewFiles.length === 0) return;
+                newFiles = newFiles.concat(uniqueNewFiles);
+                renderFilePreviews();
+            }
+        }
+
+        // ---------- Отправка формы ----------
+        function initFormSubmit(id) {
+            const form = document.getElementById('editSuggestionForm');
+            if (!form) return;
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const jsonData = {
+                    user_title: document.getElementById('user_title').value,
+                    user_description: document.getElementById('user_description').value,
+                    user_address: document.getElementById('user_address').value,
+                    user_timetable: document.getElementById('user_timetable').value,
+                    user_phone: document.getElementById('user_phone').value,
+                    user_foreign_url: document.getElementById('user_foreign_url').value,
+                    category_ids: selectedCategoryIds
+                };
+
+                fetch(`/api/suggestions/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(jsonData)
+                })
+                .then(res => res.json())
+                .then(resp => {
+                    if (!resp.success) {
+                        alert('Ошибка сохранения: ' + resp.error);
+                        return;
+                    }
+
+                    const uploadPromises = [];
+
+                    // Загружаем новые файлы
+                    newFiles.forEach(file => {
+                        const formData = new FormData();
+                        formData.append('photo', file);
+                        uploadPromises.push(
+                            fetch(`/api/suggestions/${id}/photo`, {
+                                method: 'POST',
+                                body: formData
+                            }).then(r => r.json())
+                        );
+                    });
+
+                    // Загружаем ссылки на фото
+                    const photoUrlsInput = document.getElementById('user_photos_url');
+                    if (photoUrlsInput && photoUrlsInput.value.trim()) {
+                        const urls = photoUrlsInput.value.split(',').map(s => s.trim()).filter(s => s);
+                        urls.forEach(url => {
+                            uploadPromises.push(
+                                fetch(`/api/suggestions/${id}/photo`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ photo_url: url })
+                                }).then(r => r.json())
+                            );
+                        });
+                    }
+
+                    if (uploadPromises.length === 0) {
+                        window.location.href = `/profile/suggestion/${id}`;
+                        return;
+                    }
+
+                    Promise.all(uploadPromises)
+                        .then(results => {
+                            const allOk = results.every(r => r && r.success);
+                            if (allOk) {
+                                window.location.href = `/profile/suggestion/${id}`;
+                            } else {
+                                const errors = results.filter(r => !r.success).map(r => r.error).join('; ');
+                                alert('Ошибка загрузки фото: ' + errors);
+                            }
+                        })
+                        .catch(err => {
+                            alert('Ошибка сети при загрузке фото: ' + err.message);
+                        });
+                })
+                .catch(err => {
+                    alert('Ошибка сети при сохранении: ' + err.message);
+                });
+            });
+        }
+
+        // Вспомогательная функция экранирования HTML
+        function escapeHtml(unsafe) {
+            if (!unsafe) return unsafe;
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Запускаем загрузку
+        loadSuggestion();
+    });
+    
+</script>
+</body>
+</html>

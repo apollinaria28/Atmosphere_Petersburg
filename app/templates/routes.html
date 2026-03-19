@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Атмосфера Петербурга | Мои маршруты</title>
+
+    <meta name="description" content="Не знаете, куда пойти в Петербурге? Находите интересные места, стройте маршруты и открывайте город по-новому.">
+    <meta name="keywords" content="места Санкт-Петербург, куда сходить в Петербурге, интересные места СПб, прогулки по Петербургу, 
+    маршруты по СПб, что посмотреть в Санкт-Петербурге, кафе Петербург, парки СПб, достопримечательности Петербурга, куда пойти в Питере, Питер, куда сходить спб, спб, куда идти, улицы питера, куда пойти питер, места">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='routes.css') }}">
+<style>
+.cr-place-row:hover { background: #f8f9fa; }
+.cr-place-selected { background: #e8f5e9 !important; }
+</style>
+</head>
+<body>
+
+<!-- Оверлей для мобильного меню -->
+<div class="navbar-mobile-overlay"></div>
+
+<!-- Шапка без фона -->
+<header class="navbar-section">
+    <nav class="navbar navbar-expand-lg navbar-desktop">
+        <div class="container">
+            <!-- Бургер-меню для мобильных -->
+            <button class="navbar-toggler" type="button" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Десктопное меню -->
+            <div class="navbar-desktop-content">
+                <div class="navbar-left">
+                    <a href="/" class="nav-link {% if active_page == 'index' %}active{% endif %}">
+                        Главная
+                        {% if active_page == 'index' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    <a href="/places" class="nav-link {% if active_page == 'places' %}active{% endif %}">
+                        Места
+                        {% if active_page == 'places' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+
+                    <!-- Избранное -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/favorites" class="nav-link {% if active_page == 'favorites' %}active{% endif %}">
+                        Избранное
+                        {% if active_page == 'favorites' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'favorites' %}active{% endif %}">
+                        Избранное
+                        {% if active_page == 'favorites' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Уже посещал -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/visited" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Уже посещал
+                        {% if active_page == 'visited' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Уже посещал
+                        {% if active_page == 'visited' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Маршруты -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/routes" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                       Маршруты
+                        {% if active_page == 'routes' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Маршруты
+                        {% if active_page == 'routes' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Предложить место -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/suggest" class="nav-link {% if active_page == 'suggest' %}active{% endif %}">
+                        Предложить место
+                        {% if active_page == 'suggest' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'suggest' %}active{% endif %}">
+                        Предложить место
+                        {% if active_page == 'suggest' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="navbar-right">
+                    <div class="user-menu">
+                        {% if current_user.is_authenticated %}
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center p-1" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if current_user.avatar_url %}
+                                <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-circle">
+                                {% else %}
+                                <div class="avatar-circle-sm">
+                                    {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                </div>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li class="dropdown-header px-3 py-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if current_user.avatar_url %}
+                                        <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-sm me-2">
+                                        {% else %}
+                                        <div class="avatar-circle-xs me-2">
+                                            {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ current_user.username }}</div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Личный кабинет</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Выйти</a></li>
+                            </ul>
+                        </div>
+                        {% else %}
+                        <div class="auth-links">
+                            <a href="/login" class="btn-login">Войти</a>
+                            <a href="/register" class="btn-register">Регистрация</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Мобильное меню -->
+            <div class="navbar-mobile-content" id="navbarMobileContent">
+                <div class="mobile-menu-container">
+                    {% if current_user.is_authenticated %}
+                    <!-- Информация о пользователе -->
+                    <div class="mobile-user-info">
+                        <div class="mobile-user-avatar">
+                            {% if current_user.avatar_url %}
+                            <img src="{{ current_user.avatar_url }}" alt="Аватар" class="mobile-avatar-icon">
+                            {% else %}
+                            <div class="mobile-avatar-circle">
+                                {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="mobile-user-name">
+                            {{ current_user.username }}
+                        </div>
+                        <a href="/profile" class="mobile-profile-link">
+                            <i class="fas fa-user me-2"></i>Личный кабинет
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Основные ссылки меню -->
+                    <div class="mobile-nav-links">
+                        <a href="/" class="mobile-nav-link">
+                            <span class="mobile-link-text">Главная</span>
+                        </a>
+                        <a href="/places" class="mobile-nav-link">
+                            <span class="mobile-link-text">Места</span>
+                        </a>
+
+                        <!-- Избранное -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/favorites" class="mobile-nav-link">
+                            <span class="mobile-link-text">Избранное</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Избранное</span>
+                        </a>
+                        {% endif %}
+
+                        <!-- Уже посещал -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/visited" class="mobile-nav-link">
+                            <span class="mobile-link-text">Уже посещал</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Уже посещал</span>
+                        </a>
+                        {% endif %}
+
+                        {% if current_user.is_authenticated %}
+                        <a href="/routes" class="mobile-nav-link">
+                            <span class="mobile-link-text">Маршруты</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Маршруты</span>
+                        </a>
+                        {% endif %}
+
+                        <!-- Предложить место -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/suggest" class="mobile-nav-link">
+                            <span class="mobile-link-text">Предложить место</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Предложить место</span>
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Кнопки входа/выхода -->
+                    <div class="mobile-auth-section">
+                        {% if current_user.is_authenticated %}
+                        <a href="/logout" class="mobile-logout-link">
+                            <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                        </a>
+                        {% else %}
+                        <div class="mobile-auth-buttons">
+                            <a href="/login" class="mobile-login-btn">Войти</a>
+                            <a href="/register" class="mobile-register-btn">Регистрация</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Основной контент -->
+<div class="container main-content">
+    <div class="mb-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center">
+                <h1 class="page-title">Мои маршруты</h1>
+                <span id="routes-counter" class="routes-counter" style="display:none;"></span>
+            </div>
+            {% if current_user.is_authenticated %}
+            <button class="btn btn-success" id="create-route-btn">
+                <i class="fas fa-plus me-2"></i>Создать маршрут
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Скелетон -->
+    <div id="skeleton-loader">
+        {% for i in range(3) %}
+        <div class="skeleton-route">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line medium"></div>
+            <div class="skeleton-line long"></div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Список маршрутов -->
+    <div id="routes-list" style="display:none;"></div>
+
+    <!-- Пустое состояние -->
+    <div id="no-results" class="no-results" style="display:none;">
+        <div class="no-results-icon">
+            <i class="fas fa-route"></i>
+        </div>
+        <h4>Пока нет маршрутов</h4>
+        <p>Добавляйте места в маршруты на странице любого места</p>
+        <a href="/places" class="btn btn-primary mt-3">
+            <i class="fas fa-search me-2"></i>Найти места
+        </a>
+    </div>
+</div>
+
+<!-- Модалка подтверждения удаления места -->
+<div class="modal fade confirm-modal" id="confirmRemovePlaceModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title fw-bold">Удалить место?</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body py-2">
+                <p class="mb-0 text-muted" style="font-size:0.9rem;">Место будет удалено из маршрута. Само место никуда не денется.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-sm btn-danger" id="confirmRemovePlaceBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка подтверждения удаления маршрута -->
+<div class="modal fade confirm-modal" id="confirmDeleteRouteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title fw-bold">Удалить маршрут?</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body py-2">
+                <p class="mb-0 text-muted" style="font-size:0.9rem;">Маршрут будет удалён без возможности восстановления.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-sm btn-danger" id="confirmDeleteRouteBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ===== МОДАЛКА: СОЗДАТЬ МАРШРУТ ===== -->
+<div class="modal fade" id="createRouteModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content crm-modal">
+            <div class="modal-header crm-header">
+                <div class="crm-title-wrap">
+                    <i class="fas fa-route crm-title-icon"></i>
+                    <h5 class="modal-title crm-title">Создать маршрут</h5>
+                </div>
+                <button type="button" class="btn-close crm-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body crm-body">
+                <div class="crm-section mb-3">
+                    <div class="crm-label">Название маршрута</div>
+                    <div class="crm-input-wrap">
+                        <i class="fas fa-pencil-alt crm-input-icon"></i>
+                        <input type="text" class="crm-input" id="cr-name"
+                               placeholder="Например: Прогулка по центру" maxlength="100">
+                    </div>
+                    <div class="crm-error" id="cr-name-error" style="display:none;">
+                        <i class="fas fa-exclamation-circle me-1"></i>Введите название маршрута
+                    </div>
+                </div>
+                <div class="crm-divider-label">
+                    <i class="fas fa-map-marker-alt me-2"></i>Выберите места
+                </div>
+                <div class="crm-input-wrap crm-search-wrap">
+                    <i class="fas fa-search crm-input-icon"></i>
+                    <input type="text" class="crm-input" id="cr-search"
+                           placeholder="Поиск по названию или адресу...">
+                </div>
+                <div id="cr-places-list" class="crm-places-list">
+                    <div class="text-center text-muted py-4">
+                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                        Загрузка мест...
+                    </div>
+                </div>
+                <div class="crm-counter">Выбрано мест: <strong id="cr-count">0</strong></div>
+            </div>
+            <div class="modal-footer crm-footer">
+                <button type="button" class="crm-btn-cancel" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="crm-btn-confirm" id="cr-submit">
+                    <i class="fas fa-check me-2"></i>Создать маршрут
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== МОДАЛКА: ДОБАВИТЬ МЕСТО В МАРШРУТ ===== -->
+<div class="modal fade" id="addPlaceToRouteModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content crm-modal">
+            <div class="modal-header crm-header">
+                <div class="crm-title-wrap">
+                    <i class="fas fa-map-marker-alt crm-title-icon"></i>
+                    <h5 class="modal-title crm-title">Добавить место в маршрут</h5>
+                </div>
+                <button type="button" class="btn-close crm-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body crm-body">
+                <div class="apm-route-name-wrap mb-3">
+                    <i class="fas fa-route me-2"></i>
+                    <span id="apm-route-name-label">Маршрут</span>
+                </div>
+                <div class="crm-input-wrap crm-search-wrap">
+                    <i class="fas fa-search crm-input-icon"></i>
+                    <input type="text" class="crm-input" id="apm-search"
+                           placeholder="Поиск по названию или адресу...">
+                </div>
+                <div id="apm-places-list" class="crm-places-list">
+                    <div class="text-center text-muted py-4">
+                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                        Загрузка мест...
+                    </div>
+                </div>
+                <div class="crm-counter">Выбрано мест: <strong id="apm-count">0</strong></div>
+            </div>
+            <div class="modal-footer crm-footer">
+                <button type="button" class="crm-btn-cancel" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="crm-btn-confirm" id="apm-submit">
+                    <i class="fas fa-check me-2"></i>Добавить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const isAuthenticated = {% if current_user.is_authenticated %}true{% else %}false{% endif %};
+
+    // ===== УВЕДОМЛЕНИЯ =====
+    function showNotification(message, type = 'success') {
+        const n = document.createElement('div');
+        n.className = `notification ${type}`;
+        n.textContent = message;
+        document.body.appendChild(n);
+        setTimeout(() => n.classList.add('show'), 10);
+        setTimeout(() => {
+            n.classList.remove('show');
+            setTimeout(() => n.remove(), 300);
+        }, 2500);
+    }
+
+    // ===== ПЕРЕМЕННЫЕ ДЛЯ МОДАЛОК =====
+    let pendingRemove = null; // { routeId, placeId, btn }
+    let pendingDeleteRoute = null; // { routeId, cardEl }
+
+    // ===== ЗАГРУЗКА МАРШРУТОВ =====
+    function loadRoutes() {
+        if (!isAuthenticated) {
+            window.location.href = '/login';
+            return;
+        }
+
+        $('#skeleton-loader').show();
+        $('#routes-list').hide();
+        $('#no-results').hide();
+
+        fetch('/api/routes')
+            .then(r => r.json())
+            .then(routes => {
+                $('#skeleton-loader').hide();
+                if (!routes || routes.length === 0) {
+                    $('#no-results').show();
+                    return;
+                }
+
+                // Обновляем счётчик
+                const counter = document.getElementById('routes-counter');
+                counter.textContent = `(${routes.length})`;
+                counter.style.display = 'inline';
+
+                // Загружаем детали каждого маршрута (с местами)
+                const promises = routes.map(r =>
+                    fetch(`/api/routes/${r.id}`)
+                        .then(res => res.json())
+                        .catch(() => ({ ...r, places: [] }))
+                );
+
+                Promise.all(promises).then(fullRoutes => {
+                    renderRoutes(fullRoutes);
+                });
+            })
+            .catch(() => {
+                $('#skeleton-loader').hide();
+                $('#no-results').show();
+                showNotification('Ошибка при загрузке маршрутов', 'error');
+            });
+    }
+
+    // ===== РЕНДЕР МАРШРУТОВ =====
+    function renderRoutes(routes) {
+        const list = document.getElementById('routes-list');
+        list.innerHTML = '';
+
+        routes.forEach(route => {
+            const placesCount = route.places ? route.places.length : 0;
+            const createdDate = route.created_at
+                ? new Date(route.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+                : '';
+
+            const card = document.createElement('div');
+            card.className = 'route-card';
+            card.dataset.routeId = route.id;
+
+            card.innerHTML = `
+                <div class="route-header" onclick="toggleRoute(this)">
+                    <div class="route-header-left">
+                        <div class="route-icon">
+                            <i class="fas fa-route"></i>
+                        </div>
+                        <div class="route-info">
+                            <p class="route-name">${escapeHtml(route.name)}</p>
+                            <p class="route-meta">${createdDate}</p>
+                        </div>
+                    </div>
+                    <div class="route-header-right">
+                        <span class="places-badge">
+                            <i class="fas fa-map-marker-alt me-1"></i>${placesCount}
+                        </span>
+                        <i class="fas fa-chevron-down route-chevron"></i>
+                    </div>
+                </div>
+                <div class="route-body">
+                    ${renderPlacesList(route)}
+                </div>
+            `;
+
+            // Кнопка удаления маршрута — добавляем отдельно чтобы не мешала onclick на header
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn-delete-route';
+            deleteBtn.title = 'Удалить маршрут';
+            deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+            deleteBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                deleteRoute(route.id, card);
+            });
+            card.querySelector('.route-header-right').insertBefore(deleteBtn, card.querySelector('.route-chevron'));
+
+            list.appendChild(card);
+        });
+
+        $('#routes-list').show();
+    }
+
+
+    // ===== РЕНДЕР СПИСКА МЕСТ =====
+    // ===== РЕНДЕР СПИСКА МЕСТ =====
+    function renderPlacesList(route) {
+        if (!route.places || route.places.length === 0) {
+            return `
+                <div class="route-empty"><i class="fas fa-map-marker-alt me-2"></i>Места ещё не добавлены</div>
+                <button class="btn-add-place-to-route" onclick="openAddPlaceModal(${route.id}, this)">
+                    <i class="fas fa-plus me-2"></i>Добавить место
+                </button>`;
+        }
+    
+        const placeholderSVG = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'46\' height=\'46\' viewBox=\'0 0 46 46\'%3E%3Crect width=\'46\' height=\'46\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' font-size=\'20\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23ccc\'%3E📷%3C/text%3E%3C/svg%3E';
+    
+        const items = route.places.map((place, idx) => {
+            // Пытаемся получить фото из разных возможных полей
+            let photoUrl = placeholderSVG;
+            if (place.main_photo_url) {
+                photoUrl = place.main_photo_url;
+            } else if (place.photos && Array.isArray(place.photos) && place.photos.length > 0) {
+                if (typeof place.photos[0] === 'string') {
+                    photoUrl = place.photos[0];
+                } else if (place.photos[0].url) {
+                    photoUrl = place.photos[0].url;
+                }
+            } else if (place.photo) {
+                photoUrl = place.photo;
+            } else if (place.image) {
+                photoUrl = place.image;
+            }
+    
+            const address = place.address
+                ? `<div class="place-item-address"><i class="fas fa-map-marker-alt me-1"></i>${escapeHtml(place.address)}</div>`
+                : '';
+    
+            return `
+                <li class="route-place-item" data-place-id="${place.id}">
+                    <div class="place-order-num">${idx + 1}</div>
+                    <img src="${photoUrl}" class="place-thumb" alt="${escapeHtml(place.title)}" onerror="this.src='${placeholderSVG}';">
+                    <div class="place-item-info">
+                        <a href="/place/${place.id}?from=routes" class="place-item-title">${escapeHtml(place.title)}</a>
+                        ${address}
+                    </div>
+                    <button class="btn-remove-place" title="Удалить из маршрута"
+                            onclick="confirmRemovePlace(${route.id}, ${place.id}, this)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </li>
+            `;
+        }).join('');
+    
+        return `
+            <ul class="route-places-list">${items}</ul>
+            <button class="btn-add-place-to-route" onclick="openAddPlaceModal(${route.id}, this)">
+                <i class="fas fa-plus me-2"></i>Добавить место
+            </button>`;
+    }
+    // ===== РАСКРЫТИЕ/СВОРАЧИВАНИЕ МАРШРУТА =====
+    function toggleRoute(header) {
+        const card = header.closest('.route-card');
+        card.classList.toggle('open');
+    }
+
+    // ===== УДАЛЕНИЕ МАРШРУТА (через модальное окно) =====
+    function deleteRoute(routeId, cardEl) {
+        pendingDeleteRoute = { routeId, cardEl };
+        new bootstrap.Modal(document.getElementById('confirmDeleteRouteModal')).show();
+    }
+
+    // Обработчик подтверждения удаления маршрута
+    document.getElementById('confirmDeleteRouteBtn').addEventListener('click', function() {
+        if (!pendingDeleteRoute) return;
+        const { routeId, cardEl } = pendingDeleteRoute;
+        pendingDeleteRoute = null;
+        bootstrap.Modal.getInstance(document.getElementById('confirmDeleteRouteModal')).hide();
+
+        fetch(`/api/routes/${routeId}`, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.message) {
+                    cardEl.style.transition = 'opacity 0.3s';
+                    cardEl.style.opacity = '0';
+                    setTimeout(() => {
+                        cardEl.remove();
+                        const remaining = document.querySelectorAll('.route-card').length;
+                        if (remaining === 0) {
+                            $('#routes-list').hide();
+                            $('#no-results').show();
+                            document.getElementById('routes-counter').style.display = 'none';
+                        } else {
+                            document.getElementById('routes-counter').textContent = `(${remaining})`;
+                        }
+                    }, 300);
+                    showNotification('Маршрут удалён');
+                } else {
+                    showNotification('Ошибка при удалении', 'error');
+                }
+            })
+            .catch(() => showNotification('Ошибка соединения', 'error'));
+    });
+
+    // ===== УДАЛЕНИЕ МЕСТА ИЗ МАРШРУТА =====
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmRemovePlaceModal'));
+
+    function confirmRemovePlace(routeId, placeId, btn) {
+        pendingRemove = { routeId, placeId, btn };
+        confirmModal.show();
+    }
+
+    document.getElementById('confirmRemovePlaceBtn').addEventListener('click', function() {
+        if (!pendingRemove) return;
+        const { routeId, placeId, btn } = pendingRemove;
+        pendingRemove = null;
+        confirmModal.hide();
+
+        fetch(`/api/routes/${routeId}/places/${placeId}`, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.message) {
+                    const item = btn.closest('.route-place-item');
+                    const list = item.closest('.route-places-list');
+                    item.style.transition = 'opacity 0.25s';
+                    item.style.opacity = '0';
+
+                    setTimeout(() => {
+                        item.remove();
+
+                        // Перенумеровываем оставшиеся места
+                        list.querySelectorAll('.route-place-item').forEach((li, idx) => {
+                            li.querySelector('.place-order-num').textContent = idx + 1;
+                        });
+
+                        // Обновляем бейдж с количеством мест
+                        const card = list.closest('.route-card');
+                        const badge = card.querySelector('.places-badge');
+                        const newCount = list.querySelectorAll('.route-place-item').length;
+                        badge.innerHTML = `<i class="fas fa-map-marker-alt me-1"></i>${newCount}`;
+
+                        // Если мест не осталось — показываем заглушку
+                        if (newCount === 0) {
+                            card.querySelector('.route-body').innerHTML =
+                                `<div class="route-empty"><i class="fas fa-map-marker-alt me-2"></i>Места ещё не добавлены</div>`;
+                        }
+                    }, 250);
+
+                    showNotification('Место удалено из маршрута');
+                } else {
+                    showNotification('Ошибка при удалении', 'error');
+                }
+            })
+            .catch(() => showNotification('Ошибка соединения', 'error'));
+    });
+
+    // ===== УТИЛИТА =====
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+
+
+    // ===== СОЗДАТЬ МАРШРУТ / ДОБАВИТЬ МЕСТО =====
+    let crAllPlaces = [];
+    let crSelected = new Set();
+    let apmRouteId = null;
+    let apmSelected = new Set();
+    let apmExisting = new Set();
+
+    const PH = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='52'%3E%3Crect width='52' height='52' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' font-size='22' text-anchor='middle' dy='.35em' fill='%23ccc'%3E%F0%9F%93%B7%3C/text%3E%3C/svg%3E";
+
+    // --- Загрузка всех мест (с кэшем) ---
+    function fetchAllPlaces(callback) {
+        if (crAllPlaces.length > 0) { callback(crAllPlaces); return; }
+        fetch('/api/all-places?limit=300')
+            .then(r => r.json())
+            .then(data => { crAllPlaces = data.places || []; callback(crAllPlaces); })
+            .catch(() => callback(null));
+    }
+
+    // ======= СОЗДАТЬ МАРШРУТ =======
+    document.getElementById('create-route-btn')?.addEventListener('click', function () {
+        document.getElementById('cr-name').value = '';
+        document.getElementById('cr-name-error').style.display = 'none';
+        document.getElementById('cr-search').value = '';
+        crSelected = new Set();
+        updateCrCount();
+        new bootstrap.Modal(document.getElementById('createRouteModal')).show();
+        loadPlacesForCreate();
+    });
+
+    function loadPlacesForCreate() {
+        const list = document.getElementById('cr-places-list');
+        list.innerHTML = `<div class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Загрузка мест...</div>`;
+        fetchAllPlaces(places => {
+            if (!places) { list.innerHTML = `<div class="text-center text-danger py-4"><i class="fas fa-exclamation-circle me-2"></i>Не удалось загрузить места</div>`; return; }
+            renderCrPlaces(places);
+        });
+    }
+
+    function renderCrPlaces(places) {
+        const list = document.getElementById('cr-places-list');
+        if (!places.length) { list.innerHTML = `<div class="text-center text-muted py-4">Места не найдены</div>`; return; }
+        list.innerHTML = places.map(p => `
+            <label class="d-flex align-items-center gap-3 px-2 py-2 rounded cr-place-row ${crSelected.has(p.id) ? 'cr-place-selected' : ''}" style="cursor:pointer;" data-id="${p.id}">
+                <input type="checkbox" class="form-check-input cr-checkbox flex-shrink-0" value="${p.id}" ${crSelected.has(p.id)?'checked':''} style="width:20px;height:20px;cursor:pointer;accent-color:#3E3F38;">
+                <img src="${p.photo_url||PH}" style="width:90px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0;" onerror="this.src='${PH}'">
+                <div class="overflow-hidden">
+                    <div class="fw-semibold text-truncate" style="font-size:.92rem;">${escapeHtml(p.title)}</div>
+                    ${p.address?`<div class="text-muted small text-truncate"><i class="fas fa-map-marker-alt me-1"></i>${escapeHtml(p.address)}</div>`:''}
+                </div>
+            </label>`).join('');
+        list.querySelectorAll('.cr-checkbox').forEach(cb => {
+            cb.addEventListener('change', function () {
+                const id = parseInt(this.value), row = this.closest('.cr-place-row');
+                this.checked ? (crSelected.add(id), row.classList.add('cr-place-selected')) : (crSelected.delete(id), row.classList.remove('cr-place-selected'));
+                updateCrCount();
+            });
+        });
+    }
+
+    function updateCrCount() { document.getElementById('cr-count').textContent = crSelected.size; }
+
+    document.getElementById('cr-search')?.addEventListener('input', function () {
+        const q = this.value.trim().toLowerCase();
+        renderCrPlaces(q ? crAllPlaces.filter(p => p.title.toLowerCase().includes(q)||(p.address||'').toLowerCase().includes(q)) : crAllPlaces);
+    });
+
+    document.getElementById('cr-submit')?.addEventListener('click', function () {
+        const name = document.getElementById('cr-name').value.trim();
+        if (!name) { document.getElementById('cr-name-error').style.display='block'; document.getElementById('cr-name').focus(); return; }
+        document.getElementById('cr-name-error').style.display = 'none';
+        if (!crSelected.size) { showNotification('Выберите хотя бы одно место', 'error'); return; }
+        const btn = this;
+        btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Создание...';
+        fetch('/api/routes', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name}) })
+            .then(r => r.json())
+            .then(route => {
+                if (!route.id) throw new Error();
+                return fetch(`/api/routes/${route.id}/places`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({place_ids:Array.from(crSelected)}) })
+                    .then(r=>r.json()).then(()=>route);
+            })
+            .then(route => { bootstrap.Modal.getInstance(document.getElementById('createRouteModal')).hide(); showNotification(`Маршрут «${name}» создан!`); loadRoutes(); })
+            .catch(() => showNotification('Ошибка при создании маршрута', 'error'))
+            .finally(() => { btn.disabled=false; btn.innerHTML='<i class="fas fa-check me-2"></i>Создать маршрут'; });
+    });
+
+    // ======= ДОБАВИТЬ МЕСТО В МАРШРУТ =======
+    function openAddPlaceModal(routeId, btn) {
+        apmRouteId = routeId;
+        apmSelected = new Set();
+        document.getElementById('apm-search').value = '';
+        document.getElementById('apm-count').textContent = '0';
+        const card = btn.closest('.route-card');
+        document.getElementById('apm-route-name-label').textContent = card.querySelector('.route-name')?.textContent || 'Маршрут';
+        apmExisting = new Set(Array.from(card.querySelectorAll('.route-place-item')).map(li=>parseInt(li.dataset.placeId)).filter(Boolean));
+        new bootstrap.Modal(document.getElementById('addPlaceToRouteModal')).show();
+        loadPlacesForApm();
+    }
+
+    function loadPlacesForApm() {
+        const list = document.getElementById('apm-places-list');
+        list.innerHTML = `<div class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Загрузка мест...</div>`;
+        fetchAllPlaces(places => {
+            if (!places) { list.innerHTML = `<div class="text-center text-danger py-4"><i class="fas fa-exclamation-circle me-2"></i>Не удалось загрузить места</div>`; return; }
+            renderApmPlaces(places);
+        });
+    }
+
+    function renderApmPlaces(places) {
+        const list = document.getElementById('apm-places-list');
+        if (!places.length) { list.innerHTML = `<div class="text-center text-muted py-4">Места не найдены</div>`; return; }
+        list.innerHTML = places.map(p => {
+            const photo = p.photo_url || PH;
+            if (apmExisting.has(p.id)) return `
+                <label class="d-flex align-items-center gap-3 px-2 py-2 rounded cr-place-row apm-row-disabled">
+                    <input type="checkbox" class="form-check-input flex-shrink-0" disabled style="width:20px;height:20px;opacity:0.35;">
+                    <img src="${photo}" style="width:90px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0;opacity:0.5;" onerror="this.src='${PH}'">
+                    <div class="overflow-hidden flex-grow-1">
+                        <div class="fw-semibold text-truncate" style="font-size:.92rem;color:#aaa;">${escapeHtml(p.title)}</div>
+                        ${p.address?`<div class="text-muted small text-truncate"><i class="fas fa-map-marker-alt me-1"></i>${escapeHtml(p.address)}</div>`:''}
+                    </div>
+                    <span class="apm-already-badge"><i class="fas fa-check me-1"></i>В маршруте</span>
+                </label>`;
+            return `
+            <label class="d-flex align-items-center gap-3 px-2 py-2 rounded cr-place-row ${apmSelected.has(p.id)?'cr-place-selected':''}" style="cursor:pointer;" data-id="${p.id}">
+                <input type="checkbox" class="form-check-input apm-checkbox flex-shrink-0" value="${p.id}" ${apmSelected.has(p.id)?'checked':''} style="width:20px;height:20px;cursor:pointer;accent-color:#3E3F38;">
+                <img src="${photo}" style="width:90px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0;" onerror="this.src='${PH}'">
+                <div class="overflow-hidden">
+                    <div class="fw-semibold text-truncate" style="font-size:.92rem;">${escapeHtml(p.title)}</div>
+                    ${p.address?`<div class="text-muted small text-truncate"><i class="fas fa-map-marker-alt me-1"></i>${escapeHtml(p.address)}</div>`:''}
+                </div>
+            </label>`;
+        }).join('');
+        list.querySelectorAll('.apm-checkbox').forEach(cb => {
+            cb.addEventListener('change', function () {
+                const id = parseInt(this.value), row = this.closest('.cr-place-row');
+                this.checked ? (apmSelected.add(id), row.classList.add('cr-place-selected')) : (apmSelected.delete(id), row.classList.remove('cr-place-selected'));
+                document.getElementById('apm-count').textContent = apmSelected.size;
+            });
+        });
+    }
+
+    document.getElementById('apm-search')?.addEventListener('input', function () {
+        const q = this.value.trim().toLowerCase();
+        renderApmPlaces(q ? crAllPlaces.filter(p => p.title.toLowerCase().includes(q)||(p.address||'').toLowerCase().includes(q)) : crAllPlaces);
+    });
+
+    document.getElementById('addPlaceToRouteModal')?.addEventListener('hidden.bs.modal', function () {
+        apmSelected = new Set();
+        document.getElementById('apm-search').value = '';
+        document.getElementById('apm-count').textContent = '0';
+    });
+
+    document.getElementById('apm-submit')?.addEventListener('click', function () {
+        if (!apmSelected.size) { showNotification('Выберите хотя бы одно место', 'error'); return; }
+        const btn = this;
+        btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Добавление...';
+        fetch(`/api/routes/${apmRouteId}/places`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({place_ids:Array.from(apmSelected)}) })
+            .then(r => r.json())
+            .then(() => { bootstrap.Modal.getInstance(document.getElementById('addPlaceToRouteModal')).hide(); showNotification(`Добавлено мест: ${apmSelected.size}`); loadRoutes(); })
+            .catch(() => showNotification('Ошибка при добавлении', 'error'))
+            .finally(() => { btn.disabled=false; btn.innerHTML='<i class="fas fa-check me-2"></i>Добавить'; });
+    });
+
+    // ===== МОБИЛЬНОЕ МЕНЮ =====
+    $(document).ready(function() {
+        if (isAuthenticated) {
+            loadRoutes();
+        } else {
+            $('#skeleton-loader').hide();
+            $('#no-results').show();
+            $('#no-results').html(`
+                <div class="no-results-icon"><i class="fas fa-user-lock"></i></div>
+                <h4>Требуется авторизация</h4>
+                <p>Войдите в систему, чтобы просматривать маршруты</p>
+                <div class="mt-3">
+                    <a href="/login" class="btn btn-primary me-2"><i class="fas fa-sign-in-alt me-2"></i>Войти</a>
+                    <a href="/register" class="btn btn-outline-primary"><i class="fas fa-user-plus me-2"></i>Регистрация</a>
+                </div>
+            `);
+        }
+
+        // Мобильное меню
+        let isMenuOpen = false;
+        const $toggler = $('.navbar-toggler');
+        const $mobileMenu = $('.navbar-mobile-content');
+        const $overlay = $('.navbar-mobile-overlay');
+
+        function openMenu() {
+            if (isMenuOpen) return;
+            isMenuOpen = true;
+            $toggler.attr('aria-expanded', 'true');
+            $('body').css('overflow', 'hidden');
+            $overlay.css('display', 'block');
+            setTimeout(() => $overlay.css('opacity', '1'), 10);
+            $mobileMenu.css('display', 'block');
+            setTimeout(() => $mobileMenu.addClass('show'), 10);
+        }
+
+        function closeMenu() {
+            if (!isMenuOpen) return;
+            isMenuOpen = false;
+            $toggler.attr('aria-expanded', 'false');
+            $mobileMenu.removeClass('show');
+            setTimeout(() => $mobileMenu.css('display', 'none'), 300);
+            $overlay.css('opacity', '0');
+            setTimeout(() => { $overlay.css('display', 'none'); $('body').css('overflow', ''); }, 300);
+        }
+
+        $toggler.click(function(e) { e.preventDefault(); e.stopPropagation(); !isMenuOpen ? openMenu() : closeMenu(); });
+        $overlay.click(closeMenu);
+        $(document).keydown(function(e) { if (e.key === 'Escape' && isMenuOpen) closeMenu(); });
+    });
+</script>
+</body>
+</html>

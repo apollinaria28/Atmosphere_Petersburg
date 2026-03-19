@@ -1,0 +1,12 @@
+[project]
+name = "spb-places"
+version = "0.1.0"
+description = "Сайт для рекомендации мест в Санкт-Петербурге"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "Flask>=2.3.3",
+    "psycopg2-binary>=2.9.9",
+    "python-dotenv>=1.0.0",
+    "gunicorn>=21.2.0",
+]

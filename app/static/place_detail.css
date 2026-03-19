@@ -1,0 +1,1909 @@
+/* place_detail.css - финальная версия с правильной адаптацией */
+
+/* ===== БАЗОВЫЕ СТИЛИ ===== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+html::-webkit-scrollbar {
+    display: none;
+}
+
+/* Убираем синюю рамку фокуса после клика */
+button:focus,
+.btn:focus,
+button:active,
+.btn:active,
+a:focus,
+a:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+/* Отключаем изменение фона при нажатии (опционально) */
+.btn-primary:active,
+.btn-success:active,
+.btn:active {
+    background-color: inherit !important;
+    border-color: inherit !important;
+    color: inherit !important;
+}
+
+/* ===== ШАПКА С ФОНОМ ===== */
+.place-header {
+    position: relative;
+    color: white;
+    margin-bottom: 40px;
+    overflow: hidden;
+    min-height: 50vh;
+}
+
+.place-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.5), rgba(0,0,0,0.3));
+    z-index: 1;
+}
+
+.place-header-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.place-header-content {
+    position: relative;
+    z-index: 2;
+    padding-top: 45px;
+}
+
+/* ===== ХЛЕБНЫЕ КРОШКИ (ВСЕ ЭЛЕМЕНТЫ ОДИНАКОВЫ, РАЗДЕЛИТЕЛЬ ПО ЦЕНТРУ) ===== */
+.breadcrumb {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+    list-style: none;
+    background-color: transparent;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    min-width: 0;
+    flex-shrink: 1;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.navbar-section .dropdown-item:active:hover {
+    background-color: transparent !important;
+    color: #FDFAFA !important;
+}
+
+.navbar-section .dropdown-item:hover {
+    background-color: transparent !important;
+    color: #FDFAFA !important;
+}
+/* Стили для выпадающего меню пользователя */
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
+    background-color: transparent !important;
+    color: #FDFAFA !important;
+}
+
+/* Дополнительно для пункта "Выйти" (красный текст) */
+.dropdown-menu .dropdown-item.text-danger:hover {
+    background-color: transparent !important;
+    color: #FDFAFA !important;
+}
+
+/* Ссылки (и активный элемент — без отдельного класса) */
+.breadcrumb-item a {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
+    text-decoration: none;
+    border: none;
+    padding: 0.2rem 0;
+    vertical-align: middle;
+}
+
+.breadcrumb-item a:hover {
+    color: #ffffff;
+}
+
+/* Разделитель (стрелка) */
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    color: rgba(255, 255, 255, 0.6);
+    padding: 0 0.6rem;
+    font-size: 1.3rem;
+    font-weight: 300;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    align-self: center;
+    line-height: 1;
+    height: auto;
+}
+
+/* ===== ГАЛЕРЕЯ ===== */
+.photo-gallery-section {
+    margin-bottom: 50px;
+}
+
+.gallery-container {
+    width: 100%;
+    margin: 20px 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
+}
+
+.gallery-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.gallery-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.gallery-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.gallery-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.gallery-track {
+    display: flex;
+    padding: 10px 0;
+    gap: 20px;
+}
+
+.gallery-item {
+    flex: 0 0 auto;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background: white;
+    transition: transform 0.3s ease;
+}
+
+.gallery-item:hover {
+    transform: translateY(-5px);
+}
+
+.gallery-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: pointer;
+    display: block;
+}
+
+.gallery-img[src*="data:image/svg+xml"] {
+    background: #f0f0f0;
+    padding: 20px;
+}
+
+.no-photos {
+    text-align: center;
+    padding: 50px 20px;
+    background: white;
+    border-radius: 12px;
+    color: #6c757d;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+/* ===== ИНФОРМАЦИОННЫЕ КАРТОЧКИ ===== */
+.info-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border: 1px solid #f0f0f0;
+}
+
+.info-row {
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    gap: 16px;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #333;
+    min-width: 160px;
+    flex-shrink: 0;
+}
+
+.info-value {
+    color: #555;
+    flex: 1;
+    word-break: break-word;
+}
+
+/* Бейджи */
+.category-badge {
+    margin-right: 8px;
+    margin-bottom: 8px;
+    padding: 6px 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.subway-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    color: white;
+    font-weight: 500;
+}
+
+.subway-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.description-box {
+    line-height: 1.8;
+    color: #444;
+    font-size: 1.05rem;
+    white-space: pre-line;
+}
+
+.description-box img {
+    display: none;
+}
+
+.empty-value {
+    color: #999;
+    font-style: italic;
+}
+
+/* ===== КНОПКИ ДЕЙСТВИЙ (ИЗБРАННОЕ/ПОСЕЩЕНО) ===== */
+.action-buttons {
+    display: flex;
+    justify-content: center !important;
+    gap: 20px;
+    margin: 10px 0;
+}
+
+.action-buttons .place-visited,
+.action-buttons .place-heart {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    width: 44px;
+    height: 44px;
+}
+
+.action-buttons .place-visited i,
+.action-buttons .place-heart i {
+    color: #555;
+    font-size: 22px;
+}
+
+.action-buttons .place-heart.active i {
+    color: #ff4757;
+}
+
+.action-buttons .place-visited.active i {
+    color: #28a745;
+}
+
+.action-buttons .place-visited,
+.action-buttons .place-heart {
+    margin-right: 0 !important;
+}
+
+.action-buttons a.place-visited,
+.action-buttons a.place-heart {
+    display: inline-flex;
+    text-decoration: none;
+}
+
+.place-icons-container {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+}
+
+.place-visited,
+.place-heart,
+a.place-visited,
+a.place-heart {
+    position: relative;
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0;
+    padding: 0;
+}
+
+.place-visited:hover,
+.place-heart:hover {
+    transform: scale(1);
+}
+
+.place-heart i {
+    font-size: 22px;
+    color: #70716E;
+    transition: all 0.3s ease;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.place-heart:hover i {
+    color: #ff4757;
+}
+
+.place-heart.active i {
+    color: #ff4757;
+}
+
+.place-heart.active i:before {
+    content: "\f004";
+    font-weight: 900;
+}
+
+.place-visited i.visited-icon {
+    font-size: 22px;
+    color: #70716E;
+    transition: all 0.3s ease;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.place-visited:hover i.visited-icon {
+    color: #3E3F38;
+}
+
+.place-visited.active i.visited-icon {
+    color: #3E3F38;
+}
+
+.place-visited.active i.visited-icon:before {
+    content: "\f058";
+    font-weight: 900;
+}
+
+a.place-visited i.visited-icon,
+a.place-heart i {
+    color: #70716E;
+}
+
+.btn-success{
+    font-weight: 500;
+    color: #555;
+    background: #fff;
+    border: 1.5px solid #e0e0e0;
+}
+.btn-success:hover {
+    font-weight: 500;
+    color: #555;
+    background: #f0f0f0;
+    border: 1.5px solid #e0e0e0;
+}
+/* ===== МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ В МАРШРУТ ===== */
+#addToRouteModal .modal-content {
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+#addToRouteModal .modal-header {
+    border-bottom: 1px solid #e9ecef;
+    padding: 1.25rem 1.5rem;
+    background-color: #ffffff;
+}
+
+#addToRouteModal .modal-title {
+    font-weight: 600;
+    color: #3E3F38;
+    font-size: 1.25rem;
+}
+
+#addToRouteModal .btn-close {
+    background: transparent;
+    opacity: 0.5;
+    transition: opacity 0.2s, transform 0.2s;
+}
+#addToRouteModal .btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+#addToRouteModal .modal-body {
+    padding: 1.5rem;
+    background: #f8fafc;
+}
+
+/* Стилизация выпадающего списка (select) */
+#addToRouteModal .form-select {
+    border: 1.5px solid #dee2e6;
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    font-size: 0.95rem;
+    color: #2c3e50;
+    background-color: white;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%233E3F38' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 16px 12px;
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#addToRouteModal .form-select:focus {
+    border-color: #3E3F38;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(62, 63, 56, 0.2);
+}
+
+/* Стилизация текстового поля */
+#addToRouteModal .form-control {
+    border: 1.5px solid #dee2e6;
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    font-size: 0.95rem;
+    color: #2c3e50;
+    background-color: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#addToRouteModal .form-control:focus {
+    border-color: #3E3F38;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(62, 63, 56, 0.2);
+}
+
+#addToRouteModal .form-label {
+    font-weight: 500;
+    color: #3E3F38;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Кнопки в футере */
+#addToRouteModal .modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 1.25rem 1.5rem;
+    background: #ffffff;
+}
+
+#addToRouteModal .btn-secondary {
+    background-color: #f1f3f5;
+    border: 1.5px solid #dee2e6;
+    color: #495057;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 40px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+#addToRouteModal .btn-secondary:hover {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+}
+
+#addToRouteModal .btn-primary {
+    background-color: #3E3F38;
+    border-color: #3E3F38;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 40px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+#addToRouteModal .btn-primary:hover,
+#addToRouteModal .btn-primary:active,
+#addToRouteModal .btn-primary:focus {
+    background-color: #2d2e2a;
+    border-color: #2d2e2a;
+    box-shadow: none;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 576px) {
+    #addToRouteModal .modal-dialog {
+        margin: 0.5rem;
+    }
+    #addToRouteModal .modal-header,
+    #addToRouteModal .modal-body,
+    #addToRouteModal .modal-footer {
+        padding: 1rem;
+    }
+    #addToRouteModal .modal-title {
+        font-size: 1.1rem;
+    }
+    #addToRouteModal .form-select,
+    #addToRouteModal .form-control {
+        font-size: 0.9rem;
+    }
+    #addToRouteModal .btn-primary,
+    #addToRouteModal .btn-secondary {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+/* ===== УВЕДОМЛЕНИЯ ===== */
+.notification {
+    position: fixed;
+    top: 30px;
+    right: 20px;
+    background-color: #3E3F38;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.notification i {
+    font-size: 18px;
+}
+
+.notification.success i {
+    color: #4CAF50;
+}
+
+.notification.error i {
+    color: #F44336;
+}
+
+/* ===== МОДАЛЬНОЕ ОКНО ФОТО ===== */
+body.modal-open {
+    overflow: hidden !important;
+    padding-right: 0 !important;
+}
+
+#photoModal .modal-dialog.modal-fullscreen {
+    margin: 0;
+    max-width: none;
+    width: 100vw;
+    height: 100vh;
+}
+
+#photoModal .modal-content {
+    background-color: rgba(0, 0, 0, 0.65);
+    border: none;
+    border-radius: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#photoModal .modal-body {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+#photoModal #modalImage {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+#photoModal .modal-header {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    border: none;
+    padding: 2rem;
+    z-index: 1001;
+    display: flex;
+    justify-content: flex-end;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
+}
+
+.btn-close-large {
+    width: 4.5rem;
+    height: 4.5rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    opacity: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-close-large i {
+    color: white;
+    font-size: 2rem;
+}
+
+.btn-close-large:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.15);
+}
+
+#photoModal .btn-close:not(.btn-close-large) {
+    display: none;
+}
+
+.modal-nav-btn {
+    position: absolute;
+    top: 50%;
+    /* transform: translateY(-50%); */
+    width: 5rem;
+    height: 5rem;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.modal-nav-btn:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.5);
+    transform: translateY(-50%) scale(1.1);
+}
+
+#prevBtn {
+    left: 3rem;
+}
+
+#nextBtn {
+    right: 3rem;
+}
+
+.photo-counter {
+    color: white;
+    font-size: 1.3rem;
+    background-color: transparent;
+    padding: 0.8rem 1.8rem;
+    border-radius: 2rem;
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.selected-place-card {
+    border: 2px solid #198754 !important;
+    box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.2);
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+
+/* ГРУППА 1: посещено + избранное */
+.action-group {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 30px 8px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    text-decoration: none;
+}
+
+.action-btn-wrap:hover {
+    border-color: #aaa;
+    background: #f8f8f8;
+}
+
+/* .action-btn-wrap.active {
+    border-color: currentColor;
+    background: #f0fff4;
+} */
+
+.action-icon {
+    font-size: 1.3rem;
+    color: #888;
+    transition: color 0.2s;
+}
+
+.action-btn-wrap.active .action-icon {
+    color: #198754;
+}
+
+.place-heart .action-icon { color: #888; }
+.place-heart.active .action-icon { color: #e74c3c !important; }
+
+.action-label {
+    font-size: 0.75rem;
+    color: #888;
+    font-weight: 500;
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* ГРУППА 2: карты */
+.map-btns-row {
+    display: flex;
+    gap: 10px;
+}
+
+.map-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 8px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #555;
+    text-decoration: none;
+    background: #fff;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+    font-family: 'Montserrat', sans-serif;
+}
+
+
+
+.map-btn i {
+    font-size: 0.95rem;
+}
+
+/* ===== МОДАЛЬНОЕ ОКНО БЛИЖАЙШИХ МЕСТ ===== */
+#nearbyModal .modal-content {
+    border-radius: 24px;
+    border: none;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+}
+
+#nearbyModal .modal-header {
+    border-bottom: 1px solid #e9ecef;
+    padding: 1.25rem 1.75rem;
+    background-color: #ffffff;
+}
+
+#nearbyModal .modal-title {
+    font-weight: 600;
+    color: #3E3F38;
+    font-size: 1.35rem;
+    letter-spacing: -0.01em;
+}
+
+#nearbyModal .btn-close {
+    background: transparent;
+    opacity: 0.6;
+    transition: opacity 0.2s, transform 0.2s;
+    padding: 0.75rem;
+}
+#nearbyModal .btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+/* Текст внутри карточки всегда по левому краю */
+#nearbyModal .place-card .card-body {
+    text-align: left;
+    padding: 0.75rem 1rem;
+}
+
+
+/* Изображение в карточке места (десктоп) */
+#nearbyModal .place-card .place-card-img {
+    height: 100%;
+    min-height: 120px;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 16px 0 0 16px;
+}
+.place-card:focus {
+    outline: none !important;
+}
+/* Кнопка "Добавить в маршрут" (оставляем как в оригинале — синяя) */
+/* #nearbyModal .place-card .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+    font-weight: 500;
+    font-size: 0.85rem;
+    padding: 0.3rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+#nearbyModal .place-card .btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+} */
+
+/* ===== АДАПТАЦИЯ КАРТОЧЕК БЛИЖАЙШИХ МЕСТ (≤ 768px) ===== */
+@media (max-width: 768px) {
+
+    /* Строка становится вертикальным стеком */
+    #nearbyModal .place-card .row {
+        flex-direction: column;
+    }
+
+    /* Обе колонки — на всю ширину */
+    #nearbyModal .place-card .col-4,
+    #nearbyModal .place-card .col-8,
+    #nearbyModal .place-card .col-md-4,
+    #nearbyModal .place-card .col-md-8,
+    #nearbyModal .place-card .col-md-3,
+    #nearbyModal .place-card .col-md-9 {
+        width: 100%;
+        max-width: 100%;
+        flex: 0 0 100%;
+    }
+
+    /* Фото — на всю ширину, высота фиксированная, скругление сверху */
+    #nearbyModal .place-card .place-card-img {
+        height: 200px;
+        width: 100%;
+        border-radius: 16px 16px 0 0;
+        object-fit: cover;
+    }
+
+    /* Текстовый блок — на всю ширину */
+    #nearbyModal .place-card .card-body {
+        width: 100%;
+        padding: 0.85rem 1rem;
+    }
+
+    /* Название крупнее на мобильных */
+    #nearbyModal .place-card .card-title {
+        font-size: 0.95rem;
+        margin-bottom: 0.3rem;
+    }
+}
+#nearbyModal .modal-body {
+    padding: 1.75rem;
+    background: #f8fafc;
+}
+
+#nearbyMap {  /* Замените #nearby-map на этот ID, если используете */
+    height: 45vh;
+    min-height: 300px;
+    border-radius: 20px;
+    margin-bottom: 1.75rem;
+    border: 2px solid white;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+#nearbyModal .place-card {
+    border: 1px solid #edf2f7;
+    border-radius: 16px;
+    background: white;
+    transition: all 0.25s ease;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+#nearbyModal .place-card:hover {
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.12);
+    transform: translateY(-3px);
+    border-color: #cbd5e0;
+}
+
+#nearbyModal .place-card .card-title {
+    font-weight: 600;
+    color: #3E3F38;
+    margin-bottom: 0.25rem;
+    margin-top: 10px;
+}
+#nearbyModal .place-card .card-text.small {
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+#nearbyModal .place-card .btn-sm {
+    background-color: white;
+    border: 1.5px solid #e2e8f0;
+    color: #3E3F38;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.35rem 1rem;
+    border-radius: 40px;
+    transition: all 0.2s;
+}
+#nearbyModal .place-card .btn-sm:hover {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+}
+.btn-primary,
+.btn-primary:active,
+.btn-primary:focus {
+    background-color: #3E3F38 !important;
+    border-color: #3E3F38 !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}
+.btn-primary:hover {
+    background-color: #3E3F38 !important;
+    border-color: #3E3F38 !important;
+}
+
+#nearbyModal .modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 1.25rem 1.75rem;
+    background: #ffffff;
+}
+
+#nearbyModal .modal-footer .btn-secondary {
+    background: white;
+    border: 1.5px solid #dee2e6;
+    color: #495057;
+    font-weight: 500;
+    padding: 0.6rem 2rem;
+    border-radius: 40px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+#nearbyModal .modal-footer .btn-secondary:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+@media (max-width: 992px) {
+    #nearbyModal .modal-dialog {
+        max-width: 90%;
+        margin: 1.5rem auto;
+    }
+}
+
+@media (max-width: 768px) {
+    #nearbyModal .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+    #nearbyModal .modal-body {
+        padding: 1.25rem;
+    }
+    #nearbyModal #nearbyMap {
+        height: 35vh;
+        min-height: 220px;
+    }
+    #nearbyModal .place-card .row {
+        flex-direction: column;
+    }
+    #nearbyModal .place-card .col-md-3 {
+        width: 100%;
+    }
+    #nearbyModal .place-card .col-md-3 img {
+        height: 170px;
+        width: 100%;
+        border-radius: 16px 16px 0 0;
+        object-fit: cover;
+    }
+    #nearbyModal .place-card .col-md-9 {
+        width: 100%;
+        padding: 0.75rem;
+    }
+    #nearbyModal .place-card .card-body {
+        padding: 1rem;
+    }
+    #nearbyModal .modal-header {
+        padding: 1rem 1.25rem;
+    }
+    #nearbyModal .modal-footer {
+        padding: 1rem 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #nearbyModal #nearbyMap {
+        height: 30vh;
+        min-height: 180px;
+    }
+    #nearbyModal .modal-title {
+        font-size: 1.2rem;
+    }
+    #nearbyModal .place-card .btn-sm {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.7rem;
+    }
+}
+
+/* ===== АДАПТИВНОСТЬ ПО ЗАДАННЫМ БРЕЙКПОИНТАМ ===== */
+
+/* Очень широкие экраны (от 1441px) */
+@media (min-width: 1441px) {
+    .gallery-item {
+        width: calc(33.333% - 14px);
+        height: 350px;
+    }
+
+    .info-card {
+        padding: 35px;
+    }
+
+    .description-box {
+        font-size: 1.1rem;
+    }
+
+    h3 {
+        font-size: 1.8rem;
+    }
+
+    .breadcrumb-item {
+        font-size: 1.1rem;
+    }
+}
+
+/* От 1200px до 1440px (десктоп стандартный) */
+@media (min-width: 1200px) and (max-width: 1440px) {
+    .gallery-item {
+        width: calc(33.333% - 14px);
+        height: 300px;
+    }
+}
+
+/* От 992px до 1199px (планшеты и небольшие десктопы) */
+@media (max-width: 1199px) {
+    .gallery-item {
+        width: calc(50% - 10px);
+        height: 280px;
+    }
+
+    .info-card {
+        padding: 16px;
+    }
+
+    .description-box {
+        font-size: 1rem;
+    }
+
+    h3 {
+        font-size: 1.6rem;
+    }
+
+    .info-label {
+        min-width: 140px;
+    }
+
+    .breadcrumb-item {
+        font-size: 0.95rem;
+    }
+}
+
+/* От 768px до 991px (планшеты вертикально) */
+@media (max-width: 991px) {
+    .gallery-item {
+        width: calc(50% - 5px);
+        height: 260px;
+    }
+    .place-header {
+        min-height: 40vh;
+
+    }
+
+    .info-card {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .description-box {
+        font-size: 0.95rem;
+    }
+
+    h3 {
+        font-size: 1.5rem;
+    }
+
+    .info-label {
+        min-width: 130px;
+        font-size: 0.95rem;
+    }
+
+    .info-value {
+        font-size: 0.95rem;
+    }
+
+    .breadcrumb {
+        padding: 0.3rem 0;
+    }
+
+    .breadcrumb-item {
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        font-size: 1.1rem;
+        padding: 0 0.4rem;
+    }
+
+    .action-buttons {
+        gap: 15px;
+    }
+
+    .action-buttons .place-visited,
+    .action-buttons .place-heart {
+        width: 40px;
+        height: 40px;
+    }
+
+    .action-buttons .place-visited i,
+    .action-buttons .place-heart i {
+        font-size: 20px;
+    }
+}
+
+/* До 767px (мобильные, одно изображение в галерее) */
+@media (max-width: 767px) {
+    .gallery-item {
+        width: calc(100% - 20px);
+        height: 260px;
+    }
+
+    .gallery-track {
+        gap: 15px;
+    }
+
+    .display-5 {
+        font-size: 2.1rem;
+    }
+
+    .info-card {
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+
+    .description-box {
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    h2 {
+        font-size: 1.4rem;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .info-row {
+        padding: 10px 0;
+        gap: 12px;
+    }
+
+    .info-label {
+        min-width: 120px;
+        font-size: 0.9rem;
+    }
+
+    .info-value {
+        font-size: 0.9rem;
+        word-break: break-word;
+    }
+
+    .breadcrumb {
+        padding: 0.2rem 0;
+    }
+
+    .breadcrumb-item {
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        font-size: 1rem;
+        padding: 0 0.3rem;
+    }
+
+    .align-items-center {
+        font-size: 16px;
+    }
+
+    .action-buttons {
+        gap: 12px;
+    }
+
+    .action-buttons .place-visited,
+    .action-buttons .place-heart {
+        width: 38px;
+        height: 38px;
+    }
+
+    .action-buttons .place-visited i,
+    .action-buttons .place-heart i {
+        font-size: 18px;
+    }
+
+    .place-header-content {
+        padding-top: 30px;
+    }
+
+    .place-header {
+        min-height: 40vh;
+    }
+
+    /* Модальное окно на мобильных */
+    .modal-nav-btn {
+        width: 3.5rem;
+        height: 3.5rem;
+        font-size: 1.8rem;
+    }
+
+    #prevBtn {
+        left: 1.5rem;
+    }
+
+    #nextBtn {
+        right: 1.5rem;
+    }
+
+    .btn-close-large {
+        width: 3.5rem;
+        height: 3.5rem;
+    }
+
+    .btn-close-large i {
+        font-size: 1.6rem;
+    }
+
+    #photoModal .modal-header {
+        padding: 1.5rem;
+    }
+
+    .photo-counter {
+        bottom: 2rem;
+        font-size: 1.1rem;
+        padding: 0.6rem 1.4rem;
+    }
+
+    .notification {
+        top: 20px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        font-size: 14px;
+        padding: 10px 15px;
+    }
+}
+
+/* До 576px (маленькие мобильные) */
+@media (max-width: 576px) {
+    .gallery-item {
+        height: 250px;
+    }
+
+    .info-card {
+        padding: 20px;
+    }
+
+    .description-box {
+        font-size: 0.85rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .display-5 {
+        font-size: 2rem;
+    }
+
+    .breadcrumb {
+        padding: 0.1rem 0;
+    }
+
+    .breadcrumb-item {
+        font-size: 0.8rem;
+    }
+    .align-items-center {
+        font-size: 15px;
+    }
+
+    .info-row {
+        flex-direction: column;
+        gap: 5px;
+        padding: 8px 0;
+    }
+
+    .info-label {
+        min-width: auto;
+        font-size: 0.85rem;
+    }
+
+    .info-value {
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb-item {
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        padding: 0 0.2rem;
+        font-size: 0.9rem;
+    }
+
+    .action-buttons .place-visited,
+    .action-buttons .place-heart {
+        width: 36px;
+        height: 36px;
+    }
+
+    .action-buttons .place-visited i,
+    .action-buttons .place-heart i {
+        font-size: 18px;
+    }
+
+    .place-header {
+        min-height: 35vh;
+    }
+
+    .place-header-content {
+        padding-top: 20px;
+    }
+
+
+}
+
+/* До 500px */
+@media (max-width: 500px) {
+    .gallery-item {
+        height: 250px;
+    }
+
+    .info-card {
+        padding: 15px;
+    }
+
+    .description-box {
+        font-size: 0.85rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .display-5 {
+        font-size: 1.8rem;
+    }
+
+    .breadcrumb {
+        padding: 0.1rem 0;
+    }
+
+    .breadcrumb-item {
+        font-size: 0.8rem;
+    }
+    .align-items-center {
+        font-size: 15px;
+    }
+    .place-header {
+        min-height: 35vh;
+    }
+
+
+    .modal-nav-btn {
+        width: 3rem;
+        height: 3rem;
+        font-size: 1.5rem;
+    }
+
+    #prevBtn {
+        left: 1rem;
+    }
+
+    #nextBtn {
+        right: 1rem;
+    }
+
+    .btn-close-large {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .btn-close-large i {
+        font-size: 1.4rem;
+    }
+
+    .photo-counter {
+        bottom: 1.5rem;
+        font-size: 1rem;
+        padding: 0.5rem 1.2rem;
+    }
+}
+
+/* До 425px */
+@media (max-width: 425px) {
+    .gallery-item {
+        height: 250px;
+    }
+
+    .info-card {
+        padding: 15px;
+    }
+
+    .description-box {
+        font-size: 0.85rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .display-5 {
+        font-size: 1.8rem;
+    }
+
+    .breadcrumb {
+        padding: 0.1rem 0;
+    }
+
+    .breadcrumb-item {
+        font-size: 0.8rem;
+    }
+    .align-items-center {
+        font-size: 15px;
+    }
+    .place-header {
+        min-height: 35vh;
+    }
+
+    .info-label, .info-value {
+        font-size: 0.85rem;
+    }
+
+    .action-buttons {
+        gap: 10px;
+    }
+
+    .action-buttons .place-visited,
+    .action-buttons .place-heart {
+        width: 34px;
+        height: 34px;
+    }
+
+    .action-buttons .place-visited i,
+    .action-buttons .place-heart i {
+        font-size: 16px;
+    }
+
+}
+
+/* До 375px */
+@media (max-width: 375px) {
+    .gallery-item {
+        height: 200px;
+    }
+
+    .photo-gallery-section {
+        margin-bottom: 30px;
+    }
+
+    .info-card {
+        padding: 10px;
+    }
+
+    h2 {
+        font-size: 1.4rem;
+    }
+
+    .description-box {
+        font-size: 0.75rem;
+    }
+
+    .info-label, .info-value {
+        font-size: 0.75rem;
+    }
+
+    .breadcrumb-item {
+        font-size: 0.7rem;
+    }
+
+    .display-5 {
+        font-size: 1.6rem;
+    }
+    .align-items-center {
+        font-size: 12px;
+    }
+}
+
+/* До 360px */
+@media (max-width: 360px) {
+    .gallery-item {
+        height: 200px;
+    }
+
+    .photo-gallery-section {
+        margin-bottom: 30px;
+    }
+
+    .info-card {
+        padding: 10px;
+    }
+
+    h2 {
+        font-size: 1.4rem;
+    }
+
+    .description-box {
+        font-size: 0.75rem;
+    }
+
+    .info-label, .info-value {
+        font-size: 0.75rem;
+    }
+
+    .breadcrumb-item {
+        font-size: 0.7rem;
+    }
+
+    .display-5 {
+        font-size: 1.6rem;
+    }
+
+    .action-buttons {
+        gap: 8px;
+    }
+
+    .action-buttons .place-visited,
+    .action-buttons .place-heart {
+        width: 32px;
+        height: 32px;
+    }
+
+    .action-buttons .place-visited i,
+    .action-buttons .place-heart i {
+        font-size: 15px;
+    }
+    .align-items-center {
+        font-size: 12px;
+    }
+}
+
+
+
+/* ============================================================
+   МОДАЛКА "ДОБАВИТЬ В МАРШРУТ" — КАСТОМНЫЙ СТИЛЬ
+   ============================================================ */
+
+/* Само окно */
+.atr-modal {
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 24px 48px rgba(0,0,0,0.18);
+    overflow: hidden;
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* Шапка */
+.atr-header {
+    background: #3E3F38;
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+}
+.atr-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.atr-title-icon {
+    color: rgba(255,255,255,0.7);
+    font-size: 1rem;
+}
+.atr-title {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1.15rem;
+    margin: 0;
+}
+.atr-close {
+    filter: invert(1);
+    opacity: 0.7;
+    transition: opacity 0.2s, transform 0.2s;
+}
+.atr-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+/* Тело */
+.atr-body {
+    background: #f8fafc;
+    padding: 1.5rem;
+}
+
+/* Секция */
+.atr-section {
+    margin-bottom: 0;
+}
+.atr-section-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #70716E;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.6rem;
+}
+
+/* Кастомный дропдаун — обёртка */
+.atr-dropdown {
+    position: relative;
+}
+
+/* Кнопка-триггер */
+.atr-dropdown-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border: 1.5px solid #dee2e6;
+    border-radius: 12px;
+    padding: 0.65rem 1rem;
+    font-size: 0.95rem;
+    color: #adb5bd;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: 'Montserrat', sans-serif;
+    text-align: left;
+}
+.atr-dropdown-trigger:hover {
+    border-color: #3E3F38;
+}
+.atr-dropdown-trigger--selected {
+    color: #3E3F38 !important;
+    border-color: #3E3F38;
+}
+.atr-dropdown-trigger--selected .atr-chevron {
+    color: #3E3F38;
+}
+.atr-chevron {
+    color: #adb5bd;
+    font-size: 0.8rem;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+/* Выпадающее меню */
+.atr-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1.5px solid #dee2e6;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 1060;
+    overflow: hidden;
+    display: none;
+    max-height: 220px;
+    overflow-y: auto;
+}
+.atr-dropdown-menu.atr-menu--open {
+    display: block;
+    animation: atrFadeIn 0.15s ease;
+}
+@keyframes atrFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Опция */
+.atr-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    font-size: 0.92rem;
+    color: #3E3F38;
+    transition: background 0.15s;
+    border-bottom: 1px solid #f0f0f0;
+}
+.atr-option:last-child {
+    border-bottom: none;
+}
+.atr-option:hover {
+    background: #f8fafc;
+}
+.atr-option--active {
+    background: #f0f4f0;
+    font-weight: 600;
+}
+.atr-option--active .atr-option-check {
+    display: block !important;
+}
+.atr-option-icon {
+    color: #70716E;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+.atr-option-check {
+    display: none;
+    margin-left: auto;
+    color: #3E3F38;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+.atr-option--empty {
+    color: #adb5bd;
+    cursor: default;
+    font-size: 0.88rem;
+}
+.atr-option--empty:hover {
+    background: transparent;
+}
+
+/* Разделитель "или" */
+.atr-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 1.25rem 0;
+    color: #adb5bd;
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+.atr-divider::before,
+.atr-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #dee2e6;
+}
+
+/* Поле нового маршрута */
+.atr-input-wrap {
+    position: relative;
+}
+.atr-input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #adb5bd;
+    font-size: 0.8rem;
+    pointer-events: none;
+}
+.atr-input {
+    width: 100%;
+    background: #ffffff;
+    border: 1.5px solid #dee2e6;
+    border-radius: 12px;
+    padding: 0.65rem 1rem 0.65rem 2.4rem;
+    font-size: 0.95rem;
+    color: #3E3F38;
+    font-family: 'Montserrat', sans-serif;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+.atr-input::placeholder {
+    color: #adb5bd;
+}
+.atr-input:focus {
+    border-color: #3E3F38;
+    box-shadow: 0 0 0 3px rgba(62,63,56,0.12);
+}
+
+/* Футер */
+.atr-footer {
+    background: #ffffff;
+    border-top: 1px solid #e9ecef;
+    padding: 1.1rem 1.5rem;
+    gap: 10px;
+}
+.atr-btn-cancel {
+    background: #f1f3f5;
+    border: 1.5px solid #dee2e6;
+    color: #495057;
+    font-weight: 500;
+    padding: 0.6rem 1.4rem;
+    border-radius: 40px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    transition: background 0.2s;
+}
+.atr-btn-cancel:hover {
+    background: #e9ecef;
+}
+.atr-btn-confirm {
+    background: #3E3F38;
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 0.6rem 1.6rem;
+    border-radius: 40px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    transition: background 0.2s, transform 0.15s;
+    display: flex;
+    align-items: center;
+}
+.atr-btn-confirm:hover {
+    background: #2d2e2a;
+    transform: translateY(-1px);
+}
+.atr-btn-confirm:active {
+    transform: translateY(0);
+}
+
+/* Мобильная адаптация */
+@media (max-width: 576px) {
+    .atr-modal { border-radius: 16px; }
+    .atr-header, .atr-body, .atr-footer { padding: 1rem; }
+    .atr-title { font-size: 1rem; }
+    .atr-btn-cancel, .atr-btn-confirm { padding: 0.55rem 1.1rem; font-size: 0.85rem; }
+}

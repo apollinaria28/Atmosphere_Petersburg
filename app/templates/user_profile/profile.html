@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет | Атмосфера Петербурга</title>
+    
+    <meta name="description" content="Не знаете, куда пойти в Петербурге? Находите интересные места, стройте маршруты и открывайте город по-новому.">
+    <meta name="keywords" content="места Санкт-Петербург, куда сходить в Петербурге, интересные места СПб, прогулки по Петербургу, 
+    маршруты по СПб, что посмотреть в Санкт-Петербурге, кафе Петербург, парки СПб, достопримечательности Петербурга, куда пойти в Питере, Питер, куда сходить спб, спб, куда идти, улицы питера, куда пойти питер, места">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap&subset=cyrillic" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='profile/profile.css') }}">
+</head>
+<body>
+<!-- Оверлей для мобильного меню -->
+<div class="navbar-mobile-overlay"></div>
+
+<!-- Шапка без фона -->
+<header class="navbar-section">
+    <nav class="navbar navbar-expand-lg navbar-desktop">
+        <div class="container">
+            <!-- Бургер-меню для мобильных -->
+            <button class="navbar-toggler" type="button" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Десктопное меню -->
+            <div class="navbar-desktop-content">
+                <div class="navbar-left">
+                    <a href="/" class="nav-link {% if active_page == 'index' %}active{% endif %}">
+                        Главная
+                        {% if active_page == 'index' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    <a href="/places" class="nav-link {% if active_page == 'places' %}active{% endif %}">
+                        Места
+                        {% if active_page == 'places' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+
+                    <!-- Избранное -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/favorites" class="nav-link {% if active_page == 'favorites' %}active{% endif %}">
+                        Избранное
+                        {% if active_page == 'favorites' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'favorites' %}active{% endif %}">
+                        Избранное
+                        {% if active_page == 'favorites' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Уже посещал -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/visited" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Уже посещал
+                        {% if active_page == 'visited' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Уже посещал
+                        {% if active_page == 'visited' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Маршруты -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/routes" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                       Маршруты
+                        {% if active_page == 'routes' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Маршруты
+                        {% if active_page == 'routes' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Предложить место -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/suggest" class="nav-link {% if active_page == 'suggest' %}active{% endif %}">
+                        Предложить место
+                        {% if active_page == 'suggest' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'suggest' %}active{% endif %}">
+                        Предложить место
+                        {% if active_page == 'suggest' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="navbar-right">
+                    <div class="user-menu">
+                        {% if current_user.is_authenticated %}
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center p-1" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if current_user.avatar_url %}
+                                <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-circle">
+                                {% else %}
+                                <div class="avatar-circle-sm">
+                                    {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                </div>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li class="dropdown-header px-3 py-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if current_user.avatar_url %}
+                                        <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-sm me-2">
+                                        {% else %}
+                                        <div class="avatar-circle-xs me-2">
+                                            {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ current_user.username }}</div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Личный кабинет</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Выйти</a></li>
+                            </ul>
+                        </div>
+                        {% else %}
+                        <div class="auth-links">
+                            <a href="/login" class="btn-login">Войти</a>
+                            <a href="/register" class="btn-register">Регистрация</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Мобильное меню -->
+            <div class="navbar-mobile-content" id="navbarMobileContent">
+                <div class="mobile-menu-container">
+                    {% if current_user.is_authenticated %}
+                    <!-- Информация о пользователе -->
+                    <div class="mobile-user-info">
+                        <div class="mobile-user-avatar">
+                            {% if current_user.avatar_url %}
+                            <img src="{{ current_user.avatar_url }}" alt="Аватар" class="mobile-avatar-icon">
+                            {% else %}
+                            <div class="mobile-avatar-circle">
+                                {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="mobile-user-name">
+                            {{ current_user.username }}
+                        </div>
+                        <a href="/profile" class="mobile-profile-link">
+                            <i class="fas fa-user me-2"></i>Личный кабинет
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Основные ссылки меню -->
+                    <div class="mobile-nav-links">
+                        <a href="/" class="mobile-nav-link">
+                            <span class="mobile-link-text">Главная</span>
+                        </a>
+                        <a href="/places" class="mobile-nav-link">
+                            <span class="mobile-link-text">Места</span>
+                        </a>
+
+                        <!-- Избранное -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/favorites" class="mobile-nav-link">
+                            <span class="mobile-link-text">Избранное</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Избранное</span>
+                        </a>
+                        {% endif %}
+
+                        <!-- Уже посещал -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/visited" class="mobile-nav-link">
+                            <span class="mobile-link-text">Уже посещал</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Уже посещал</span>
+                        </a>
+                        {% endif %}
+
+                        {% if current_user.is_authenticated %}
+                        <a href="/routes" class="mobile-nav-link">
+                            <span class="mobile-link-text">Маршруты</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Маршруты</span>
+                        </a>
+                        {% endif %}
+
+                        <!-- Предложить место -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/suggest" class="mobile-nav-link">
+                            <span class="mobile-link-text">Предложить место</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Предложить место</span>
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Кнопки входа/выхода -->
+                    <div class="mobile-auth-section">
+                        {% if current_user.is_authenticated %}
+                        <a href="/logout" class="mobile-logout-link">
+                            <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                        </a>
+                        {% else %}
+                        <div class="mobile-auth-buttons">
+                            <a href="/login" class="mobile-login-btn">Войти</a>
+                            <a href="/register" class="mobile-register-btn">Регистрация</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+<!-- Основной контейнер -->
+<div class="profile-main-container">
+    <!-- Верхний блок: Профиль и личная информация -->
+    <div class="profile-top-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-4 col-md-5 mb-4 mb-md-0">
+                    <div class="profile-identity">
+                        <div class="profile-avatar-main">
+                            {% if current_user.avatar_url %}
+                            <img src="{{ current_user.avatar_url }}" alt="Аватар" id="profileAvatarImg">
+                            {% else %}
+                            <div class="avatar-initials">
+                                {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                            </div>
+                            {% endif %}
+                            {% if current_user.role == 'admin' %}
+                            <span class="admin-badge" title="Администратор">
+                                <i class="fas fa-crown"></i>
+                            </span>
+                            {% endif %}
+                        </div>
+                        <h1 class="profile-username">{{ current_user.username }}</h1>
+                    </div>
+                </div>
+                <div class="col-lg-8 col-md-7">
+                    <!-- Карточка с личной информацией (теперь полупрозрачная чёрная) -->
+                    <div class="profile-info-card">
+                        <h2 class="profile-info-title">
+                            Личная информация
+                        </h2>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Email</div>
+                                <div class="info-value">{{ current_user.email }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Имя пользователя</div>
+                                <div class="info-value" id="currentUsername">{{ current_user.username or 'Не указано' }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Дата регистрации</div>
+                                <div class="info-value" id="registrationDate">Загрузка...</div>
+                            </div>
+                        </div>
+                        <div class="profile-actions mt-4">
+                            <button class="btn btn-edit-profile" onclick="showEditProfileModal()">
+                                <i class="fas fa-edit"></i> Редактировать профиль
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Нижний блок: Мои предложения и Сообщения в одну колонку -->
+    <div class="profile-cards-container">
+        <!-- Мои предложения -->
+        <div class="featured-card suggestions-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title me-4">Мои предложения</h3>
+                <span class="badge bg-secondary" id="suggestionsCount">0</span>
+                <a href="{{ url_for('profile.profile_suggestions_page') }}" class="btn btn-sm btn-outline-primary ms-auto">Все предложения</a>
+            </div>
+            <div class="card-stats-grid">
+                <div class="stat-item pending">
+                    <div class="stat-number" id="pendingSuggestions">0</div>
+                    <div class="stat-label">На рассмотрении</div>
+                </div>
+                <div class="stat-item approved">
+                    <div class="stat-number" id="approvedSuggestions">0</div>
+                    <div class="stat-label">Одобрено</div>
+                </div>
+                <div class="stat-item rejected">
+                    <div class="stat-number" id="rejectedSuggestions">0</div>
+                    <div class="stat-label">Отклонено</div>
+                </div>
+            </div>
+            <div class="card-content">
+                <div id="suggestionsList" class="suggestions-list">
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="far fa-lightbulb"></i></div>
+                        <h4 class="empty-state-title">Пока нет предложений</h4>
+                        <p class="empty-state-text">Предложите новое место, которое стоит добавить в наш путеводитель!</p>
+                        <a href="/suggest" class="btn btn-add-suggestion"><i class="fas fa-plus"></i> Предложить место</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Мои сообщения об ошибках -->
+        <div class="featured-card reports-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title me-4">Мои сообщения об ошибках</h3>
+                <span class="badge bg-secondary" id="reportsCount">0</span>
+                <a href="{{ url_for('profile.profile_reports_page') }}" class="btn btn-sm btn-outline-primary ms-auto">Все обращения</a>
+            </div>
+            <div class="card-stats-grid">
+                <div class="stat-item pending">
+                    <div class="stat-number" id="pendingReports">0</div>
+                    <div class="stat-label">На рассмотрении</div>
+                </div>
+                <div class="stat-item approved">
+                    <div class="stat-number" id="resolvedReports">0</div>
+                    <div class="stat-label">Исправлено</div>
+                </div>
+            </div>
+            <div class="card-content">
+                <div id="reportsList" class="reports-list">
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="far fa-flag"></i></div>
+                        <h4 class="empty-state-title">Нет сообщений об ошибках</h4>
+                        <p class="empty-state-text">Если вы заметили неточность в информации о месте, сообщите нам об этом.</p>
+                        <a href="/suggest" class="btn btn-add-report"><i class="fas fa-flag"></i> Сообщить об ошибке</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- конец profile-cards-container -->
+</div>
+
+
+<!-- Модальное окно подтверждения удаления -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content delete-modal-content">
+            <div class="modal-body delete-modal-body">
+                <div class="delete-modal-icon">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <h5 class="delete-modal-title">Удалить аккаунт?</h5>
+                <p class="delete-modal-text">Это действие необратимо. Все ваши данные будут удалены навсегда.</p>
+                <p class="delete-modal-confirm-label">Для подтверждения, введите слово <strong>УДАЛИТЬ</strong>:</p>
+                <input type="text" id="deleteConfirmInput" class="delete-confirm-input" placeholder="УДАЛИТЬ" autocomplete="off">
+                <div class="delete-modal-actions">
+                    <button class="btn-delete-cancel" data-bs-dismiss="modal">Отмена</button>
+                    <button class="btn-delete-confirm" id="confirmDeleteBtn" disabled>Удалить навсегда</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно редактирования профиля -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">Редактировать профиль</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    <div class="mb-4">
+                        <label for="editUsername" class="form-label">Имя пользователя *</label>
+                        <input type="text" class="form-control" id="editUsername"
+                               placeholder="Введите ваше имя" required>
+                        <div class="form-text">Это имя будет отображаться в вашем профиле</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label d-block">Выберите аватар</label>
+                        <div class="avatar-grid" id="avatarGrid">
+                            <!-- Аватары будут загружены через JS -->
+                            <div class="avatar-loading">
+                                <i class="fas fa-spinner fa-spin"></i> Загрузка аватаров...
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-link text-danger p-0" id="openDeleteModalBtn" style="font-size:0.9rem; font-weight:600;">
+                    <i class="fas fa-trash-alt me-1"></i> Удалить аккаунт
+                </button>
+                <div>
+                    <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" id="saveProfileBtn" onclick="saveProfile()">
+                        <span id="saveBtnText">Сохранить изменения</span>
+                        <span id="saveBtnSpinner" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Простое модальное окно для сообщений -->
+<div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="messageModalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="messageModalBody"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // Переменные для аватаров
+    let availableAvatars = [];
+    let selectedAvatarUrl = '{{ current_user.avatar_url }}' || '';
+
+    $(document).ready(function() {
+        loadProfileData();
+        loadSuggestionsStats();
+        loadUserSuggestions();      // загружаем список предложений
+        loadReportsStats();        // статистика сообщений об ошибках
+        loadUserReports();         // список последних сообщений об ошибках
+    });
+
+    // --- ЗАГРУЗКА ДАННЫХ ПРОФИЛЯ ---
+    function loadProfileData() {
+        $.ajax({
+            url: '/profile/data',
+            method: 'GET',
+            success: function(response) {
+                if (response.success && response.registration_date) {
+                    const date = new Date(response.registration_date);
+                    $('#registrationDate').text(date.toLocaleDateString('ru-RU', {
+                        year: 'numeric', month: 'long', day: 'numeric'
+                    }));
+                }
+            }
+        });
+    }
+
+    // --- СТАТИСТИКА ПРЕДЛОЖЕНИЙ ---
+    function loadSuggestionsStats() {
+        $.ajax({
+            url: '/profile/api/profile/suggestions/stats',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    $('#pendingSuggestions').text(response.pending || 0);
+                    $('#approvedSuggestions').text(response.approved || 0);
+                    $('#rejectedSuggestions').text(response.rejected || 0);
+                    $('#suggestionsCount').text(response.total || 0);
+                }
+            }
+        });
+    }
+
+    // --- СПИСОК ПОСЛЕДНИХ ПРЕДЛОЖЕНИЙ ---
+    function loadUserSuggestions() {
+        $.ajax({
+            url: '/profile/api/user/suggestions?limit=5&per_page=5',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    displaySuggestions(response.suggestions);
+                }
+            },
+            error: function() {
+                // Если API ещё нет, показываем пустое состояние
+                console.warn('Не удалось загрузить предложения');
+            }
+        });
+    }
+
+    function displaySuggestions(suggestions) {
+        const container = $('#suggestionsList');
+        if (!suggestions || suggestions.length === 0) {
+            // Оставляем пустое состояние, которое уже в HTML
+            return;
+        }
+
+        let html = '<div class="list-group mt-2">';
+        suggestions.forEach(s => {
+            const statusClass = {
+                'pending': 'warning',
+                'approved': 'success',
+                'rejected': 'danger'
+            }[s.status] || 'secondary';
+
+            const statusText = {
+                'pending': 'На модерации',
+                'approved': 'Одобрено',
+                'rejected': 'Отклонено'
+            }[s.status] || s.status;
+
+            const date = s.created_at ? new Date(s.created_at).toLocaleDateString('ru-RU') : '';
+
+            html += `
+                <div class="list-group-item suggestion-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center">
+                                <h6 class="mb-1">${s.user_title || 'Без названия'}</h6>
+                                ${s.admin_comment ?
+                '<span class="badge bg-info ms-2" title="' + escapeHtml(s.admin_comment) + '">комментарий</span>' :
+                ''}
+                            </div>
+                            <small class="text-muted d-block">${date}</small>
+                            ${s.place_title ?
+                `<small class="text-success">Создано место: <a href="/place/${s.place_slug || s.place_id}" class="text-success">${s.place_title}</a></small>` :
+                ''}
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-${statusClass} me-2">${statusText}</span>
+                            <a href="/profile/suggestion/${s.id}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.html(html);
+    }
+
+    // --- СТАТИСТИКА СООБЩЕНИЙ ОБ ОШИБКАХ ---
+    function loadReportsStats() {
+        $.ajax({
+            url: '/profile/api/user/reports/stats',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    $('#pendingReports').text(response.pending || 0);
+                    $('#resolvedReports').text(response.resolved || 0);
+                    $('#reportsCount').text(response.total || 0);
+                }
+            },
+            error: function() {
+                console.warn('Не удалось загрузить статистику сообщений');
+            }
+        });
+    }
+
+    // --- СПИСОК ПОСЛЕДНИХ СООБЩЕНИЙ ОБ ОШИБКАХ ---
+    function loadUserReports() {
+        $.ajax({
+            url: '/profile/api/user/reports?limit=5&per_page=5',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    displayReports(response.reports);
+                }
+            },
+            error: function() {
+                console.warn('Не удалось загрузить сообщения об ошибках');
+            }
+        });
+    }
+
+    function displayReports(reports) {
+        const container = $('#reportsList');
+        if (!reports || reports.length === 0) {
+            return; // оставляем пустое состояние
+        }
+
+        let html = '<div class="list-group mt-2">';
+        reports.forEach(r => {
+            const statusClass = r.status === 'pending' ? 'warning' : 'success';
+            const statusText = r.status === 'pending' ? 'На рассмотрении' : 'Исправлено';
+            const date = r.created_at ? new Date(r.created_at).toLocaleDateString('ru-RU') : '';
+
+            html += `
+                <div class="list-group-item report-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center">
+                                <h6 class="mb-1">${r.subject || 'Без темы'}</h6>
+                                ${r.resolution_comment ?
+                '<span class="badge bg-info ms-2" title="' + escapeHtml(r.resolution_comment) + '">ответ</span>' :
+                ''}
+                            </div>
+                            <small class="text-muted d-block">${date}</small>
+                            <small>Место: ${r.place_title || 'Неизвестно'}</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-${statusClass} me-2">${statusText}</span>
+                            <a href="/profile/report/${r.id}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.html(html);
+    }
+
+
+    // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // --- РЕДАКТИРОВАНИЕ ПРОФИЛЯ (без изменений) ---
+    function showEditProfileModal() {
+        loadAvailableAvatars();
+        $('#editUsername').val('{{ current_user.username }}');
+        selectedAvatarUrl = '{{ current_user.avatar_url }}' || '';
+        const editModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editProfileModal'));
+        editModal.show();
+    }
+
+    function loadAvailableAvatars() {
+        $('#avatarGrid').html('<div class="avatar-loading"><i class="fas fa-spinner fa-spin"></i> Загрузка аватаров...</div>');
+        $.ajax({
+            url: '/profile/api/avatars',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    availableAvatars = response.avatars;
+                    renderAvatarGrid();
+                } else {
+                    $('#avatarGrid').html('<div class="avatar-error">Не удалось загрузить аватары</div>');
+                }
+            }
+        });
+    }
+
+    function renderAvatarGrid() {
+        const grid = $('#avatarGrid');
+        grid.empty();
+        if (!availableAvatars.length) {
+            grid.html('<div class="avatar-error">Аватары не найдены</div>');
+            return;
+        }
+        availableAvatars.forEach(avatar => {
+            const isSelected = selectedAvatarUrl === avatar.url;
+            const avatarHtml = `
+                <div class="avatar-option ${isSelected ? 'selected' : ''}"
+                     onclick="selectAvatar('${avatar.url.replace(/'/g, "\\'")}')"
+                     role="button">
+                    <img src="${avatar.url}" alt="${avatar.name}">
+                </div>
+            `;
+            grid.append(avatarHtml);
+        });
+    }
+
+    function selectAvatar(url) {
+        selectedAvatarUrl = url;
+        $('.avatar-option').removeClass('selected');
+        $(`.avatar-option[onclick*="${url}"]`).addClass('selected');
+    }
+
+    function saveProfile() {
+        const username = $('#editUsername').val().trim();
+        if (!username) {
+            showMessage('Ошибка', 'Введите имя пользователя', 'error');
+            return;
+        }
+        $('#saveBtnText').hide();
+        $('#saveBtnSpinner').show();
+        $('#saveProfileBtn').prop('disabled', true);
+
+        $.ajax({
+            url: '/profile/api/profile/update',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ username, avatar_url: selectedAvatarUrl }),
+            success: function(response) {
+                if (response.success) {
+                    const editModal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
+                    if (editModal) editModal.hide();
+                    updateProfileDisplay(response.user);
+                    showMessage('Успех', 'Профиль успешно обновлен', 'success');
+                } else {
+                    showMessage('Ошибка', response.error, 'error');
+                }
+            },
+            error: function() {
+                showMessage('Ошибка', 'Не удалось обновить профиль', 'error');
+            },
+            complete: function() {
+                $('#saveBtnText').show();
+                $('#saveBtnSpinner').hide();
+                $('#saveProfileBtn').prop('disabled', false);
+            }
+        });
+    }
+
+    function updateProfileDisplay(user) {
+        if (user.username) {
+            $('#currentUsername').text(user.username);
+            $('.profile-username').text(user.username);
+        }
+        if (user.avatar_url) {
+            $('.profile-avatar-main').html(`<img src="${user.avatar_url}" alt="Аватар" id="profileAvatarImg">`);
+            $('.user-avatar-small').html(`<img src="${user.avatar_url}" alt="Аватар">`);
+        } else {
+            const initial = user.username ? user.username[0].toUpperCase() : 'U';
+            $('.profile-avatar-main').html(`<div class="avatar-initials">${initial}</div>`);
+            $('.user-avatar-small').text(initial);
+        }
+    }
+
+    function showMessage(title, message, type = 'info') {
+        $('#messageModalTitle').text(title);
+        $('#messageModalBody').text(message);
+        const header = $('#messageModal .modal-header');
+        header.removeClass('bg-success bg-danger bg-warning bg-info text-white text-dark');
+        header.css('background-color', '');
+        if (type === 'error') {
+            header.css('background-color', '#dc3545').addClass('text-white');
+        } else if (type === 'warning') {
+            header.css('background-color', '#f0ad4e').addClass('text-white');
+        } else {
+            header.css('background-color', '#3E3F38').addClass('text-white');
+        }
+        const messageModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('messageModal'));
+        messageModal.show();
+        if (type === 'success') {
+            setTimeout(function() { messageModal.hide(); }, 2000);
+        }
+    }
+    // Управление мобильным меню - исправленная версия
+    $(document).ready(function() {
+        let isMenuOpen = false;
+        const $toggler = $('.navbar-toggler');
+        const $mobileMenu = $('.navbar-mobile-content');
+        const $overlay = $('.navbar-mobile-overlay');
+
+        // Функция открытия меню
+        function openMenu() {
+            if (isMenuOpen) return;
+
+            isMenuOpen = true;
+            $toggler.attr('aria-expanded', 'true');
+            $('body').css('overflow', 'hidden');
+
+            // Показываем оверлей
+            $overlay.css('display', 'block');
+            setTimeout(() => {
+                $overlay.css('opacity', '1');
+            }, 10);
+
+            // Показываем меню
+            $mobileMenu.css('display', 'block');
+            setTimeout(() => {
+                $mobileMenu.addClass('show');
+            }, 10);
+        }
+
+        // Функция закрытия меню
+        function closeMenu() {
+            if (!isMenuOpen) return;
+
+            isMenuOpen = false;
+            $toggler.attr('aria-expanded', 'false');
+
+            // Скрываем меню
+            $mobileMenu.removeClass('show');
+            setTimeout(() => {
+                $mobileMenu.css('display', 'none');
+            }, 300);
+
+            // Скрываем оверлей
+            $overlay.css('opacity', '0');
+            setTimeout(() => {
+                $overlay.css('display', 'none');
+                $('body').css('overflow', '');
+            }, 300);
+        }
+
+        // Обработчик клика на бургер
+        $toggler.click(function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (!isMenuOpen) {
+                openMenu();
+            } else {
+                closeMenu();
+            }
+        });
+
+        // Закрытие при клике на оверлей
+        $overlay.click(function() {
+            closeMenu();
+        });
+
+        // Закрытие при клике на ссылки в меню
+        $(document).on('click', '.mobile-nav-link, .mobile-logout-link, .mobile-profile-link, .mobile-login-btn, .mobile-register-btn', function(e) {
+            if ($(e.target).closest('.mobile-auth-section').length) {
+                // Даем время на выполнение клика перед закрытием
+                setTimeout(() => {
+                    closeMenu();
+                }, 100);
+            } else {
+                closeMenu();
+            }
+        });
+
+        // Закрытие при нажатии ESC
+        $(document).keydown(function(e) {
+            if (e.key === 'Escape' && isMenuOpen) {
+                closeMenu();
+            }
+        });
+
+        // Отслеживание скролла для фона навбара
+        $(window).scroll(function() {
+            if ($(window).scrollTop() > 50) {
+                $('.navbar').addClass('scrolled');
+            } else {
+                $('.navbar').removeClass('scrolled');
+            }
+        });
+
+        // Инициализация при загрузке
+        if ($(window).scrollTop() > 50) {
+            $('.navbar').addClass('scrolled');
+        }
+
+
+    });
+
+    // ── Удаление аккаунта ──
+    $('#openDeleteModalBtn').on('click', function () {
+        const editModal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
+        if (editModal) editModal.hide();
+        $('#deleteConfirmInput').val('');
+        $('#confirmDeleteBtn').prop('disabled', true);
+        setTimeout(function() {
+            new bootstrap.Modal(document.getElementById('deleteAccountModal')).show();
+        }, 300);
+    });
+
+    $('#deleteConfirmInput').on('input', function () {
+        $('#confirmDeleteBtn').prop('disabled', $(this).val().trim() !== 'УДАЛИТЬ');
+    });
+
+    $('#confirmDeleteBtn').on('click', function () {
+        $(this).prop('disabled', true).text('Удаляем...');
+        $.ajax({
+            url: '/profile/api/profile/delete',
+            method: 'DELETE',
+            success: function (res) {
+                if (res.success) {
+                    window.location.href = '/';
+                } else {
+                    showMessage('Ошибка', res.error, 'error');
+                    $('#confirmDeleteBtn').prop('disabled', false).text('Удалить навсегда');
+                }
+            },
+            error: function () {
+                showMessage('Ошибка', 'Не удалось удалить аккаунт. Попробуйте позже.', 'error');
+                $('#confirmDeleteBtn').prop('disabled', false).text('Удалить навсегда');
+            }
+        });
+    });
+
+</script>
+</body>
+</html>

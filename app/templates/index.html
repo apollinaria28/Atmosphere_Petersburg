@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Атмосфера Петербурга | Главная</title>
+
+    <meta name="description" content="Не знаете, куда пойти в Петербурге? Находите интересные места, стройте маршруты и открывайте город по-новому.">
+    <meta name="keywords" content="места Санкт-Петербург, куда сходить в Петербурге, интересные места СПб, прогулки по Петербургу, 
+    маршруты по СПб, что посмотреть в Санкт-Петербурге, кафе Петербург, парки СПб, достопримечательности Петербурга, куда пойти в Питере, Питер, куда сходить спб, спб, куда идти, улицы питера, куда пойти питер, места">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap&subset=cyrillic" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+</head>
+<body>
+<!-- Оверлей для мобильного меню -->
+<div class="navbar-mobile-overlay"></div>
+
+<header class="hero-section">
+    <div class="hero-overlay"></div>
+    <nav class="navbar navbar-expand-lg navbar-desktop">
+        <div class="container">
+            <!-- Бургер-меню для мобильных -->
+            <button class="navbar-toggler" type="button" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Десктопное меню -->
+            <div class="navbar-desktop-content">
+                <div class="navbar-left">
+                    <a href="/" class="nav-link">Главная</a>
+                    <a href="/places" class="nav-link">Места</a>
+                    <a href="/favorites" class="nav-link">Избранное</a>
+                    <a href="/visited" class="nav-link">Уже посещал</a>
+                    <a href="/routes" class="nav-link">Маршруты</a>
+                    <a href="/suggest" class="nav-link">Предложить место</a>
+                </div>
+
+                <div class="navbar-right">
+                    <div class="user-menu">
+                        {% if current_user.is_authenticated %}
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center p-1" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if current_user.avatar_url %}
+                                <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-circle">
+                                {% else %}
+                                <div class="avatar-circle-sm">
+                                    {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                </div>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li class="dropdown-header px-3 py-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if current_user.avatar_url %}
+                                        <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-sm me-2">
+                                        {% else %}
+                                        <div class="avatar-circle-xs me-2">
+                                            {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ current_user.username }}</div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Личный кабинет</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Выйти</a></li>
+                            </ul>
+                        </div>
+                        {% else %}
+                        <div class="auth-links">
+                            <a href="/login" class="btn-login">Войти</a>
+                            <a href="/register" class="btn-register">Регистрация</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Мобильное меню -->
+            <div class="navbar-mobile-content" id="navbarMobileContent">
+                <div class="mobile-menu-container">
+                    {% if current_user.is_authenticated %}
+                    <!-- Информация о пользователе -->
+                    <div class="mobile-user-info">
+                        <div class="mobile-user-avatar">
+                            {% if current_user.avatar_url %}
+                            <img src="{{ current_user.avatar_url }}" alt="Аватар" class="mobile-avatar-icon">
+                            {% else %}
+                            <div class="mobile-avatar-circle">
+                                {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="mobile-user-name">
+                            {{ current_user.username }}
+                        </div>
+                        <a href="/profile" class="mobile-profile-link">
+                            <i class="fas fa-user me-2"></i>Личный кабинет
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Основные ссылки меню -->
+                    <div class="mobile-nav-links">
+                        <a href="/" class="mobile-nav-link">
+                            <span class="mobile-link-text">Главная</span>
+                        </a>
+                        <a href="/places" class="mobile-nav-link">
+                            <span class="mobile-link-text">Места</span>
+                        </a>
+                        <a href="/favorites" class="mobile-nav-link">
+                            <span class="mobile-link-text">Избранное</span>
+                        </a>
+                        <a href="/visited" class="mobile-nav-link">
+                            <span class="mobile-link-text">Уже посещал</span>
+                        </a>
+                        <a href="/routes" class="mobile-nav-link">
+                            <span class="mobile-link-text">Маршруты</span>
+                        </a>
+                        <a href="/suggest" class="mobile-nav-link">
+                            <span class="mobile-link-text">Предложить место</span>
+                        </a>
+                    </div>
+
+                    <!-- Кнопки входа/выхода -->
+                    <div class="mobile-auth-section">
+                        {% if current_user.is_authenticated %}
+                        <a href="/logout" class="mobile-logout-link">
+                            <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                        </a>
+                        {% else %}
+                        <div class="mobile-auth-buttons">
+                            <a href="/login" class="mobile-login-btn">Войти</a>
+                            <a href="/register" class="mobile-register-btn">Регистрация</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">Санкт-Петербург, который<br>чувствует Ваше настроение</h1>
+            <p class="hero-subtitle">Смотрите подборки ниже <br>и выбирайте, куда пойти</p>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <!-- Случайные места -->
+    <section class="mb-7 mt-7">
+        <div class="d-flex justify-content-between align-items-center mb-8">
+            <div class="d-flex align-items-center">
+                <h2 class="section-title me-3">Случайное вдохновение</h2>
+                <button id="refresh-random" class="btn-refresh-icon" title="Обновить случайные места">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" class="refresh-icon">
+                        <path d="M 15 3 C 12.031398 3 9.3028202 4.0834384 7.2070312 5.875 A 1.0001 1.0001 0 1 0 8.5058594 7.3945312 C 10.25407 5.9000929 12.516602 5 15 5 C 20.19656 5 24.450989 8.9379267 24.951172 14 L 22 14 L 26 20 L 30 14 L 26.949219 14 C 26.437925 7.8516588 21.277839 3 15 3 z M 4 10 L 0 16 L 3.0507812 16 C 3.562075 22.148341 8.7221607 27 15 27 C 17.968602 27 20.69718 25.916562 22.792969 24.125 A 1.0001 1.0001 0 1 0 21.494141 22.605469 C 19.74593 24.099907 17.483398 25 15 25 C 9.80344 25 5.5490109 21.062074 5.0488281 16 L 8 16 L 4 10 z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div id="random-places" class="row">
+            {% for place in random_places %}
+            <div class="col-lg-4 col-md-4 col-sm-6 mb-4">
+                <a href="/place/{{ place.id }}?from=index" class="text-decoration-none">
+                    <div class="card random-place-card shadow-sm h-100">
+                        {% if place.photo_url %}
+                        <img src="{{ place.photo_url }}" class="card-img-top" alt="{{ place.title }}">
+                        {% else %}
+                        <div class="no-photo-container">
+                            <i class="fas fa-camera"></i>
+                            <p>Место пока ждет своей фотографии</p>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ place.title[:50] if place.title else 'Без названия' }}{% if place.title and place.title|length > 50 %}...{% endif %}</h5>
+                            {% if place.address %}
+                            <p class="card-text text-muted small">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ place.address[:50] }}{% if place.address|length > 50 %}...{% endif %}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Тест -->
+    <div class="test-section-wrapper">
+        <div class="container">
+            <div class="test-section">
+                <h2 class="section-title-t">Не знаете, куда пойти?</h2>
+                <p class="section-subtitle-t">Петербург подскажет — просто ответьте на несколько вопросов</p>
+                <a href="/test" class="btn-test">Отправиться в путь</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Фильтры настроения -->
+    <section class="mb-5">
+        <div class="mt-7">
+            <h2 class="section-title">Город большой, а настроение одно</h2>
+            <p class="section-subtitle-f">Давайте выберем, куда можно направиться</p>
+            <p class="filter-prompt"><strong>Какая атмосфера вам сегодня ближе?</strong></p>
+
+
+        </div>
+        <div class="mb-4">
+            <div id="mood-filters" class="mood-filters-container">
+                <button type="button" class="mood-filter-btn active mood-filter" data-mood-id="all">
+                    <span class="mood-text">Все места</span>
+                    <svg class="mood-wave" viewBox="0 0 100 10" preserveAspectRatio="none">
+                        <path d="M0,5 Q25,0 50,5 T100,5" fill="none" stroke="#353631" stroke-width="2"/>
+                    </svg>
+                </button>
+                {% for mood in moods %}
+                <button type="button" class="mood-filter-btn mood-filter" data-mood-id="{{ mood.id }}">
+                    <span class="mood-text">{{ mood.name }}</span>
+                    <svg class="mood-wave" viewBox="0 0 100 10" preserveAspectRatio="none">
+                        <path d="M0,5 Q25,0 50,5 T100,5" fill="none" stroke="#353631" stroke-width="2"/>
+                    </svg>
+                </button>
+                {% endfor %}
+            </div>
+            <button type="button" class="mood-filter-toggle" data-bs-toggle="modal" data-bs-target="#moodFilterModal">
+                <span>Выбрать атмосферу</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <!-- Модальное окно фильтров настроения -->
+            <div class="modal fade" id="moodFilterModal" tabindex="-1" aria-labelledby="moodFilterModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="moodFilterModalLabel">Выберите атмосферу</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Сюда копируем содержимое #mood-filters (кнопки) -->
+                            <div class="mood-filters-container">
+                                <!-- Те же самые кнопки, что и в основном блоке -->
+                                <button type="button" class="mood-filter-btn active" data-mood-id="all">
+                                    <span class="mood-text">Все места</span>
+                                </button>
+                                {% for mood in moods %}
+                                <button type="button" class="mood-filter-btn" data-mood-id="{{ mood.id }}">
+                                    <span class="mood-text">{{ mood.name }}</span>
+                                </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="filter-info" class="mb-3" style="display: none;">
+            <span id="current-filter-text"></span>
+        </div>
+    </section>
+
+    <!-- Список мест -->
+    <section id="places">
+        <div id="skeleton-loader" class="skeleton-loader" style="display: none;">
+            {% for i in range(3) %}
+            <div class="place-skeleton">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="skeleton-image"></div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="skeleton-content">
+                            <div class="skeleton-title"></div>
+                            <div class="skeleton-text"></div>
+                            <div class="skeleton-text"></div>
+                            <div class="skeleton-text short"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div id="no-places" class="alert alert-warning text-center" style="display: none;">
+            <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+            <h4>По вашему запросу ничего не найдено</h4>
+            <p>Попробуйте выбрать другое настроение или сбросить фильтр</p>
+        </div>
+        <div id="places-list">
+            {% for place in all_places %}
+            <div class="place-list-item">
+                <div class="row">
+                    <div class="col-md-4 position-relative">
+                        <a href="/place/{{ place.id }}?from=index">
+                            {% if place.photo_url %}
+                            <img src="{{ place.photo_url }}" class="place-image" alt="{{ place.title }}">
+                            {% else %}
+                            <div class="no-photo-container">
+                                <i class="fas fa-camera"></i>
+                                <p>Место пока ждет своей фотографии</p>
+                            </div>
+                            {% endif %}
+                        </a>
+                    </div>
+                    <div class="col-md-8 position-relative">
+                        <div class="place-info">
+                            <!-- ВАЖНО: убираем place-title-container из общего блока, он должен быть только для заголовка и иконок -->
+                            <div class="place-content-wrapper">
+                                <!-- Контейнер ТОЛЬКО для заголовка и иконок -->
+                                <div class="place-title-container">
+                                    <a href="/place/{{ place.id }}?from=index" class="text-decoration-none">
+                                        <h3 class="place-title">{{ place.title if place.title else 'Без названия' }}</h3>
+                                    </a>
+
+                                    <div class="place-icons-container">
+                                        <!-- Иконка посещения -->
+                                        {% if current_user.is_authenticated %}
+                                        <div class="place-visited" data-place-id="{{ place.id }}" title="Отметить как посещенное">
+                                            <i class="far fa-check-circle visited-icon"></i>
+                                        </div>
+                                        {% else %}
+                                        <a href="/login" class="place-visited" title="Войдите, чтобы отметить как посещенное">
+                                            <i class="far fa-check-circle visited-icon"></i>
+                                        </a>
+                                        {% endif %}
+
+                                        <!-- Сердечко -->
+                                        {% if current_user.is_authenticated %}
+                                        <div class="place-heart" data-place-id="{{ place.id }}">
+                                            <i class="far fa-heart"></i>
+                                        </div>
+                                        {% else %}
+                                        <a href="/login" class="place-heart" title="Войдите, чтобы добавить в избранное">
+                                            <i class="far fa-heart"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <!-- КОНЕЦ контейнера для заголовка и иконок -->
+
+                                <!-- ОТДЕЛЬНЫЙ контейнер для всего остального -->
+                                <div class="place-details-container">
+                                    {% if place.description %}
+                                    <p class="place-description">
+                                        {{ place.description[:250] | striptags }}
+                                        {% if place.description|length > 250 %}...{% endif %}
+                                    </p>
+                                    {% endif %}
+
+                                    <div class="place-meta">
+                                        {% if place.address %}
+                                        <div class="mb-2">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <strong>Адрес:</strong> {{ place.address }}
+                                        </div>
+                                        {% endif %}
+                                        {% if place.timetable %}
+                                        <div class="mb-2">
+                                            <i class="fas fa-clock"></i>
+                                            <strong>Режим работы:</strong> {{ place.timetable }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+
+                                </div>
+                                <a href="/place/{{ place.id }}?from=index" class="btn-place-detail">
+                                    <span class="btn-place-detail-text">Подробнее</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4 mb-5">
+            <button id="load-more" type="button" class="btn-load-more">
+                <i class="fas fa-plus"></i> Загрузить еще
+            </button>
+            <div id="no-more-message" class="mt-3 text-muted" style="display: none;">
+                <i class="fas fa-check-circle"></i> Отображены все места
+            </div>
+        </div>
+    </section>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const AppState = {
+        currentMood: 'all',
+        currentLimit: 10,
+        isLoading: false,
+        loadedPlaceIds: new Set(),
+        excludedIds: new Set(),
+        currentAjaxRequest: null,
+        hasMore: true,
+        isAuthenticated: {% if current_user.is_authenticated %}true{% else %}false{% endif %}
+    };
+
+    function showNotification(message, type = 'success') {
+        const notif = document.createElement('div');
+        notif.className = `notification ${type}`;
+        notif.textContent = message; // только текст, без иконок
+        document.body.appendChild(notif);
+        setTimeout(() => notif.classList.add('show'), 10);
+        setTimeout(() => {
+            notif.classList.remove('show');
+            setTimeout(() => notif.remove(), 300);
+        }, 2000);
+    }
+
+    function toggleVisited(placeId, element) {
+        if (!AppState.isAuthenticated) { window.location.href = '/login'; return; }
+        const $visited = $(element);
+        $visited.toggleClass('active');
+        const $icon = $visited.find('i');
+        $icon.toggleClass('far fas');
+        const isNowActive = $visited.hasClass('active');
+
+        fetch('/api/visited/toggle', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ place_id: placeId })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    $visited.toggleClass('active');
+                    $icon.toggleClass('far fas');
+                    showNotification('Ошибка при сохранении', 'error');
+                } else {
+                    const message = isNowActive ? 'Добавлено в уже посещённое' : 'Удалено из посещённого';
+                    showNotification(message, 'success');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                $visited.toggleClass('active');
+                $icon.toggleClass('far fas');
+                showNotification('Ошибка соединения', 'error');
+            });
+    }
+
+    function loadVisitedStatus(placeIds) {
+        if (!AppState.isAuthenticated || placeIds.length === 0) return;
+
+        fetch(`/api/visited/status?place_ids=${placeIds.join(',')}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.visited) {
+                    data.visited.forEach(placeId => {
+                        const $visited = $(`.place-visited[data-place-id="${placeId}"]:not([href])`);
+                        if ($visited.length) {
+                            $visited.addClass('active');
+                            $visited.find('i').removeClass('far').addClass('fas');
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке статуса посещенных:', error);
+            });
+    }
+
+    $(document).ready(function() {
+        // Собираем ID всех мест на странице
+        $('.place-list-item').each(function() {
+            const placeId = parseInt(
+                $(this).find('.place-heart').data('place-id') ||
+                $(this).find('.place-visited').data('place-id')
+            );
+            if (placeId && !isNaN(placeId)) {
+                AppState.loadedPlaceIds.add(placeId);
+                AppState.excludedIds.add(placeId);
+            }
+        });
+
+        // Загружаем статусы для авторизованных пользователей
+        if (AppState.isAuthenticated) {
+            const initialPlaceIds = Array.from(AppState.loadedPlaceIds);
+            if (initialPlaceIds.length > 0) {
+                loadFavoritesStatus(initialPlaceIds);
+                loadVisitedStatus(initialPlaceIds); // ← ДОБАВЬ ЭТУ СТРОЧКУ
+            }
+        }
+    });
+
+    function toggleFavorite(placeId, element) {
+        if (!AppState.isAuthenticated) { window.location.href = '/login'; return; }
+        const $heart = $(element);
+        $heart.toggleClass('active');
+        const $icon = $heart.find('i');
+        $icon.toggleClass('far fas');
+        const isNowActive = $heart.hasClass('active'); // запоминаем после переключения
+
+        fetch('/api/favorites/toggle', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ place_id: placeId })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    $heart.toggleClass('active');
+                    $icon.toggleClass('far fas');
+                    showNotification('Ошибка при сохранении', 'error');
+                } else {
+                    const message = isNowActive ? 'Добавлено в избранное' : 'Удалено из избранного';
+                    showNotification(message, 'success');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                $heart.toggleClass('active');
+                $icon.toggleClass('far fas');
+                showNotification('Ошибка соединения', 'error');
+            });
+    }
+
+    function loadFavoritesStatus(placeIds) {
+        if (!AppState.isAuthenticated || placeIds.length === 0) return;
+        fetch(`/api/favorites/status?place_ids=${placeIds.join(',')}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    data.favorites.forEach(placeId => {
+                        const $heart = $(`.place-heart[data-place-id="${placeId}"]:not([href])`);
+                        if ($heart.length) {
+                            $heart.addClass('active');
+                            $heart.find('i').removeClass('far').addClass('fas');
+                        }
+                    });
+                }
+            });
+    }
+
+    function cancelCurrentRequest() {
+        if (AppState.currentAjaxRequest) {
+            AppState.currentAjaxRequest.abort();
+            AppState.currentAjaxRequest = null;
+        }
+    }
+
+    function refreshRandomPlaces() {
+        const $button = $('#refresh-random');
+        $button.addClass('clicked');
+        $.ajax({
+            url: '/api/random-places',
+            method: 'GET',
+            data: { limit: 3 },
+            success: function(response) {
+                if (response.success) updateRandomPlaces(response.places);
+            },
+            complete: function() {
+                setTimeout(() => $button.removeClass('clicked'), 500);
+            }
+        });
+    }
+
+    function updateRandomPlaces(places) {
+        const $randomPlaces = $('#random-places');
+        $randomPlaces.empty();
+        places.forEach(function(place) {
+            const hasPhoto = place.photo_url !== null && place.photo_url !== undefined &&
+                place.photo_url !== 'None' && place.photo_url !== 'null' &&
+                place.photo_url !== '' && place.photo_url;
+            const title = place.title || 'Без названия';
+            const address = place.address || '';
+            const photoHtml = hasPhoto
+                ? `<img src="${place.photo_url}" class="card-img-top" alt="${title}">`
+                : `<div class="no-photo-container"><i class="fas fa-camera"></i><p>Место пока ждет своей фотографии</p></div>`;
+            const addressHtml = address
+                ? `<p class="card-text text-muted small"><i class="fas fa-map-marker-alt"></i>${address.substring(0, 50)}${address.length > 50 ? '...' : ''}</p>`
+                : '';
+            $randomPlaces.append(`
+        <div class="col-lg-4 col-md-4 col-sm-6 mb-4">
+            <a href="/place/${place.id}?from=index" class="text-decoration-none">
+                <div class="card random-place-card shadow-sm h-100">
+                    ${photoHtml}
+                    <div class="card-body">
+                        <h5 class="card-title">${title.substring(0, 50)}${title.length > 50 ? '...' : ''}</h5>
+                        ${addressHtml}
+                    </div>
+                </div>
+            </a>
+        </div>
+        `);
+        });
+    }
+
+    function loadPlaces(append = false) {
+        if (AppState.isLoading) return;
+        cancelCurrentRequest();
+        AppState.isLoading = true;
+        if (!append) {
+            AppState.loadedPlaceIds.clear();
+            AppState.excludedIds.clear();
+            $('#places-list').empty();
+            $('#skeleton-loader').show();
+            $('#no-more-message').hide();
+            $('#load-more').show().html('<i class="fas fa-plus"></i> Загрузить еще');
+        } else {
+            $('#load-more').html('<i class="fas fa-spinner fa-spin"></i> Загрузка...');
+        }
+        $('#no-places').hide();
+        let url = AppState.currentMood === 'all' ? '/api/all-places' : '/api/filter-by-mood';
+        const params = { limit: AppState.currentLimit };
+        if (AppState.currentMood !== 'all') params.mood_id = AppState.currentMood;
+        if (AppState.excludedIds.size > 0) params.exclude_ids = Array.from(AppState.excludedIds).join(',');
+        AppState.currentAjaxRequest = $.ajax({
+            url: url,
+            method: 'GET',
+            data: params,
+            cache: false,
+            success: function(response) {
+                $('#skeleton-loader').hide();
+                AppState.isLoading = false;
+                $('#load-more').html('<i class="fas fa-plus"></i> Загрузить еще');
+                if (response.success && response.places && response.places.length > 0) {
+                    const newPlaces = response.places.filter(place => {
+                        const placeId = parseInt(place.id || place.place_id);
+                        return !isNaN(placeId) && !AppState.loadedPlaceIds.has(placeId);
+                    });
+                    newPlaces.forEach(place => {
+                        const placeId = parseInt(place.id || place.place_id);
+                        if (placeId && !isNaN(placeId)) {
+                            AppState.loadedPlaceIds.add(placeId);
+                            AppState.excludedIds.add(placeId);
+                        }
+                    });
+                    if (append) appendPlaces(newPlaces);
+                    else displayPlaces(newPlaces);
+                    AppState.hasMore = response.has_more;
+                    // Скрываем кнопку только если сервер говорит что мест больше нет
+                    // newPlaces.length === 0 не означает конец — просто все уже показаны
+                    if (!response.has_more) {
+                        $('#load-more').hide();
+                        $('#no-more-message').show();
+                    } else {
+                        $('#load-more').show();
+                        $('#no-more-message').hide();
+                    }
+                } else {
+                    if (!append) displayNoPlaces();
+                    $('#load-more').hide();
+                    $('#no-more-message').hide();
+                    AppState.hasMore = false;
+                }
+            },
+            error: function(xhr, status, error) {
+                AppState.isLoading = false;
+                $('#skeleton-loader').hide();
+                $('#load-more').html('<i class="fas fa-plus"></i> Загрузить еще');
+            }
+        });
+    }
+
+    function displayPlaces(places) {
+        const $placesList = $('#places-list');
+        $placesList.empty();
+        if (places.length === 0) {
+            displayNoPlaces();
+            return;
+        }
+        places.forEach(place => addPlaceToDOM(place));
+        const placeIds = places.map(p => p.id || p.place_id).filter(id => id);
+        if (placeIds.length > 0) {
+            loadFavoritesStatus(placeIds);
+            loadVisitedStatus(placeIds); // ← ДОБАВЬ ЭТУ СТРОЧКУ
+        }
+    }
+
+    function appendPlaces(places) {
+        places.forEach(place => addPlaceToDOM(place));
+        const placeIds = places.map(p => p.id || p.place_id).filter(id => id);
+        if (placeIds.length > 0) {
+            loadFavoritesStatus(placeIds);
+            loadVisitedStatus(placeIds);
+        }
+    }
+
+    function addPlaceToDOM(place) {
+        const placeId = place.id || place.place_id;
+        const title = place.title || 'Без названия';
+        const description = place.description || '';
+        const address = place.address || '';
+        const timetable = place.timetable || '';
+        const photoUrl = place.photo_url || '';
+
+        const hasPhoto = photoUrl !== null && photoUrl !== undefined &&
+            photoUrl !== 'None' && photoUrl !== 'null' &&
+            photoUrl !== '' && photoUrl;
+
+        let photoHtml = '';
+        if (hasPhoto) {
+            photoHtml = `<img src="${photoUrl}" class="place-image" alt="${title}">`;
+        } else {
+            photoHtml = `<div class="no-photo-container"><i class="fas fa-camera"></i><p>Место пока ждет своей фотографии</p></div>`;
+        }
+
+        // Генерируем HTML для иконок в зависимости от авторизации
+        let visitedIconHtml = '';
+        let heartIconHtml = '';
+
+        if (AppState.isAuthenticated) {
+            visitedIconHtml = `
+            <div class="place-visited" data-place-id="${placeId}" title="Отметить как посещенное">
+                <i class="far fa-check-circle visited-icon"></i>
+            </div>`;
+
+            heartIconHtml = `
+            <div class="place-heart" data-place-id="${placeId}" title="Добавить в избранное">
+                <i class="far fa-heart"></i>
+            </div>`;
+        } else {
+            visitedIconHtml = `
+            <a href="/login" class="place-visited" title="Войдите, чтобы отметить как посещенное">
+                <i class="far fa-check-circle visited-icon"></i>
+            </a>`;
+
+            heartIconHtml = `
+            <a href="/login" class="place-heart" title="Войдите, чтобы добавить в избранное">
+                <i class="far fa-heart"></i>
+            </a>`;
+        }
+
+        const placeHtml = `
+    <div class="place-list-item">
+        <div class="row">
+            <div class="col-md-4 position-relative">
+                <a href="/place/${placeId}?from=index">${photoHtml}</a>
+            </div>
+            <div class="col-md-8 position-relative">
+                <div class="place-info">
+                    <div class="place-content-wrapper">
+                        <div class="place-title-container">
+                            <a href="/place/${placeId}?from=index" class="text-decoration-none">
+                                <h3 class="place-title">${title}</h3>
+                            </a>
+                            <div class="place-icons-container">
+                                ${visitedIconHtml}
+                                ${heartIconHtml}
+                            </div>
+                        </div>
+                        ${description ? `<p class="place-description">${description.substring(0, 250)}${description.length > 250 ? '...' : ''}</p>` : ''}
+                        <div class="place-meta">
+                            ${address ? `<div class="mb-2"><i class="fas fa-map-marker-alt"></i><strong>Адрес:</strong> ${address}</div>` : ''}
+                            ${timetable ? `<div class="mb-2"><i class="fas fa-clock"></i><strong>Режим работы:</strong> ${timetable}</div>` : ''}
+                        </div>
+                    </div>
+                    <a href="/place/${placeId}?from=index" class="btn-place-detail">
+                        <span class="btn-place-detail-text">Подробнее</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+        $('#places-list').append(placeHtml);
+    }
+
+    function displayNoPlaces() {
+        $('#places-list').html(`
+        <div class="alert alert-warning text-center">
+            <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+            <h4>По вашему запросу ничего не найдено</h4>
+            <p>Попробуйте выбрать другое настроение или сбросить фильтр</p>
+        </div>
+    `);
+        $('#no-places').show();
+        $('#load-more').hide();
+        $('#no-more-message').hide();
+    }
+
+    $(document).ready(function() {
+        $('#refresh-random').click(function(e) {
+            e.preventDefault();
+            refreshRandomPlaces();
+        });
+        $(document).on('click', '.mood-filter', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $('.mood-filter').removeClass('active');
+            $(this).addClass('active');
+            AppState.currentMood = $(this).data('mood-id');
+            loadPlaces();
+        });
+
+        // При открытии модалки ставим активной текущую выбранную категорию
+        $('#moodFilterModal').on('show.bs.modal', function () {
+            const currentMood = AppState.currentMood;
+            $('#moodFilterModal .mood-filter-btn').removeClass('active');
+            $('#moodFilterModal .mood-filter-btn[data-mood-id="' + currentMood + '"]').addClass('active');
+        });
+
+        // Обработчик клика по кнопкам в модалке (обновлённый)
+        $(document).on('click', '#moodFilterModal .mood-filter-btn', function(e) {
+            e.preventDefault();
+            const moodId = $(this).data('mood-id');
+
+            // Обновляем активный класс в модалке
+            $('#moodFilterModal .mood-filter-btn').removeClass('active');
+            $(this).addClass('active');
+
+            // Активируем соответствующую кнопку в основном блоке (скрытом)
+            $('.mood-filter[data-mood-id="' + moodId + '"]').trigger('click');
+
+            // Закрываем модальное окно
+            $('#moodFilterModal').modal('hide');
+        });
+        $('#load-more').click(function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!AppState.isLoading && AppState.hasMore) loadPlaces(true);
+        });
+        $(document).on('click', '.place-heart:not([href])', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const placeId = $(this).data('place-id');
+            if (placeId) toggleFavorite(placeId, this);
+        });
+        $(document).on('click', '.place-visited:not([href])', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const placeId = $(this).data('place-id');
+            if (placeId) toggleVisited(placeId, this);
+        });
+        $(document).on('error', 'img', function() {
+            const $img = $(this);
+            const $container = $img.parent();
+            if (!$container.find('.no-photo-container').length) {
+                $container.html(`
+                <div class="no-photo-container">
+                    <i class="fas fa-camera"></i>
+                    <p>Место пока ждет своей фотографии</p>
+                </div>
+            `);
+            }
+        });
+    });
+    // Управление мобильным меню - исправленная версия
+    $(document).ready(function() {
+        let isMenuOpen = false;
+        const $toggler = $('.navbar-toggler');
+        const $mobileMenu = $('.navbar-mobile-content');
+        const $overlay = $('.navbar-mobile-overlay');
+
+        // Функция открытия меню
+        function openMenu() {
+            if (isMenuOpen) return;
+
+            isMenuOpen = true;
+            $toggler.attr('aria-expanded', 'true');
+            $('body').css('overflow', 'hidden');
+
+            // Показываем оверлей
+            $overlay.css('display', 'block');
+            setTimeout(() => {
+                $overlay.css('opacity', '1');
+            }, 10);
+
+            // Показываем меню
+            $mobileMenu.css('display', 'block');
+            setTimeout(() => {
+                $mobileMenu.addClass('show');
+            }, 10);
+        }
+
+        // Функция закрытия меню
+        function closeMenu() {
+            if (!isMenuOpen) return;
+
+            isMenuOpen = false;
+            $toggler.attr('aria-expanded', 'false');
+
+            // Скрываем меню
+            $mobileMenu.removeClass('show');
+            setTimeout(() => {
+                $mobileMenu.css('display', 'none');
+            }, 300);
+
+            // Скрываем оверлей
+            $overlay.css('opacity', '0');
+            setTimeout(() => {
+                $overlay.css('display', 'none');
+                $('body').css('overflow', '');
+            }, 300);
+        }
+
+        // Обработчик клика на бургер
+        $toggler.click(function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (!isMenuOpen) {
+                openMenu();
+            } else {
+                closeMenu();
+            }
+        });
+
+        // Закрытие при клике на оверлей
+        $overlay.click(function() {
+            closeMenu();
+        });
+
+        // Закрытие при клике на ссылки в меню
+        $(document).on('click', '.mobile-nav-link, .mobile-logout-link, .mobile-profile-link, .mobile-login-btn, .mobile-register-btn', function(e) {
+            if ($(e.target).closest('.mobile-auth-section').length) {
+                // Даем время на выполнение клика перед закрытием
+                setTimeout(() => {
+                    closeMenu();
+                }, 100);
+            } else {
+                closeMenu();
+            }
+        });
+
+        // Закрытие при нажатии ESC
+        $(document).keydown(function(e) {
+            if (e.key === 'Escape' && isMenuOpen) {
+                closeMenu();
+            }
+        });
+
+        // Отслеживание скролла для фона навбара
+        $(window).scroll(function() {
+            if ($(window).scrollTop() > 50) {
+                $('.navbar').addClass('scrolled');
+            } else {
+                $('.navbar').removeClass('scrolled');
+            }
+        });
+
+        // Инициализация при загрузке
+        if ($(window).scrollTop() > 50) {
+            $('.navbar').addClass('scrolled');
+        }
+    });
+</script>
+
+<!-- Баннер cookie (фиксированный внизу) -->
+<div id="cookieBanner" class="cookie-banner" style="display:none;">
+    <div class="cookie-banner-inner">
+        <div class="cookie-banner-left">
+            <i class="fas fa-cookie-bite cookie-banner-icon"></i>
+            <div class="cookie-banner-text">
+                <span class="cookie-banner-title">И снова cookie...</span>
+                <span class="cookie-banner-desc">Только технически необходимые, они поддерживают работу сервиса.</span>
+            </div>
+        </div>
+        <div class="cookie-banner-actions">
+            <a href="/static/doc/cookie_policy.pdf" class="cookie-banner-link">Подробнее</a>
+            <button class="btn-cookie-accept" id="cookieAcceptBtn">Понятно</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        if (!localStorage.getItem('cookieAccepted')) {
+            setTimeout(function () {
+                $('#cookieBanner').fadeIn(400);
+            }, 600);
+        }
+
+        $('#cookieAcceptBtn').on('click', function () {
+            localStorage.setItem('cookieAccepted', 'true');
+            $('#cookieBanner').slideUp(300);
+        });
+    });
+</script>
+</body>
+</html>

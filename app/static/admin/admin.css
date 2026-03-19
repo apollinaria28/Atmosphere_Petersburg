@@ -1,0 +1,922 @@
+
+/* =========================================================================
+   ШРИФТЫ
+   ========================================================================= */
+@font-face {
+    font-family: 'Montserrat';
+    src: url('/static/fonts/Montserrat-Regular.woff2') format('woff2'),
+    url('/static/fonts/Montserrat-Regular.woff') format('woff'),
+    url('/static/fonts/Montserrat-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* =========================================================================
+   ПЕРЕМЕННЫЕ И ЦВЕТА
+   ========================================================================= */
+:root {
+    --primary-dark: #3E3F38;       /* Основной тёмно-зелёный */
+    --primary-light: #5A5B54;      /* Светлее для hover */
+    --primary-soft: #E8E9E5;       /* Очень светлый для фона */
+    --accent-green: #1e3e25;       /* Зелёный акцент (кнопки) */
+    --accent-green-hover: #1F4F2D; /* Зелёный акцент hover */
+    --text-dark: #1C1D1A;          /* Основной текст */
+    --text-muted: #6B6C66;         /* Вторичный текст */
+    --border-color: #D1D2CD;       /* Цвет границ */
+    --bg-light: #F5F5F3;           /* Светлый фон страницы */
+}
+
+/* =========================================================================
+   БАЗОВЫЕ СТИЛИ (GLOBAL)
+   ========================================================================= */
+body {
+    background-color: var(--bg-light);
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    padding: 0;
+    color: var(--text-dark);
+}
+
+/* Убираем синюю обводку у всех интерактивных элементов */
+.btn:focus,
+.btn:active,
+.btn-custom-primary:focus,
+.btn-custom-primary:active,
+.btn-custom-outline:focus,
+.btn-custom-outline:active,
+.form-control:focus,
+.form-control-custom:focus,
+.page-link:focus,
+a:focus,
+button:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+a:hover{
+    color: white !important;
+}
+/* =========================================================================
+   САЙДБАР (ДЕСКТОП)
+   ========================================================================= */
+.sidebar {
+    background-color: var(--primary-dark);
+    color: white;
+    min-height: 100vh;
+    position: fixed;
+    width: 260px;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.sidebar-brand {
+    padding: 1.5rem 1.5rem 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    margin-bottom: 1rem;
+}
+
+.sidebar-user {
+    padding: 0 1.5rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    margin-bottom: 1rem;
+}
+
+.sidebar-user .user-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.sidebar-user .user-email {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-nav-item {
+    margin-bottom: 0.25rem;
+}
+
+.sidebar-nav-link {
+    display: block;
+    padding: 0.75rem 1.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: all 0.2s;
+    border-left: 4px solid transparent;
+}
+
+.sidebar-nav-link:hover,
+.sidebar-nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-left-color: var(--border-color);
+}
+
+.sidebar-nav-link i {
+    width: 1.8rem;
+    text-align: center;
+    margin-right: 0.5rem;
+}
+
+/* =========================================================================
+   ОСНОВНОЙ КОНТЕНТ (LAYOUT)
+   ========================================================================= */
+.main-content {
+    margin-left: 260px;
+    padding: 2rem;
+    transition: margin-left 0.3s;
+}
+
+/* =========================================================================
+   КОМПОНЕНТЫ: КАРТОЧКИ
+   ========================================================================= */
+/* Общие карточки (Dashboard, Lists) */
+.card-custom {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.card-header-custom {
+    display: inline-block;
+    border-bottom: 2px solid var(--primary-dark);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+/* Карточки статистики (Dashboard) */
+.stat-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    height: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+    border-color: var(--accent-green);
+}
+
+.stat-card h3 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 0.25rem;
+}
+
+.stat-card p {
+    color: var(--text-muted);
+    margin-bottom: 0;
+}
+
+/* Карточки фильтров (Suggestions, Reports) */
+.filter-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-left: 6px solid var(--primary-dark);
+}
+
+/* =========================================================================
+   КОМПОНЕНТЫ: ТАБЛИЦЫ
+   ========================================================================= */
+.table-custom {
+    width: 100%;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border-collapse: collapse;
+}
+
+.table-custom th {
+    background-color: var(--primary-soft);
+    font-weight: 600;
+    color: var(--primary-dark);
+    padding: 1rem 0.75rem;
+    border-bottom: 2px solid var(--primary-dark);
+}
+
+.table-custom td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.table-custom tr:last-child td {
+    border-bottom: none;
+}
+
+/* =========================================================================
+   КОМПОНЕНТЫ: КНОПКИ
+   ========================================================================= */
+/* Основная кнопка */
+.btn-custom-primary {
+    background-color: var(--primary-dark);
+    border: none;
+    color: white;
+    padding: 0.5rem 1.2rem;
+    border-radius: 30px;
+    font-weight: 500;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(46, 107, 62, 0.2);
+}
+
+
+/* Контурная кнопка (используется для фильтров/вкладок) */
+.btn-custom-outline {
+    background: transparent;
+    border: 1px solid var(--primary-dark);
+    color: var(--primary-dark);
+    padding: 0.5rem 1.2rem;
+    border-radius: 30px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-custom-outline:hover {
+    background-color: var(--primary-dark);
+    color: white;
+}
+
+.btn-custom-outline:active {
+    background-color: var(--primary-dark);
+    color: white;
+}
+
+/* АКТИВНОЕ СОСТОЯНИЕ (ВЫБРАННАЯ ВКЛАДКА) */
+.btn-custom-outline.active,
+.btn-custom-outline.selected {
+    background-color: var(--primary-dark);
+    color: white;
+    border-color: var(--primary-dark);
+    box-shadow: 0 2px 6px rgba(46, 107, 62, 0.2);
+}
+
+.btn-custom-outline.active:hover,
+.btn-custom-outline.selected:hover {
+    background-color: var(--primary-dark);
+    color: white;
+    border-color: var(--primary-dark);
+}
+
+/* Кнопка-иконка */
+.btn-icon-only {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--primary-soft);
+    color: var(--primary-dark);
+    border: none;
+    transition: 0.2s;
+}
+
+.btn-icon-only:hover {
+    background-color: var(--primary-dark);
+    color: white;
+}
+
+/* Равная высота кнопок в рядах */
+.row.buttons-equal-height {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.row.buttons-equal-height > [class*='col-'] {
+    display: flex;
+    flex-direction: column;
+}
+
+.row.buttons-equal-height .btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    white-space: normal;
+    word-wrap: break-word;
+    padding: 0.75rem 1rem;
+}
+
+/* =========================================================================
+   КОМПОНЕНТЫ: ФОРМЫ
+   ========================================================================= */
+.form-control-custom {
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    padding: 0.5rem 1.2rem;
+    transition: 0.2s;
+}
+
+.form-control-custom:focus {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 3px rgba(46, 107, 62, 0.1);
+    outline: none;
+}
+
+/* =========================================================================
+   КОМПОНЕНТЫ: БЕЙДЖИ СТАТУСОВ
+   ========================================================================= */
+.badge-status {
+    padding: 0.35rem 0.9rem;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.badge-pending { background-color: #FFB347; color: #1C1D1A; }
+.badge-resolved { background-color: #2E6B3E; color: white; }
+.badge-approved { background-color: #2E6B3E; color: white; }
+.badge-rejected { background-color: #B22222; color: white; }
+
+/* Светлый серый бейдж (переопределение Bootstrap) */
+.badge-secondary,
+.badge-status.bg-secondary {
+    background-color: #e9ecef !important;
+    color: #212529 !important;
+    font-weight: 500;
+    padding: 0.35rem 0.9rem;
+    border-radius: 30px;
+}
+
+/* =========================================================================
+   КОМПОНЕНТЫ: ПАГИНАЦИЯ
+   ========================================================================= */
+.pagination-custom .page-link {
+    border: none;
+    color: var(--primary-dark);
+    background: transparent;
+    margin: 0 3px;
+    border-radius: 30px;
+    padding: 0.5rem 1rem;
+    transition: 0.2s;
+}
+
+.pagination-custom .page-link:hover {
+    background-color: var(--primary-soft);
+    color: var(--primary-dark);
+}
+
+.pagination-custom .page-item.active .page-link {
+    background-color: var(--accent-green);
+    color: white;
+    box-shadow: 0 2px 6px rgba(46, 107, 62, 0.3);
+}
+
+.pagination-custom .page-item.disabled .page-link {
+    color: var(--border-color);
+    pointer-events: none;
+}
+
+.pagination-custom .page-link:focus {
+    box-shadow: none;
+}
+
+/* =========================================================================
+   МОБИЛЬНОЕ МЕНЮ (BURGER & OVERLAY)
+   ========================================================================= */
+/* Кнопка бургера (скрыта на десктопе) */
+.navbar-toggler {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1002;
+    background: none;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.navbar-toggler-icon {
+    display: block;
+    width: 30px;
+    height: 3px;
+    background-color: var(--primary-dark);
+    position: relative;
+    transition: all 0.3s;
+}
+
+.navbar-toggler-icon::before,
+.navbar-toggler-icon::after {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 3px;
+    background-color: var(--primary-dark);
+    left: 0;
+    transition: all 0.3s;
+}
+
+.navbar-toggler-icon::before { top: -8px; }
+.navbar-toggler-icon::after { bottom: -8px; }
+
+/* Анимация крестика */
+.navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
+    background-color: transparent;
+}
+
+.navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::before {
+    transform: rotate(45deg);
+    top: 0;
+    background-color: white;
+}
+
+.navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::after {
+    transform: rotate(-45deg);
+    bottom: 0;
+    background-color: white;
+}
+
+/* Контент мобильного меню */
+.navbar-mobile-content {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: -320px;
+    width: 320px;
+    height: 100%;
+    background: var(--primary-dark);
+    padding: 80px 30px 30px;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    overflow-y: auto;
+    box-shadow: -5px 0 30px rgba(0, 0, 0, 0.3);
+    color: white;
+}
+
+.navbar-mobile-content.show {
+    right: 0;
+}
+
+.navbar-mobile-content .mobile-user-info {
+    text-align: center;
+    padding-bottom: 25px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    margin-bottom: 25px;
+}
+
+.navbar-mobile-content .mobile-user-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.navbar-mobile-content .mobile-user-email {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.navbar-mobile-content .mobile-nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.navbar-mobile-content .mobile-nav-link {
+    display: block;
+    padding: 15px 0;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s;
+    font-size: 18px;
+}
+
+.navbar-mobile-content .mobile-nav-link:hover {
+    padding-left: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+}
+
+.navbar-mobile-content .mobile-nav-link i {
+    width: 1.8rem;
+    text-align: center;
+    margin-right: 0.5rem;
+}
+
+.navbar-mobile-content .mobile-logout-link {
+    display: block;
+    margin-top: 30px;
+    padding: 16px;
+    color: #ff4757;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 18px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s;
+}
+
+.navbar-mobile-content .mobile-logout-link:hover {
+    background: rgba(255, 71, 87, 0.1);
+}
+
+/* =========================================================================
+   АДАПТИВНОСТЬ (MEDIA QUERIES)
+   ========================================================================= */
+
+/* --- Экраны от 1441px (Очень широкие) --- */
+@media (min-width: 1441px) {
+    .main-content {
+        max-width: 1400px;
+        margin-right: auto;
+    }
+}
+
+/* --- Экраны до 1024px (Средние ноутбуки) --- */
+@media (max-width: 1024px) {
+    /* При необходимости можно добавить небольшие корректировки */
+}
+
+/* --- Экраны до 992px (Планшеты горизонтально / Скрытие сайдбара) --- */
+@media (max-width: 992px) {
+    .sidebar {
+        display: none !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        padding-top: 80px; /* Отступ под фиксированную кнопку бургера */
+        padding: 45px 2rem 2rem 2rem;
+    }
+
+    .navbar-toggler {
+        display: block;
+        position: fixed;
+        top: 25px;
+        right: 15px;
+        z-index: 1002;
+        border: none;
+    }
+
+    .navbar-toggler-icon,
+    .navbar-toggler-icon::before,
+    .navbar-toggler-icon::after {
+        background-color: var(--primary-dark);
+    }
+
+    .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::before,
+    .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::after {
+        background-color: white;
+    }
+
+    .navbar-mobile-content {
+        display: block;
+    }
+
+    .filter-card {
+        padding: 1.2rem;
+    }
+}
+
+/* --- Экраны до 768px (Планшеты вертикально) --- */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        min-height: auto;
+        position: relative;
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 3.5rem 1rem 1rem 1rem;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .stat-card h3 {
+        font-size: 1.8rem;
+    }
+
+    .stat-card p {
+        font-size: 0.9rem;
+    }
+
+    .stat-card i {
+        font-size: 2rem !important;
+    }
+
+    .card-custom .row .col-md-4 {
+        margin-bottom: 0.75rem;
+    }
+
+    .card-custom .btn-custom-primary {
+        width: 100%;
+        padding: 0.75rem;
+    }
+
+    .stat-card h3 {
+        font-size: 2rem;
+    }
+
+    .filter-card .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .filter-card .btn-group .btn {
+        border-radius: 30px !important;
+        margin: 0;
+    }
+
+    .filter-card .btn-group .btn:first-child,
+    .filter-card .btn-group .btn:last-child,
+    .filter-card .btn-group .btn:not(:first-child):not(:last-child) {
+        border-radius: 30px !important;
+    }
+
+    .card-custom {
+        padding: 1.2rem;
+    }
+
+    .card-custom h4 {
+        font-size: 1.2rem;
+    }
+
+    .badge-status {
+        font-size: 0.8rem;
+    }
+}
+
+/* --- Экраны до 576px (Мобильные устройства) --- */
+@media (max-width: 576px) {
+    .main-content {
+        padding: 55px 0.75rem 0.75rem 0.75rem;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem !important;
+    }
+
+    .stat-card {
+        padding: 0.75rem;
+    }
+
+    .stat-card h3 {
+        font-size: 1.5rem;
+    }
+
+    .stat-card p {
+        font-size: 0.8rem;
+    }
+
+    .stat-card i {
+        font-size: 1.8rem !important;
+    }
+
+    .card-custom {
+        padding: 1rem;
+    }
+
+    .card-header-custom {
+        font-size: 1.1rem;
+    }
+
+    #recent-activities .d-flex i {
+        font-size: 1.5rem !important;
+    }
+
+    #recent-activities h6 {
+        font-size: 0.95rem;
+    }
+
+    #recent-activities small {
+        font-size: 0.75rem;
+    }
+
+    .filter-card .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .filter-card .btn-group .btn {
+        border-radius: 30px !important;
+        margin: 0;
+    }
+
+    .filter-card .btn-group .btn:first-child,
+    .filter-card .btn-group .btn:last-child,
+    .filter-card .btn-group .btn:not(:first-child):not(:last-child) {
+        border-radius: 30px !important;
+    }
+}
+
+/* --- Экраны до 500px (Мобильные малые) --- */
+@media (max-width: 500px) {
+    .badge-status {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 16px;
+        white-space: nowrap;
+    }
+}
+
+/* --- Экраны до 425px (Мобильные XS) --- */
+@media (max-width: 425px) {
+    .badge-status {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 14px;
+        white-space: nowrap;
+    }
+
+    .btn-custom-outline.w-100 {
+        font-size: 0.9rem;
+        padding: 0.45rem 0.9rem;
+    }
+
+    .filter-card .btn-group {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    .filter-card .btn-group .btn {
+        width: 100%;
+        border-radius: 30px !important;
+    }
+
+    .filter-card .input-group {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+}
+
+/* --- Экраны до 375px (Мобильные XXS) --- */
+@media (max-width: 375px) {
+    .btn-custom-outline.w-100 {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .badge-status {
+        font-size: 0.65rem;
+        padding: 0.15rem 0.4rem;
+        border-radius: 12px;
+        white-space: nowrap;
+    }
+
+    .filter-card {
+        padding: 1rem;
+    }
+
+    .filter-card .btn-group {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    .filter-card .btn-group .btn {
+        width: 100%;
+        border-radius: 30px !important;
+    }
+
+    .filter-card .input-group {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    .card-custom {
+        padding: 1rem;
+    }
+
+    .badge-status {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.6rem;
+    }
+}
+
+/* --- Экраны до 360px (Мобильные XXXS - Самые маленькие) --- */
+@media (max-width: 360px) {
+    .main-content {
+        padding: 50px 0.5rem 0.5rem 0.5rem;
+    }
+
+    .stat-card .d-flex {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .stat-card i {
+        margin-top: 0.5rem;
+    }
+
+    .mobile-user-name {
+        font-size: 1rem;
+    }
+
+    .mobile-user-email {
+        font-size: 0.75rem;
+    }
+
+    .mobile-nav-link {
+        font-size: 16px;
+        padding: 12px 0;
+    }
+
+    .filter-card .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .filter-card .btn-group .btn {
+        border-radius: 30px !important;
+        margin: 0;
+    }
+
+    .filter-card .btn-group .btn:first-child,
+    .filter-card .btn-group .btn:last-child,
+    .filter-card .btn-group .btn:not(:first-child):not(:last-child) {
+        border-radius: 30px !important;
+    }
+
+    .filter-card .btn-group .btn {
+        width: 100%;
+        border-radius: 30px !important;
+    }
+
+    .filter-card .input-group {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    .filter-card .input-group .form-control-custom,
+    .filter-card .input-group .btn {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .card-custom {
+        padding: 0.75rem;
+    }
+
+    .card-custom h4 {
+        font-size: 1.1rem;
+    }
+
+    .card-custom h5 {
+        font-size: 0.95rem;
+    }
+
+    .card-custom p {
+        font-size: 0.85rem;
+    }
+
+    .badge-status {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+    }
+
+    .pagination-custom .page-link {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .badge-status {
+        font-size: 0.65rem;
+        padding: 0.15rem 0.4rem;
+        border-radius: 12px;
+        white-space: nowrap;
+    }
+}

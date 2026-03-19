@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора | Атмосфера Петербурга</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap&subset=cyrillic" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/admin.css') }}">
+</head>
+<body>
+<!-- Десктопный сайдбар -->
+<div class="sidebar">
+    <div class="sidebar-brand">Админ-панель</div>
+    <div class="sidebar-user">
+        <div class="user-name">{{ current_user.get_display_name() }}</div>
+        <div class="user-email">{{ current_user.email }}</div>
+    </div>
+    <ul class="sidebar-nav">
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.dashboard') }}" class="sidebar-nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                Главная
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.places_list') }}" class="sidebar-nav-link {% if active_page == 'places' %}active{% endif %}">
+                Редактировать места
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.suggestions') }}" class="sidebar-nav-link {% if active_page == 'suggestions' %}active{% endif %}">
+                Предложения мест
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.reports') }}" class="sidebar-nav-link {% if active_page == 'reports' %}active{% endif %}">
+                Сообщения об ошибках
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-nav-link text-danger">
+                Выйти
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Бургер-кнопка для мобильных -->
+<button class="navbar-toggler" type="button" aria-label="Toggle navigation" id="mobile-menu-toggle">
+    <span class="navbar-toggler-icon"></span>
+</button>
+
+<!-- Оверлей -->
+<!--<div class="navbar-mobile-overlay" id="mobile-menu-overlay"></div>-->
+
+<!-- Мобильное меню -->
+<div class="navbar-mobile-content" id="mobile-menu">
+
+    <div class="mobile-user-info">
+        <div class="mobile-user-name">{{ current_user.get_display_name() }}</div>
+        <div class="mobile-user-email">{{ current_user.email }}</div>
+    </div>
+    <ul class="mobile-nav-links">
+        <ul class="mobile-nav-links">
+            <li><a href="{{ url_for('admin.dashboard') }}" class="mobile-nav-link">Главная</a></li>
+            <li><a href="{{ url_for('admin.places_list') }}" class="mobile-nav-link">Редактировать места</a></li>
+            <li><a href="{{ url_for('admin.suggestions') }}" class="mobile-nav-link">Предложения мест</a></li>
+            <li><a href="{{ url_for('admin.reports') }}" class="mobile-nav-link">Сообщения об ошибках</a></li>
+        </ul>
+    </ul>
+    <a href="{{ url_for('auth.logout') }}" class="mobile-logout-link">Выйти</a>
+</div>
+<!-- Основной контент -->
+<div class="main-content">
+    <h1 class="mb-4">
+        Панель администратора
+    </h1>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="stat-card" onclick="window.location.href='{{ url_for('admin.suggestions') }}'">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 id="pending-suggestions">0</h3>
+                        <p class="text-muted mb-0">Предложений на модерации</p>
+                    </div>
+                    <i class="fas fa-map-marker-alt fa-3x" style="color: #3E3F38; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="stat-card" onclick="window.location.href='{{ url_for('admin.reports') }}'">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 id="pending-reports">0</h3>
+                        <p class="text-muted mb-0">Сообщений об ошибках</p>
+                    </div>
+                    <i class="fas fa-exclamation-triangle fa-3x" style="color: #3E3F38; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 id="total-places">0</h3>
+                        <p class="text-muted mb-0">Всего мест в базе</p>
+                    </div>
+                    <i class="fas fa-building fa-3x" style="color: #3E3F38; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрые действия -->
+    <div class="card-custom">
+        <div class="card-header-custom">
+            Быстрые действия
+        </div>
+        <div class="row buttons-equal-height">
+            <div class="col-md-4 mb-3">
+                <a href="{{ url_for('admin.suggestions') }}" class="btn btn-custom-primary w-100">
+                    <i class="fas fa-map-marker-alt me-2"></i> Модерация предложений
+                </a>
+            </div>
+            <div class="col-md-4 mb-3">
+                <a href="{{ url_for('admin.reports') }}" class="btn btn-custom-primary w-100"> <!-- style="background-color: #B85C5C;"-->
+                    <i class="fas fa-exclamation-triangle me-2"></i> Сообщения об ошибках
+                </a>
+            </div>
+            <div class="col-md-4 mb-3">
+               <a href="{{ url_for('admin.places_list') }}" class="btn btn-custom-primary w-100" > <!-- style="background-color: #3E3F38;"-->
+                    <i class="fas fa-pen me-2"></i> Редактировать места
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Последние активности -->
+    <div class="card-custom">
+        <div class="card-header-custom">
+            Последние активности
+        </div>
+        <div id="recent-activities">
+            <div class="text-center py-3">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="mt-2">Загружаем активности...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    $(document).ready(function() {
+        const $toggle = $('#mobile-menu-toggle');
+        const $menu = $('#mobile-menu');
+
+        function openMenu() {
+            $toggle.attr('aria-expanded', 'true');
+            $menu.addClass('show');
+            $('body').css('overflow', 'hidden');
+        }
+
+        function closeMenu() {
+            $toggle.attr('aria-expanded', 'false');
+            $menu.removeClass('show');
+            $('body').css('overflow', '');
+        }
+
+        $toggle.on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if ($menu.hasClass('show')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+
+        // Закрытие при клике вне меню
+        $(document).on('click', function(e) {
+            if ($menu.hasClass('show') &&
+                !$menu.is(e.target) &&
+                $menu.has(e.target).length === 0 &&
+                !$toggle.is(e.target) &&
+                $toggle.has(e.target).length === 0) {
+                closeMenu();
+            }
+        });
+
+        // Закрытие по Esc
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape' && $menu.hasClass('show')) {
+                closeMenu();
+            }
+        });
+
+        loadDashboardStats();
+        loadRecentActivities();
+        setInterval(loadDashboardStats, 30000);
+    });
+
+
+
+    function loadDashboardStats() {
+        $.ajax({
+            url: '/api/admin/dashboard/stats',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    $('#pending-suggestions').text(response.pending_suggestions || 0);
+                    $('#pending-reports').text(response.pending_reports || 0);
+                    $('#total-places').text(response.total_places || 0);
+                }
+            }
+        });
+    }
+
+    function loadRecentActivities() {
+        $.ajax({
+            url: '/api/admin/dashboard/activities',
+            method: 'GET',
+            success: function(response) {
+                const container = $('#recent-activities');
+                if (response.success && response.activities.length > 0) {
+                    let html = '';
+                    response.activities.forEach(activity => {
+                        const icon = getActivityIcon(activity.type);
+                        const time = new Date(activity.created_at).toLocaleString();
+                        html += `
+                                <div class="border-bottom pb-3 mb-3">
+                                    <div class="d-flex">
+                                        <div class="me-3">
+                                            <i class="${icon} fa-2x" style="color: #3E3F38;"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">${activity.title}</h6>
+                                            <p class="text-muted mb-1">${activity.description}</p>
+                                            <small class="text-muted"><i class="fas fa-clock me-1"></i>${time}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                    });
+                    container.html(html);
+                } else {
+                    container.html(`
+                            <div class="text-center py-3">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Нет последних активностей</p>
+                            </div>
+                        `);
+                }
+            }
+        });
+    }
+
+    function getActivityIcon(type) {
+        const icons = {
+            'suggestion': 'fas fa-map-marker-alt',
+            'report': 'fas fa-exclamation-triangle',
+            'approval': 'fas fa-check-circle',
+            'rejection': 'fas fa-times-circle',
+            'update': 'fas fa-edit'
+        };
+        return icons[type] || 'fas fa-info-circle';
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модерация предложения | Админ-панель</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap&subset=cyrillic" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/admin_form.css') }}">
+</head>
+<body>
+<!-- Десктопный сайдбар -->
+<div class="sidebar">
+    <div class="sidebar-brand">Админ-панель</div>
+    <div class="sidebar-user">
+        <div class="user-name">{{ current_user.get_display_name() }}</div>
+        <div class="user-email">{{ current_user.email }}</div>
+    </div>
+    <ul class="sidebar-nav">
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.dashboard') }}" class="sidebar-nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                Главная
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.places_list') }}" class="sidebar-nav-link {% if active_page == 'places' %}active{% endif %}">
+                Редактировать места
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.suggestions') }}" class="sidebar-nav-link {% if active_page == 'suggestions' %}active{% endif %}">
+                Предложения мест
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.reports') }}" class="sidebar-nav-link {% if active_page == 'reports' %}active{% endif %}">
+                Сообщения об ошибках
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-nav-link text-danger">
+                Выйти
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Бургер-кнопка для мобильных -->
+<button class="navbar-toggler" type="button" aria-label="Toggle navigation" id="mobile-menu-toggle">
+    <span class="navbar-toggler-icon"></span>
+</button>
+
+
+<!-- Мобильное меню -->
+<div class="navbar-mobile-content" id="mobile-menu">
+
+    <div class="mobile-user-info">
+        <div class="mobile-user-name">{{ current_user.get_display_name() }}</div>
+        <div class="mobile-user-email">{{ current_user.email }}</div>
+    </div>
+    <ul class="mobile-nav-links">
+        <li><a href="{{ url_for('admin.dashboard') }}" class="mobile-nav-link">Главная</a></li>
+        <li><a href="{{ url_for('admin.places_list') }}" class="mobile-nav-link">Редактировать места</a></li>
+        <li><a href="{{ url_for('admin.suggestions') }}" class="mobile-nav-link">Предложения мест</a></li>
+        <li><a href="{{ url_for('admin.reports') }}" class="mobile-nav-link">Сообщения об ошибках</a></li>
+    </ul>
+    <a href="{{ url_for('auth.logout') }}" class="mobile-logout-link">Выйти</a>
+</div>
+
+<div class="main-content">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb" id="breadcrumb"></ol>
+    </nav>
+    <div class="content-container">
+        <div id="notification-area"></div>
+
+        <!-- Заголовок страницы -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="page-title">Модерация предложения № <span id="suggestion-id">{{ suggestion_id }}</span></h2>
+            <span class="badge-status" id="suggestion-status-badge">на модерации</span>
+        </div>
+
+        <!-- БЛОК 1: Данные от пользователя -->
+        <div class="user-card">
+            <div class="section-title">Данные от пользователя</div>
+            <div id="user-data-content">
+                <div class="text-center py-5">
+                    <i class="fas fa-spinner fa-spin fa-3x text-muted"></i>
+                    <p class="mt-2">Загрузка информации о предложении...</p>
+                </div>
+            </div>
+            <div id="suggestion-resolution-info" style="display: none;" class="mt-4 p-3 bg-light border rounded"></div>
+        </div>
+
+        <!-- БЛОК 2: Редактирование модератора (скрывается для approved/rejected) -->
+        <div class="moderator-card" id="moderator-card">
+            <div class="section-title">Редактирование модератора</div>
+            <form id="moderator-form">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="moderated_title" class="form-label fw-bold">Название <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-custom" id="moderated_title" name="moderated_title" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="moderated_short_title" class="form-label fw-bold">Короткое название <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-custom" id="moderated_short_title" name="moderated_short_title" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="moderated_slug" class="form-label fw-bold">URL-адрес (slug) <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">{{ request.host }}/place/</span>
+                        <input type="text" class="form-control form-control-custom" id="moderated_slug" name="moderated_slug" required>
+                    </div>
+                    <div class="form-text">Генерируется автоматически. Можно изменить вручную.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="moderated_address" class="form-label fw-bold">Адрес <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-custom" id="moderated_address" name="moderated_address" required>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="moderated_timetable" class="form-label fw-bold">Режим работы</label>
+                        <input type="text" class="form-control form-control-custom" id="moderated_timetable" name="moderated_timetable">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="moderated_phone" class="form-label fw-bold">Телефон <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-custom" id="moderated_phone" name="moderated_phone" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="moderated_description" class="form-label fw-bold">Краткое описание <span class="text-danger">*</span></label>
+                    <textarea class="form-control form-control-custom" id="moderated_description" name="moderated_description" rows="3" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="moderated_body_text" class="form-label fw-bold">Полное описание</label>
+                    <textarea class="form-control form-control-custom" id="moderated_body_text" name="moderated_body_text" rows="5"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="moderated_foreign_url" class="form-label fw-bold">Сайт / Соцсети</label>
+                    <input type="url" class="form-control form-control-custom" id="moderated_foreign_url" name="moderated_foreign_url">
+                </div>
+
+                <!-- Координаты -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="moderated_coords_lat" class="form-label fw-bold">Широта</label>
+                        <input type="text" class="form-control form-control-custom" id="moderated_coords_lat" name="moderated_coords_lat">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="moderated_coords_lon" class="form-label fw-bold">Долгота</label>
+                        <input type="text" class="form-control form-control-custom" id="moderated_coords_lon" name="moderated_coords_lon">
+                    </div>
+                </div>
+
+                <!-- Категории -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Категории <span class="text-danger">*</span></label>
+                    <div id="categories-container" class="border p-3 rounded" style="max-height: 280px; overflow-y: auto; background: var(--primary-soft);"></div>
+                    <div class="form-text">Выберите хотя бы одну категорию</div>
+                </div>
+
+                <!-- Фотографии -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Фотографии</label>
+                    <div id="moderated-photos-grid" class="photo-grid mb-2"></div>
+
+                    <div class="mt-2 mb-3">
+                        <label for="moderated_main_photo_url" class="form-label fw-bold">Главное фото (URL)</label>
+                        <input type="text" class="form-control form-control-custom" id="moderated_main_photo_url" name="moderated_main_photo_url" placeholder="Выберите фото выше или введите URL">
+                    </div>
+
+                    <div class="mt-2 mb-3">
+                        <label for="moderated_photos_add_url" class="form-label">Добавить фото по URL</label>
+                        <div class="input-group">
+                            <input type="url" class="form-control form-control-custom" id="moderated_photos_add_url" placeholder="https://...">
+                            <button class="btn-custom-outline" type="button" id="add-photo-url-btn">Добавить</button>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label fw-bold">Загрузить новые фотографии</label>
+                        <div class="file-upload-area" id="moderator-file-upload-area">
+                            <div class="upload-placeholder">
+                                <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                                <div class="upload-text">Перетащите фото сюда или нажмите для выбора</div>
+                                <div class="upload-hint">Можно загрузить несколько файлов (JPG, PNG, GIF, WebP)</div>
+                                <div class="upload-hint">Максимальный размер файла: 10MB</div>
+                            </div>
+                            <div id="moderator-file-preview" class="photo-grid mt-3"></div>
+                        </div>
+                        <input type="file" id="moderator-photos-file" multiple accept="image/*" style="display: none;">
+                    </div>
+                </div>
+
+                <button type="button" class="btn-custom-primary btn-action" id="save-changes-btn">
+                    <i class="fas fa-save btn-icon"></i> Сохранить изменения
+                </button>
+
+                <input type="hidden" id="moderated_coords" name="moderated_coords">
+                <input type="hidden" id="moderated_photos" name="moderated_photos">
+                <input type="hidden" id="moderated_category_ids" name="moderated_category_ids">
+            </form>
+        </div>
+
+        <!-- БЛОК 3: Действия модератора (скрывается для approved/rejected) -->
+        <div class="action-card" id="action-card">
+            <div class="section-title">Действия модератора</div>
+
+            <div class="mb-4">
+                <label for="moderator_comment" class="form-label fw-bold">Комментарий к обращению (будет виден пользователю)</label>
+                <textarea class="form-control form-control-custom" id="moderator_comment" rows="3" placeholder="Поясните причину одобрения или отклонения"></textarea>
+                <div class="form-text">Этот комментарий сохранится при одобрении или отклонении предложения.</div>
+            </div>
+
+            <div class="d-flex gap-3 flex-wrap justify-content-end">
+                <button class="btn-custom-outline btn-action" id="check-duplicates-btn">
+                    <i class="fas fa-search btn-icon"></i> Проверить дубликаты
+                </button>
+                <button class="btn-custom-primary btn-action" id="approve-btn">
+                    <i class="fas fa-check-circle btn-icon"></i> Занести в базу
+                </button>
+                <button class="btn-custom-primary btn-action" id="reject-btn" style="background-color: #B22222;">
+                    <i class="fas fa-times-circle btn-icon"></i> Отклонить
+                </button>
+                <a href="{{ url_for('admin.suggestions') }}" class="btn-custom-outline btn-action">
+                    <i class="fas fa-times btn-icon"></i> Отмена
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для одобрения предложения -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Занести в базу</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Будет создано новое место с указанными данными.</p>
+                <div class="mb-3">
+                    <label for="approve-comment" class="form-label fw-bold">Комментарий (будет виден пользователю)</label>
+                    <textarea class="form-control form-control-custom" id="approve-comment" rows="2" placeholder="Например: спасибо за предложение!"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-custom-outline" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn-custom-primary" id="confirm-approve-btn">Занести в базу</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для отклонения предложения -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Отклонение предложения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="reject-comment" class="form-label fw-bold">Комментарий для пользователя</label>
+                    <textarea class="form-control form-control-custom" id="reject-comment" rows="3" placeholder="Поясните причину отклонения"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-custom-outline" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn-custom-primary" id="confirm-reject-btn" style="background-color: #B22222;">Отклонить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для результатов проверки дубликатов -->
+<div class="modal fade" id="duplicatesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-copy text-warning me-2"></i>Результаты проверки дубликатов</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="duplicates-modal-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn-custom-outline" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
+    const suggestionId = {{ suggestion_id }};
+    let allCategories = [];
+    let selectedCategoryIds = new Set();
+    let moderatedPhotos = [];
+    let moderatedMainPhoto = '';
+    let moderatorUploadedFiles = [];
+
+    let lastFocusedElement = null;
+
+    $(document).ready(function() {
+        const $toggle = $('#mobile-menu-toggle');
+        const $menu = $('#mobile-menu');
+
+        function openMenu() {
+            $toggle.attr('aria-expanded', 'true');
+            $menu.addClass('show');
+            $('body').css('overflow', 'hidden');
+        }
+
+        function closeMenu() {
+            $toggle.attr('aria-expanded', 'false');
+            $menu.removeClass('show');
+            $('body').css('overflow', '');
+        }
+
+        $toggle.on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if ($menu.hasClass('show')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+
+        // Закрытие при клике вне меню
+        $(document).on('click', function(e) {
+            if ($menu.hasClass('show') &&
+                !$menu.is(e.target) &&
+                $menu.has(e.target).length === 0 &&
+                !$toggle.is(e.target) &&
+                $toggle.has(e.target).length === 0) {
+                closeMenu();
+            }
+        });
+
+        // Закрытие по Esc
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape' && $menu.hasClass('show')) {
+                closeMenu();
+            }
+        });
+
+
+        loadSuggestionData();
+        loadCategories();
+        buildBreadcrumbs();
+
+        $('#save-changes-btn').click(saveModeratorChanges);
+        $('#check-duplicates-btn').click(checkDuplicates);
+        $('#reject-btn').click(function() {
+            $('#reject-comment').val($('#moderator_comment').val());
+            $('#rejectModal').modal('show');
+        });
+        $('#confirm-reject-btn').click(rejectSuggestion);
+        $('#add-photo-url-btn').click(addPhotoByUrl);
+
+        // Генерация slug из названия
+        $('#moderated_title').on('input', function() {
+            if (!$('#moderated_slug').is(':focus')) {
+                const slug = generateSlug($(this).val());
+                $('#moderated_slug').val(slug);
+            }
+        });
+
+        // Копируем короткое название из названия по умолчанию (можно отредактировать)
+        $('#moderated_title').on('blur', function() {
+            if (!$('#moderated_short_title').val().trim()) {
+                $('#moderated_short_title').val($(this).val());
+            }
+        });
+
+        initFileUpload();
+
+        // Перед открытием модалки проверяем заполненность обязательных полей
+        $('#approve-btn').click(function(e) {
+            e.preventDefault();
+            if (validateRequiredFields()) {
+                $('#approve-comment').val($('#moderator_comment').val());
+                $('#approveModal').modal('show');
+            }
+        });
+
+        // Обработчик кнопки подтверждения в модалке
+        $('#confirm-approve-btn').click(approveSuggestion);
+    });
+
+    // ========== ВАЛИДАЦИЯ ОБЯЗАТЕЛЬНЫХ ПОЛЕЙ ==========
+    function validateRequiredFields() {
+        let missingFields = [];
+
+        // Проверяем поля с атрибутом required (название, короткое название, slug, адрес, телефон, описание)
+        $('#moderator-form [required]').each(function() {
+            const $field = $(this);
+            if (!$field.val() || $field.val().trim() === '') {
+                const label = $('label[for="' + $field.attr('id') + '"]').text().replace('*', '').trim();
+                missingFields.push(label || 'Поле');
+                $field.addClass('is-invalid');
+            } else {
+                $field.removeClass('is-invalid');
+            }
+        });
+
+        // Проверяем наличие хотя бы одной выбранной категории
+        if (selectedCategoryIds.size === 0) {
+            missingFields.push('Категории');
+            $('#categories-container').addClass('is-invalid');
+        } else {
+            $('#categories-container').removeClass('is-invalid');
+        }
+
+        if (missingFields.length > 0) {
+            showNotification('Заполните обязательные поля: ' + missingFields.join(', '), 'danger');
+            return false;
+        }
+        return true;
+    }
+
+    // ========== ЗАГРУЗКА ДАННЫХ ПРЕДЛОЖЕНИЯ ==========
+    function loadSuggestionData() {
+        $.ajax({
+            url: `/api/admin/suggestions/${suggestionId}`,
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    renderUserData(response.suggestion);
+                    populateModeratorForm(response.suggestion);
+                    buildBreadcrumbs(response.suggestion.status);
+                    toggleModerationBlocks(response.suggestion);
+                } else {
+                    showNotification('Ошибка загрузки данных', 'danger');
+                }
+            },
+            error: function() {
+                showNotification('Ошибка сервера', 'danger');
+            }
+        });
+    }
+
+    // ========== ОТОБРАЖЕНИЕ ДАННЫХ ПОЛЬЗОВАТЕЛЯ ==========
+    function getCategoryNames(categories) {
+        if (!categories || !categories.length) return 'Не выбраны';
+        return categories.map(c => escapeHtml(c.name)).join(', ');
+    }
+
+    function renderUserData(suggestion) {
+        // Определяем итоговые значения (приоритет у moderated_*)
+        const finalTitle = suggestion.moderated_title || suggestion.user_title || '';
+        const finalShortTitle = suggestion.moderated_short_title || '';
+        const finalSlug = suggestion.moderated_slug || '';
+        const finalAddress = suggestion.moderated_address || suggestion.user_address || '';
+        const finalTimetable = suggestion.moderated_timetable || suggestion.user_timetable || 'Не указан';
+        const finalPhone = suggestion.moderated_phone || suggestion.user_phone || 'Не указан';
+        const finalDescription = suggestion.moderated_description || suggestion.user_description || '';
+        const finalBodyText = suggestion.moderated_body_text || '';
+        const finalForeignUrl = suggestion.moderated_foreign_url || suggestion.user_foreign_url || '';
+        const finalCategories = suggestion.moderated_categories?.length ? suggestion.moderated_categories : (suggestion.user_categories || []);
+        const finalPhotos = suggestion.moderated_photos?.length ? suggestion.moderated_photos : (suggestion.user_photos || []);
+        const finalCoords = suggestion.moderated_coords || null;
+
+        // Обновляем статус-бейдж
+        let statusBadgeClass = '';
+        let statusText = '';
+        if (suggestion.status === 'pending') {
+            statusBadgeClass = 'badge-pending';
+            statusText = 'На модерации';
+        } else if (suggestion.status === 'approved') {
+            statusBadgeClass = 'badge-approved';
+            statusText = 'Одобрено';
+        } else if (suggestion.status === 'rejected') {
+            statusBadgeClass = 'badge-rejected';
+            statusText = 'Отклонено';
+        } else {
+            statusBadgeClass = 'bg-secondary';
+            statusText = escapeHtml(suggestion.status);
+        }
+        $('#suggestion-status-badge').attr('class', 'badge-status ' + statusBadgeClass).text(statusText);
+
+        // Формируем HTML
+        let html = `
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <strong class="text-secondary">Автор:</strong>
+                <span>${escapeHtml(suggestion.user_username || 'Неизвестно')} (${escapeHtml(suggestion.user_email || '')})</span>
+            </div>
+            <div class="col-md-6">
+                <strong class="text-secondary">Дата отправки:</strong>
+                <span>${new Date(suggestion.created_at).toLocaleString()}</span>
+            </div>
+            ${suggestion.created_place_id ? `
+                <div class="col-12 mt-2">
+                    <strong class="text-secondary">Созданное место:</strong>
+                    <a href="/place/${suggestion.created_place_id}" target="_blank" style="color: inherit; text-decoration: none; font-weight: bold;" class="ms-2">${escapeHtml(suggestion.place_info?.title || 'Перейти к месту')}</a>
+                </div>
+            ` : ''}
+        </div>
+        <hr>
+
+        <!-- Сетка с двумя колонками -->
+        <div class="info-grid">
+            <!-- Колонка 1: Основная информация -->
+            <div class="info-column">
+                <div class="info-group">
+                    <h4 class="info-group-title">Основное</h4>
+                    ${renderField('Название', finalTitle, suggestion.user_title, suggestion.moderated_title)}
+                    ${renderField('Короткое название', finalShortTitle)}
+                    ${renderField('URL (slug)', finalSlug)}
+                </div>
+
+                <div class="info-group">
+                    <h4 class="info-group-title">Контакты</h4>
+                    ${renderField('Телефон', finalPhone, suggestion.user_phone, suggestion.moderated_phone, true)}
+                    ${renderField('Сайт', finalForeignUrl, suggestion.user_foreign_url, suggestion.moderated_foreign_url, true)}
+                </div>
+
+                <div class="info-group">
+                    <h4 class="info-group-title">Расположение</h4>
+                    ${renderField('Адрес', finalAddress, suggestion.user_address, suggestion.moderated_address)}
+                    ${renderField('Режим работы', finalTimetable, suggestion.user_timetable, suggestion.moderated_timetable)}
+                </div>
+            </div>
+
+            <!-- Колонка 2: Описание и доп. данные -->
+            <div class="info-column">
+                <div class="info-group">
+                    <h4 class="info-group-title">Описание</h4>
+                    ${renderField('Краткое описание', finalDescription, suggestion.user_description, suggestion.moderated_description, false, true)}
+                </div>
+
+                ${finalBodyText ? `
+                    <div class="info-group">
+                        <h4 class="info-group-title">Полное описание</h4>
+                        <div class="field-value">${escapeHtml(finalBodyText).replace(/\n/g, '<br>')}</div>
+                    </div>
+                ` : ''}
+
+                <div class="info-group">
+                    <h4 class="info-group-title">Категории</h4>
+                    <div class="field-value">${finalCategories.map(c => escapeHtml(c.name || c)).join(', ') || 'Не выбраны'}</div>
+                </div>
+
+                ${finalCoords ? `
+                    <div class="info-group">
+                        <h4 class="info-group-title">Координаты</h4>
+                        <div class="field-value">
+                            ${finalCoords.lat ? `Широта: ${finalCoords.lat}<br>` : ''}
+                            ${finalCoords.lon ? `Долгота: ${finalCoords.lon}` : ''}
+                        </div>
+                    </div>
+                ` : ''}
+
+
+            </div>
+        </div>
+    `;
+
+        // Фотографии (отдельно, на всю ширину)
+        if (finalPhotos.length) {
+            html += `<div class="info-group mt-4"><h4 class="info-group-title">Фотографии</h4>`;
+            html += `<div class="photo-grid">`;
+            finalPhotos.forEach(photo => {
+                html += `<div class="photo-item"><img src="${photo}" onclick="window.open(this.src)"></div>`;
+            });
+            html += `</div>`;
+
+            if (suggestion.moderated_photos?.length && suggestion.user_photos?.length &&
+                JSON.stringify(suggestion.moderated_photos) !== JSON.stringify(suggestion.user_photos)) {
+                html += `<div class="mt-3"><small class="text-muted">Исходные фото пользователя:</small>`;
+                html += `<div class="photo-grid mt-2">`;
+                suggestion.user_photos.forEach(photo => {
+                    html += `<div class="photo-item"><img src="${photo}" onclick="window.open(this.src)"></div>`;
+                });
+                html += `</div></div>`;
+            }
+            html += `</div>`;
+        }
+
+        $('#user-data-content').html(html);
+    }
+
+    // Вспомогательная функция для отрисовки поля с возможностью показа исходного значения
+    function renderField(label, value, originalValue, moderatedValue, isUrl = false, isMultiline = false) {
+        if (!value && value !== 0) value = '—';
+        let valueHtml = isUrl && value !== '—' ? `<a href="${escapeHtml(value)}" target="_blank">${escapeHtml(value)}</a>` : escapeHtml(value);
+        if (isMultiline) valueHtml = valueHtml.replace(/\n/g, '<br>');
+
+        let extraClass = '';
+        let originalHtml = '';
+        if (moderatedValue && originalValue && moderatedValue !== originalValue) {
+            extraClass = 'field-changed';
+            originalHtml = `<br><small class="text-muted">было: ${escapeHtml(originalValue)}</small>`;
+        }
+
+        return `
+        <div class="field-row ${extraClass}">
+            <div class="field-label">${label}</div>
+            <div class="field-value">${valueHtml}${originalHtml}</div>
+        </div>
+    `;
+    }
+
+    // ========== УПРАВЛЕНИЕ ВИДИМОСТЬЮ БЛОКОВ ==========
+    function toggleModerationBlocks(suggestion) {
+        const status = suggestion.status;
+        if (status !== 'pending') {
+            $('#moderator-card').hide();
+            $('#action-card').hide();
+
+            let resolutionHtml = '<div class="section-title"><i class="fas fa-check-circle"></i> Информация о решении</div>';
+            if (status === 'approved') {
+                resolutionHtml += `<p class="text-success"><strong>Предложение одобрено</strong></p>`;
+            } else if (status === 'rejected') {
+                resolutionHtml += `<p class="text-danger"><strong>Предложение отклонено</strong></p>`;
+            }
+            if (suggestion.admin_comment) {
+                resolutionHtml += `<p><strong>Комментарий модератора:</strong><br>${escapeHtml(suggestion.admin_comment)}</p>`;
+            }
+            if (suggestion.moderator_username) {
+                resolutionHtml += `<p class="mb-0"><strong>Кто обработал:</strong> ${escapeHtml(suggestion.moderator_username)}</p>`;
+            }
+            if (suggestion.updated_at) {
+                resolutionHtml += `<p class="text-muted small mb-0">Дата обработки: ${new Date(suggestion.updated_at).toLocaleString()}</p>`;
+            }
+            if (status === 'approved' && suggestion.created_place_id) {
+                resolutionHtml += `<div class="mt-3"><a href="/place/${suggestion.created_place_id}" target="_blank" class="btn-custom-primary"><i class="fas fa-external-link-alt me-1"></i> Перейти к созданному месту</a></div>`;
+            }
+            $('#suggestion-resolution-info').html(resolutionHtml).show();
+        } else {
+            $('#moderator-card').show();
+            $('#action-card').show();
+            $('#suggestion-resolution-info').hide();
+        }
+    }
+
+    // ========== ЗАПОЛНЕНИЕ ФОРМЫ МОДЕРАТОРА ==========
+    function populateModeratorForm(suggestion) {
+        $('#moderated_title').val(suggestion.moderated_title || suggestion.user_title || '');
+        $('#moderated_short_title').val(suggestion.moderated_short_title || suggestion.user_title || '');
+        $('#moderated_slug').val(suggestion.moderated_slug || generateSlug(suggestion.user_title || ''));
+        $('#moderated_address').val(suggestion.moderated_address || suggestion.user_address || '');
+        $('#moderated_timetable').val(suggestion.moderated_timetable || suggestion.user_timetable || '');
+        $('#moderated_phone').val(suggestion.moderated_phone || suggestion.user_phone || '');
+        $('#moderated_description').val(suggestion.moderated_description || suggestion.user_description || '');
+        $('#moderated_body_text').val(suggestion.moderated_body_text || '');
+        $('#moderated_foreign_url').val(suggestion.moderated_foreign_url || suggestion.user_foreign_url || '');
+
+        let coords = suggestion.moderated_coords;
+        if (typeof coords === 'string') {
+            try { coords = JSON.parse(coords); } catch(e) { coords = null; }
+        }
+        if (coords && typeof coords === 'object') {
+            $('#moderated_coords_lat').val(coords.lat || '');
+            $('#moderated_coords_lon').val(coords.lon || '');
+        }
+
+
+        if (suggestion.moderated_categories && suggestion.moderated_categories.length) {
+            selectedCategoryIds = new Set(suggestion.moderated_categories.map(c => c.id));
+        } else if (suggestion.user_categories && suggestion.user_categories.length) {
+            selectedCategoryIds = new Set(suggestion.user_categories.map(c => c.id));
+        } else {
+            selectedCategoryIds = new Set();
+        }
+        // После загрузки категорий они отрендерятся с выбранными
+
+        moderatedPhotos = [];
+        if (suggestion.moderated_photos) {
+            let raw = suggestion.moderated_photos;
+            if (typeof raw === 'string') {
+                try { raw = JSON.parse(raw); } catch(e) { raw = []; }
+            }
+            if (Array.isArray(raw)) {
+                moderatedPhotos = raw.map(item => {
+                    if (typeof item === 'string') return item;
+                    if (item && typeof item === 'object' && item.url) return item.url;
+                    return null;
+                }).filter(url => url && typeof url === 'string');
+            }
+        }
+        if (moderatedPhotos.length === 0 && suggestion.user_photos && suggestion.user_photos.length) {
+            moderatedPhotos = suggestion.user_photos.slice();
+        }
+        renderPhotosGrid();
+
+        moderatedMainPhoto = suggestion.moderated_main_photo_url || (moderatedPhotos.length > 0 ? moderatedPhotos[0] : '');
+        $('#moderated_main_photo_url').val(moderatedMainPhoto);
+    }
+
+    // ========== КАТЕГОРИИ ==========
+    function loadCategories() {
+        $.ajax({
+            url: '/api/admin/categories',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    allCategories = response.categories;
+                    renderCategoriesList();
+                } else {
+                    showNotification('Ошибка загрузки категорий', 'danger');
+                }
+            },
+            error: function() {
+                showNotification('Ошибка сервера при загрузке категорий', 'danger');
+            }
+        });
+    }
+
+    function renderCategoriesList() {
+        let html = '';
+        allCategories.forEach(cat => {
+            const checked = selectedCategoryIds.has(cat.id);
+            html += `
+                <div class="form-check mb-2">
+                    <input class="form-check-input category-checkbox" type="checkbox"
+                           value="${cat.id}" id="cat_${cat.id}" ${checked ? 'checked' : ''}>
+                    <label class="form-check-label" for="cat_${cat.id}">
+                        ${escapeHtml(cat.name)} <span class="text-muted small">(${cat.places_count || 0})</span>
+                    </label>
+                </div>
+            `;
+        });
+        $('#categories-container').html(html);
+
+        $('.category-checkbox').change(function() {
+            const id = parseInt($(this).val());
+            if ($(this).is(':checked')) {
+                selectedCategoryIds.add(id);
+            } else {
+                selectedCategoryIds.delete(id);
+            }
+            // Убираем подсветку ошибки, если категории выбраны
+            if (selectedCategoryIds.size > 0) {
+                $('#categories-container').removeClass('is-invalid');
+            }
+        });
+    }
+
+
+    // ========== ФОТОГРАФИИ ==========
+    function renderPhotosGrid() {
+        let html = '';
+        moderatedPhotos.forEach((photo, index) => {
+            const isSelected = (photo === moderatedMainPhoto);
+            // Определяем корректный src для изображения
+            let photoSrc = photo;
+            // Если путь не начинается с http и не начинается с /static/, добавляем /static/
+            if (!photoSrc.startsWith('http') && !photoSrc.startsWith('/static/')) {
+                photoSrc = '/static/' + photoSrc;
+            }
+            html += `
+            <div class="photo-item ${isSelected ? 'selected' : ''}" data-url="${photo}" onclick="selectMainPhoto('${photo}', this)">
+                <img src="${photoSrc}" alt="Фото" onerror="this.src='/static/img/no-image.png'; this.onerror=null;">
+                <button type="button" class="remove-btn" onclick="removePhoto('${photo}', event)">&times;</button>
+            </div>
+            `;
+        });
+        $('#moderated-photos-grid').html(html);
+    }
+
+    window.selectMainPhoto = function(url, element) {
+        $('.photo-item').removeClass('selected');
+        $(element).addClass('selected');
+        moderatedMainPhoto = url;
+        $('#moderated_main_photo_url').val(url);
+    };
+
+    window.removePhoto = function(url, event) {
+        event.stopPropagation();
+        moderatedPhotos = moderatedPhotos.filter(p => p !== url);
+        if (moderatedMainPhoto === url) {
+            moderatedMainPhoto = moderatedPhotos.length > 0 ? moderatedPhotos[0] : '';
+            $('#moderated_main_photo_url').val(moderatedMainPhoto);
+        }
+        renderPhotosGrid();
+    };
+
+    function addPhotoByUrl() {
+        const url = $('#moderated_photos_add_url').val().trim();
+        if (url && !moderatedPhotos.includes(url)) {
+            moderatedPhotos.push(url);
+            if (!moderatedMainPhoto) {
+                moderatedMainPhoto = url;
+                $('#moderated_main_photo_url').val(url);
+            }
+            renderPhotosGrid();
+            $('#moderated_photos_add_url').val('');
+        }
+    }
+
+    // ========== ЗАГРУЗКА ФАЙЛОВ (drag & drop) ==========
+    function initFileUpload() {
+        const fileInput = $('#moderator-photos-file')[0];
+        const uploadArea = $('#moderator-file-upload-area')[0];
+        if (!uploadArea) return;
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect();
+            }
+        });
+
+        $(fileInput).on('change', handleFileSelect);
+    }
+
+    function handleFileSelect() {
+        const fileInput = $('#moderator-photos-file')[0];
+        const files = Array.from(fileInput.files);
+        for (const file of files) {
+            if (file.size > 10 * 1024 * 1024) {
+                showNotification(`Файл ${file.name} слишком большой (максимум 10MB)`, 'danger');
+                return;
+            }
+        }
+        files.forEach(file => {
+            if (!moderatorUploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                moderatorUploadedFiles.push(file);
+                uploadPhoto(file);
+            }
+        });
+    }
+
+    function uploadPhoto(file) {
+        const formData = new FormData();
+        formData.append('photo', file);
+        formData.append('suggestion_id', suggestionId);
+
+        $.ajax({
+            url: '/api/admin/suggestions/upload-photo',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    moderatedPhotos.push(response.url);
+                    if (!moderatedMainPhoto) {
+                        moderatedMainPhoto = response.url;
+                        $('#moderated_main_photo_url').val(response.url);
+                    }
+                    renderPhotosGrid();
+                    showNotification('Фото загружено', 'success');
+                } else {
+                    showNotification(response.error || 'Ошибка загрузки', 'danger');
+                }
+            },
+            error: function() {
+                showNotification('Ошибка сервера при загрузке', 'danger');
+            }
+        });
+    }
+
+    // ========== СБОР ДАННЫХ ФОРМЫ ==========
+    function collectModeratorData() {
+        const coords = {
+            lat: parseFloat($('#moderated_coords_lat').val()) || null,
+            lon: parseFloat($('#moderated_coords_lon').val()) || null
+        };
+        return {
+            moderated_title: $('#moderated_title').val(),
+            moderated_short_title: $('#moderated_short_title').val(),
+            moderated_slug: $('#moderated_slug').val(),
+            moderated_address: $('#moderated_address').val(),
+            moderated_timetable: $('#moderated_timetable').val(),
+            moderated_phone: $('#moderated_phone').val(),
+            moderated_description: $('#moderated_description').val(),
+            moderated_body_text: $('#moderated_body_text').val(),
+            moderated_foreign_url: $('#moderated_foreign_url').val(),
+            moderated_is_closed: false,
+            moderated_coords: (coords.lat && coords.lon) ? coords : null,
+            moderated_photos: moderatedPhotos,
+            moderated_main_photo_url: moderatedMainPhoto,
+            moderated_category_ids: Array.from(selectedCategoryIds)
+        };
+    }
+
+    // ========== СОХРАНЕНИЕ ИЗМЕНЕНИЙ ==========
+    function saveModeratorChanges() {
+        const data = collectModeratorData();
+
+        return $.ajax({
+            url: `/api/admin/suggestions/${suggestionId}`,
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(data)
+        });
+    }
+
+    // ========== ПРОВЕРКА ДУБЛИКАТОВ ==========
+    function checkDuplicates() {
+        const data = {
+            title: $('#moderated_title').val(),
+            address: $('#moderated_address').val(),
+            coords: {
+                lat: parseFloat($('#moderated_coords_lat').val()) || null,
+                lon: parseFloat($('#moderated_coords_lon').val()) || null
+            }
+        };
+
+        $.ajax({
+            url: `/api/admin/suggestions/${suggestionId}/check-duplicates`,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                let html = '';
+                if (response.success && response.duplicates && response.duplicates.length) {
+                    html = `<h6 class="text-warning">Найдены похожие места:</h6>`;
+                    response.duplicates.forEach(p => {
+                        html += `
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <a href="/place/${p.slug || p.id}" target="_blank">${escapeHtml(p.title)}</a>
+                                    <div class="text-muted">${escapeHtml(p.address || '')}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html = `<p class="text-success mb-0">Похожих мест не найдено.</p>`;
+                }
+                $('#duplicates-modal-body').html(html);
+                $('#duplicatesModal').modal('show');
+            },
+            error: function() {
+                showNotification('Ошибка при проверке дубликатов', 'danger');
+            }
+        });
+    }
+
+    // ========== ОДОБРЕНИЕ ==========
+    function approveSuggestion() {
+        const $btn = $('#confirm-approve-btn');
+        const originalText = $btn.text();
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Сохранение...');
+
+        // 1. Сохраняем все изменения через PUT
+        saveModeratorChanges()
+            .done(function(saveResponse) {
+                if (!saveResponse.success) {
+                    showNotification('Ошибка при сохранении: ' + saveResponse.error, 'danger');
+                    $btn.prop('disabled', false).text(originalText);
+                    return;
+                }
+
+                // 2. После успешного сохранения отправляем запрос на одобрение
+                const data = {
+                    admin_comment: $('#approve-comment').val()
+                };
+
+                $.ajax({
+                    url: `/api/admin/suggestions/${suggestionId}/approve`,
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function(response) {
+                        if (response.success) {
+                            $('#approveModal').modal('hide');
+                            showNotification('✅ Место успешно создано! Перенаправление...', 'success');
+                            setTimeout(() => {
+                                window.location.href = `/place/${response.place_id}`;
+                            }, 1500);
+                        } else {
+                            showNotification('Ошибка: ' + response.error, 'danger');
+                            $btn.prop('disabled', false).text(originalText);
+                        }
+                    },
+                    error: function() {
+                        showNotification('Системная ошибка при одобрении', 'danger');
+                        $btn.prop('disabled', false).text(originalText);
+                    }
+                });
+            })
+            .fail(function(xhr) {
+                let msg = 'Ошибка сохранения';
+                if (xhr.responseJSON && xhr.responseJSON.error) msg = xhr.responseJSON.error;
+                showNotification(msg, 'danger');
+                $btn.prop('disabled', false).text(originalText);
+            });
+    }
+
+    // ========== ОТКЛОНЕНИЕ ==========
+    function rejectSuggestion() {
+        const comment = $('#reject-comment').val();
+
+        $.ajax({
+            url: `/api/admin/suggestions/${suggestionId}/reject`,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ admin_comment: comment }),
+            success: function(response) {
+                if (response.success) {
+                    showNotification('✅ Предложение отклонено', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/admin/suggestions';
+                    }, 1500);
+                } else {
+                    showNotification(response.error || 'Ошибка отклонения', 'danger');
+                }
+            },
+            error: function() {
+                showNotification('Ошибка сервера', 'danger');
+            }
+        });
+    }
+
+    // ========== ХЛЕБНЫЕ КРОШКИ ==========
+    function buildBreadcrumbs(status) {
+        let breadcrumbHtml = '<li class="breadcrumb-item"><a href="/admin">Главная</a></li>';
+        breadcrumbHtml += '<li class="breadcrumb-item"><a href="/admin/suggestions">Предложения мест</a></li>';
+
+        if (status) {
+            let statusText = '';
+            let statusFilter = '';
+            if (status === 'pending') {
+                statusText = 'На модерации';
+                statusFilter = 'pending';
+            } else if (status === 'approved') {
+                statusText = 'Одобренные';
+                statusFilter = 'approved';
+            } else if (status === 'rejected') {
+                statusText = 'Отклонённые';
+                statusFilter = 'rejected';
+            } else {
+                statusText = status;
+                statusFilter = status;
+            }
+            breadcrumbHtml += `<li class="breadcrumb-item"><a href="/admin/suggestions?status=${statusFilter}">${statusText}</a></li>`;
+        }
+
+        breadcrumbHtml += `<li class="breadcrumb-item active" aria-current="page">ID ${suggestionId}</li>`;
+        $('#breadcrumb').html(breadcrumbHtml);
+    }
+
+    // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+    function generateSlug(title) {
+        return transliterate(title)
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')   // удаляем всё, кроме букв, цифр, пробелов и дефисов
+            .replace(/\s+/g, '-')            // пробелы в дефисы
+            .replace(/--+/g, '-')             // убираем двойные дефисы
+            .replace(/^-+|-+$/g, '')          // обрезаем дефисы в начале и конце
+            .substring(0, 100);
+    }
+    // Функция транслитерации кириллицы в латиницу
+    function transliterate(text) {
+        const map = {
+            'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo',
+            'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
+            'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+            'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch', 'ъ': '',
+            'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
+            'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'Yo',
+            'Ж': 'Zh', 'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M',
+            'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
+            'Ф': 'F', 'Х': 'H', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Sch', 'Ъ': '',
+            'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya'
+        };
+        return text.split('').map(c => map[c] || c).join('');
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function showNotification(message, type) {
+        const alertClass = `alert alert-${type}`;
+        const icon = type === 'success' ? 'fa-check-circle' : (type === 'danger' ? 'fa-exclamation-circle' : 'fa-info-circle');
+        const html = `<div class="${alertClass} alert-dismissible fade show d-flex align-items-center" role="alert">
+                            <i class="fas ${icon} me-2"></i> ${message}
+                            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                          </div>`;
+        $('#notification-area').html(html);
+        setTimeout(() => $('.alert').alert('close'), 5000);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход | Атмосфера Петербурга</title>
+
+    <meta name="description" content="Не знаете, куда пойти в Петербурге? Находите интересные места, стройте маршруты и открывайте город по-новому.">
+    <meta name="keywords" content="места Санкт-Петербург, куда сходить в Петербурге, интересные места СПб, прогулки по Петербургу, 
+    маршруты по СПб, что посмотреть в Санкт-Петербурге, кафе Петербург, парки СПб, достопримечательности Петербурга, куда пойти в Питере, Питер, куда сходить спб, спб, куда идти, улицы питера, куда пойти питер, места">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='auth/login.css') }}">
+</head>
+<body>
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <!-- <h1><i class="fas fa-map-marker-alt"></i> СПБ Путеводитель</h1> -->
+            <h1> Войдите в свой аккаунт</h1>
+            
+            <!-- <p>Войдите в свой аккаунт</p> -->
+        </div>
+
+        <div class="auth-body">
+            <div class="text-center mb-4">
+                <!-- <div class="auth-logo">
+                    <i class="fas fa-sign-in-alt"></i>
+                </div>
+                <h2>Вход в аккаунт</h2> -->
+                <p class="text-muted">Используйте ваш email и пароль</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email *</label>
+                    <input type="email" class="form-control" id="email" name="email"
+                           placeholder="ваш@email.com" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Пароль *</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="password" name="password"
+                               placeholder="Ваш пароль" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-options mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                        <label class="form-check-label" for="remember">
+                            Запомнить меня
+                        </label>
+                    </div>
+                    <!-- Ссылка на страницу восстановления пароля -->
+                    <a href="/reset-password" class="forgot-password">Забыли пароль?</a>
+                </div>
+
+                <button type="submit" class="btn-auth" id="loginButton">
+                    <span id="buttonText">Войти</span>
+                    <span id="loadingSpinner" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                Нет аккаунта? <a href="/register">Зарегистрироваться</a>
+                <div class="mt-3">
+                    <a href="/" class="text-muted">
+                        <i class="fas fa-arrow-left"></i> Вернуться на главную
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для сообщений -->
+<div class="modal fade" id="messageModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Уведомление</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalMessage">Сообщение</div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Функция показа/скрытия пароля
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const icon = field.nextElementSibling.querySelector('i');
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // Функция показа сообщения в модалке
+    function showMessage(title, message, type = 'info') {
+        $('#modalTitle').text(title);
+        $('#modalMessage').text(message);
+        const modalHeader = $('.modal-header');
+        modalHeader.removeClass('bg-success bg-danger bg-warning bg-info text-white text-dark');
+        switch(type) {
+            case 'success':
+                modalHeader.addClass('bg-success text-white');
+                break;
+            case 'error':
+                modalHeader.addClass('bg-danger text-white');
+                break;
+            case 'warning':
+                modalHeader.addClass('bg-warning text-dark');
+                break;
+            default:
+                modalHeader.addClass('bg-info text-white');
+        }
+        const modal = new bootstrap.Modal(document.getElementById('messageModal'));
+        modal.show();
+    }
+
+    $(document).ready(function() {
+        // Обработка формы входа
+        $('#loginForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const email = $('#email').val().trim();
+            const password = $('#password').val();
+            const remember = $('#remember').is(':checked');
+
+            if (!email || !password) {
+                showMessage('Ошибка', 'Заполните все поля', 'error');
+                return;
+            }
+
+            $('#buttonText').hide();
+            $('#loadingSpinner').show();
+            $('#loginButton').prop('disabled', true);
+
+            $.ajax({
+                url: '/api/login',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ email, password, remember }),
+                success: function(response) {
+                    if (response.success) {
+                        showMessage('Успех!', 'Вход выполнен успешно', 'success');
+                        setTimeout(function() {
+                            $.ajax({
+                                url: '/api/me',
+                                method: 'GET',
+                                success: function(meResponse) {
+                                    if (meResponse.success && meResponse.user.role === 'admin') {
+                                        window.location.href = '/admin';
+                                    } else {
+                                        window.location.href = '/';
+                                    }
+                                },
+                                error: function() {
+                                    window.location.href = '/';
+                                }
+                            });
+                        }, 1000);
+                    } else {
+                        showMessage('Ошибка', response.error, 'error');
+                        $('#buttonText').show();
+                        $('#loadingSpinner').hide();
+                        $('#loginButton').prop('disabled', false);
+                    }
+                },
+                error: function() {
+                    showMessage('Ошибка', 'Произошла ошибка при входе. Попробуйте позже.', 'error');
+                    $('#buttonText').show();
+                    $('#loadingSpinner').hide();
+                    $('#loginButton').prop('disabled', false);
+                }
+            });
+        });
+
+        $('#email').focus();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,380 @@
+/* ===== СТРАНИЦА РЕГИСТРАЦИИ ===== */
+
+body {
+    background: #FDFAFA;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.auth-header {
+    background: linear-gradient(90deg, #5a5b52 0%, #3E3F38 100%);
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+.auth-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.auth-header p {
+    margin: 10px 0 0 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.auth-body {
+    padding: 30px;
+}
+
+.auth-logo {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    color: #3E3F38;
+}
+
+/* ===== ПОЛЯ ВВОДА ===== */
+.form-control {
+    border-radius: 10px;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s;
+    background: white;
+    color: #333;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3E3F38;
+    background: #fafafa;
+    box-shadow: none;
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #555;
+}
+
+/* ===== ПОДАВЛЕНИЕ СИНЕГО АВТОЗАПОЛНЕНИЯ ===== */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #333 !important;
+    caret-color: #333;
+    border-radius: 10px;
+}
+
+.input-group .form-control:-webkit-autofill {
+    border-right: none !important;
+}
+
+/* ===== ГРУППА ПОЛЕЙ С ГЛАЗИКОМ ===== */
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    border-radius: 10px;
+}
+
+.input-group .form-control {
+    border-radius: 10px 0 0 10px;
+    border-right: none;
+}
+
+.input-group .password-toggle {
+    border-radius: 0 10px 10px 0;
+    border: 2px solid #e0e0e0;
+    border-left: none;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+    color: #777;
+    transition: all 0.3s;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.input-group .password-toggle:hover {
+    color: #3E3F38;
+    background: #fafafa;
+}
+
+.input-group .password-toggle:focus {
+    outline: none;
+    border-color: #3E3F38;
+    background: #fafafa;
+    box-shadow: none;
+}
+
+/* Без теней — только граница и фон */
+.input-group:focus-within .form-control,
+.input-group:focus-within .password-toggle {
+    border-color: #3E3F38;
+    background: #fafafa;
+}
+
+.form-check-input:checked {
+    background-color: #3E3F38 !important;
+    border-color: #e0e0e0 !important;
+}
+
+/* ===== КНОПКА РЕГИСТРАЦИИ ===== */
+.btn-auth {
+    background: linear-gradient(90deg, #5a5b52 0%, #3E3F38 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.btn-auth:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(62, 63, 56, 0.3);
+    color: white;
+}
+
+.btn-auth:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* ===== ПОДВАЛ ===== */
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.auth-footer a {
+    color: #3E3F38;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+.form-text {
+    font-size: 0.85rem;
+    color: #777;
+}
+
+.alert {
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+@media (max-width: 576px) {
+    .auth-card {
+        border-radius: 12px;
+    }
+
+    .auth-header {
+        padding: 25px 20px;
+    }
+
+    .auth-body {
+        padding: 25px 20px;
+    }
+
+    .input-group {
+        border-radius: 8px;
+    }
+
+    .input-group .form-control {
+        border-radius: 8px 0 0 8px;
+    }
+
+    .input-group .password-toggle {
+        border-radius: 0 8px 8px 0;
+        padding: 0 12px;
+    }
+}
+
+/* Стили для красивого модального окна уведомлений в цветовой гамме #3E3F38 */
+
+.modal-content {
+    border: none;
+    border-radius: 24px;
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    animation: modalAppear 0.3s ease-out;
+}
+
+/* Заголовок – используем приглушённые тёмные оттенки для разных типов,
+   кнопка закрытия и текст – белые */
+.modal-header {
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+    border-bottom: none;
+    position: relative;
+}
+
+.modal-header.bg-success {
+    background: #3E3F38 !important;
+}
+
+.modal-header.bg-danger {
+    background: #b71c1c !important; /* тёмно-красный */
+}
+
+.modal-header.bg-warning {
+    background: #ff6f00 !important; /* тёмно-оранжевый */
+}
+
+.modal-header.bg-info {
+    background: #3E3F38 !important; /* тёмно-синий */
+}
+
+/* Кнопка закрытия (белая) */
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.modal-header .btn-close:hover {
+    opacity: 1;
+}
+
+/* Заголовок с иконкой */
+.modal-title {
+    font-weight: 700;
+    font-size: 1.6rem;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    color: white;
+}
+
+.modal-header.bg-warning .modal-title::before {
+    content: "\f12a"; /* fa-exclamation-circle */
+}
+
+.modal-header.bg-info .modal-title::before {
+    content: "\f05a"; /* fa-info-circle */
+}
+
+/* Тело модалки */
+.modal-body {
+    padding: 2rem 1.5rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #1f2937;
+    background: #ffffff;
+    text-align: center;
+}
+
+/* Стили для кнопки "Отправить код повторно" */
+.btn.btn-link {
+    color: #3E3F38 !important;
+    text-decoration: none !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    padding: 0 !important; /* убираем лишние отступы, если нужно */
+    font-weight: 600 !important; /* обычное начертание */
+}
+
+.btn.btn-link:hover,
+.btn.btn-link:focus,
+.btn.btn-link:active {
+    color: #3E3F38 !important;
+    text-decoration: none !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.form-control:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: #e0e0e0 !important; /* оставляем исходный цвет рамки */
+    background: white !important;
+}
+
+/* Убираем обводку и изменения у кнопки-глазика */
+.password-toggle:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: #e0e0e0 !important; /* исходный цвет рамки кнопки */
+    background: white !important;
+}
+
+/* Для всей группы, когда любой элемент внутри в фокусе */
+.input-group:focus-within .form-control,
+.input-group:focus-within .password-toggle {
+    border-color: #e0e0e0 !important;
+    background: white !important;
+}
+
+/* Анимация появления */
+.modal.fade .modal-dialog {
+    transform: scale(0.9);
+    transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+    opacity: 0;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .modal-header {
+        padding: 1rem 1rem 0.5rem 1rem;
+    }
+
+    .modal-title {
+        font-size: 1.3rem;
+    }
+
+    .modal-title::before {
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem 1rem;
+        font-size: 1rem;
+    }
+}

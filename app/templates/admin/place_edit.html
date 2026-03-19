@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактирование места | Админ-панель</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap&subset=cyrillic" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/admin_form.css') }}">
+    <style>
+        .place-id-badge {
+            background: var(--primary-soft);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+        }
+        .save-message {
+            font-size: 1rem;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body>
+<!-- Десктопный сайдбар -->
+<div class="sidebar">
+    <div class="sidebar-brand">Админ-панель</div>
+    <div class="sidebar-user">
+        <div class="user-name">{{ current_user.get_display_name() }}</div>
+        <div class="user-email">{{ current_user.email }}</div>
+    </div>
+    <ul class="sidebar-nav">
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.dashboard') }}" class="sidebar-nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                Главная
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.places_list') }}" class="sidebar-nav-link {% if active_page == 'places' %}active{% endif %}">
+                Редактировать места
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.suggestions') }}" class="sidebar-nav-link {% if active_page == 'suggestions' %}active{% endif %}">
+                Предложения мест
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.reports') }}" class="sidebar-nav-link {% if active_page == 'reports' %}active{% endif %}">
+                Сообщения об ошибках
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-nav-link text-danger">
+                Выйти
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Бургер-кнопка для мобильных -->
+<button class="navbar-toggler" type="button" aria-label="Toggle navigation" id="mobile-menu-toggle">
+    <span class="navbar-toggler-icon"></span>
+</button>
+
+
+<!-- Мобильное меню -->
+<div class="navbar-mobile-content" id="mobile-menu">
+
+    <div class="mobile-user-info">
+        <div class="mobile-user-name">{{ current_user.get_display_name() }}</div>
+        <div class="mobile-user-email">{{ current_user.email }}</div>
+    </div>
+    <ul class="mobile-nav-links">
+        <li><a href="{{ url_for('admin.dashboard') }}" class="mobile-nav-link">Главная</a></li>
+        <li><a href="{{ url_for('admin.places_list') }}" class="mobile-nav-link">Редактировать места</a></li>
+        <li><a href="{{ url_for('admin.suggestions') }}" class="mobile-nav-link">Предложения мест</a></li>
+        <li><a href="{{ url_for('admin.reports') }}" class="mobile-nav-link">Сообщения об ошибках</a></li>
+    </ul>
+    <a href="{{ url_for('auth.logout') }}" class="mobile-logout-link">Выйти</a>
+</div>
+
+<div class="main-content">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb" id="breadcrumb"></ol>
+    </nav>
+    <!-- Уведомления -->
+    <div id="notification-area"></div>
+
+
+
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title">Редактирование места</h2>
+            <span class="text-muted">ID {{ place_id }}</span>
+        </div>
+        <a href="/place/{{ place_id }}" target="_blank" class="btn-custom-outline">На сайт</a>
+    </div>
+
+    <!-- Карточка редактирования -->
+    <div class="place-card">
+        <div class="section-title">
+            Основные данные
+        </div>
+
+        <form id="place-edit-form">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="place_title" class="form-label fw-semibold">Название</label>
+                    <input type="text" class="form-control form-control-custom" id="place_title" name="title">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="place_short_title" class="form-label fw-semibold">Короткое название</label>
+                    <input type="text" class="form-control form-control-custom" id="place_short_title" name="short_title">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="place_slug" class="form-label fw-semibold">URL-адрес (slug)</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light">{{ request.host }}/place/</span>
+                    <input type="text" class="form-control form-control-custom" id="place_slug" name="slug" required>
+                </div>
+                <div class="form-text">Генерируется автоматически из названия. Можно изменить вручную.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="place_address" class="form-label fw-semibold">Адрес</label>
+                <input type="text" class="form-control form-control-custom" id="place_address" name="address">
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="place_timetable" class="form-label fw-semibold">Режим работы</label>
+                    <input type="text" class="form-control form-control-custom" id="place_timetable" name="timetable">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="place_phone" class="form-label fw-semibold">Телефон</label>
+                    <input type="text" class="form-control form-control-custom" id="place_phone" name="phone">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="place_description" class="form-label fw-semibold">Краткое описание</label>
+                <textarea class="form-control form-control-custom" id="place_description" name="description" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="place_body_text" class="form-label fw-semibold">Полное описание</label>
+                <textarea class="form-control form-control-custom" id="place_body_text" name="body_text" rows="5"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="place_foreign_url" class="form-label fw-semibold">Сайт / Соцсети</label>
+                <input type="url" class="form-control form-control-custom" id="place_foreign_url" name="foreign_url">
+            </div>
+
+            <!-- Координаты -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="place_lat" class="form-label fw-semibold">Широта</label>
+                    <input type="text" class="form-control form-control-custom" id="place_lat" name="lat">
+                </div>
+                <div class="col-md-6">
+                    <label for="place_lng" class="form-label fw-semibold">Долгота</label>
+                    <input type="text" class="form-control form-control-custom" id="place_lng" name="lng">
+                </div>
+            </div>
+
+            <!-- Категории -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Категории</label>
+                <div id="place-categories-container" class="border p-3 rounded" style="max-height: 280px; overflow-y: auto; background: var(--primary-soft);">
+                    <div class="text-center text-muted">Загрузка категорий...</div>
+                </div>
+            </div>
+
+            <!-- Фотографии -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Фотографии</label>
+
+                <!-- Сетка фотографий -->
+                <div id="place-photos-grid" class="photo-grid mb-2"></div>
+
+                <!-- Поле главного фото -->
+                <div class="mt-2 mb-3">
+                    <label for="place_main_photo_url" class="form-label fw-semibold">Главное фото (URL)</label>
+                    <input type="text" class="form-control form-control-custom" id="place_main_photo_url" name="main_photo_url" placeholder="Выберите фото выше или введите URL">
+                </div>
+
+                <!-- Добавление по URL -->
+                <div class="mt-2 mb-3">
+                    <label for="place_photos_add_url" class="form-label">Добавить фото по URL</label>
+                    <div class="input-group">
+                        <input type="url" class="form-control form-control-custom" id="place_photos_add_url" placeholder="https://...">
+                        <button class="btn-custom-outline" type="button" id="add-photo-url-btn">Добавить</button>
+                    </div>
+                </div>
+
+                <!-- Загрузка файлов -->
+                <div class="mt-3">
+                    <label class="form-label fw-semibold">Загрузить новые фотографии</label>
+                    <div class="file-upload-area" id="place-file-upload-area">
+                        <div class="upload-placeholder">
+                            <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <div class="upload-text">Перетащите фото сюда или нажмите для выбора</div>
+                            <div class="upload-hint">Можно загрузить несколько файлов (JPG, PNG, GIF, WebP)</div>
+                            <div class="upload-hint">Максимальный размер файла: 10MB</div>
+                        </div>
+                        <div id="place-file-preview" class="photo-grid mt-3"></div>
+                    </div>
+                    <input type="file" id="place-photos-file" multiple accept="image/*" style="display: none;">
+                </div>
+            </div>
+
+            <input type="hidden" id="place_coords" name="coords">
+            <input type="hidden" id="place_categories" name="categories">
+            <input type="hidden" id="place_photos" name="photos">
+        </form>
+
+        <!-- Кнопки действий -->
+        <div class="d-flex flex-column align-items-end mt-4">
+            <div id="save-message" class="save-message text-success mb-2" style="display: none;"></div>
+            <div class="d-flex gap-3">
+                <button class="btn-custom-primary btn-action" id="save-place-btn">
+                    <i class="fas fa-save btn-icon"></i> Сохранить изменения
+                </button>
+                <a href="{{ url_for('admin.places_list') }}" class="btn-custom-outline btn-action">
+                    <i class="fas fa-list btn-icon"></i> К списку мест
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const placeId = {{ place_id }};
+    let allCategories = [];
+    let selectedCategoryIds = new Set();
+    let placePhotos = [];
+    let placeMainPhoto = '';
+    let placeUploadedFiles = [];
+
+
+    $(document).ready(function() {
+        const $toggle = $('#mobile-menu-toggle');
+        const $menu = $('#mobile-menu');
+
+        function openMenu() {
+            $toggle.attr('aria-expanded', 'true');
+            $menu.addClass('show');
+            $('body').css('overflow', 'hidden');
+        }
+
+        function closeMenu() {
+            $toggle.attr('aria-expanded', 'false');
+            $menu.removeClass('show');
+            $('body').css('overflow', '');
+        }
+
+        $toggle.on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if ($menu.hasClass('show')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+
+        // Закрытие при клике вне меню
+        $(document).on('click', function(e) {
+            if ($menu.hasClass('show') &&
+                !$menu.is(e.target) &&
+                $menu.has(e.target).length === 0 &&
+                !$toggle.is(e.target) &&
+                $toggle.has(e.target).length === 0) {
+                closeMenu();
+            }
+        });
+
+        // Закрытие по Esc
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape' && $menu.hasClass('show')) {
+                closeMenu();
+            }
+        });
+
+        loadPlaceData();
+        loadCategories();
+        buildBreadcrumbs();
+
+        $('#save-place-btn').click(savePlace);
+        $('#add-photo-url-btn').click(addPhotoByUrl);
+
+        $('#place_title').on('input', function() {
+            if (!$('#place_slug').is(':focus')) {
+                const slug = generateSlug($(this).val());
+                $('#place_slug').val(slug);
+            }
+        });
+
+        initFileUpload();
+    });
+
+    function loadPlaceData() {
+        $.ajax({
+            url: `/api/admin/place/${placeId}`,
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    populatePlaceForm(response.place);
+                } else {
+                    showNotification('Ошибка загрузки данных', 'danger');
+                }
+            },
+            error: function() {
+                showNotification('Ошибка сервера', 'danger');
+            }
+        });
+    }
+
+    function populatePlaceForm(place) {
+        $('#place_title').val(place.title || '');
+        $('#place_short_title').val(place.short_title || '');
+        $('#place_slug').val(place.slug || generateSlug(place.title || ''));
+        $('#place_address').val(place.address || '');
+        $('#place_timetable').val(place.timetable || '');
+        $('#place_phone').val(place.phone || '');
+        $('#place_description').val(place.description || '');
+        $('#place_body_text').val(place.body_text || '');
+        $('#place_foreign_url').val(place.foreign_url || '');
+
+        if (place.coords) {
+            let coords = place.coords;
+            if (typeof coords === 'string') {
+                try { coords = JSON.parse(coords); } catch (e) { coords = null; }
+            }
+            if (coords && typeof coords === 'object') {
+                $('#place_lat').val(coords.lat || '');
+                $('#place_lng').val(coords.lng || '');
+            }
+        }
+
+        if (place.categories) {
+            window.placeCategoriesSlugs = place.categories;
+        }
+
+        if (place.photos) {
+            let raw = place.photos;
+            if (typeof raw === 'string') {
+                try { raw = JSON.parse(raw); } catch (e) { raw = []; }
+            }
+            if (Array.isArray(raw)) {
+                placePhotos = raw.map(item => {
+                    if (typeof item === 'string') return item;
+                    if (item && typeof item === 'object' && item.url) return item.url;
+                    return null;
+                }).filter(url => url && typeof url === 'string');
+            } else {
+                placePhotos = [];
+            }
+        } else {
+            placePhotos = [];
+        }
+
+        placeMainPhoto = place.main_photo_url || (placePhotos.length > 0 ? placePhotos[0] : '');
+        $('#place_main_photo_url').val(placeMainPhoto);
+        renderPhotosGrid();
+    }
+
+    function loadCategories() {
+        $.ajax({
+            url: '/api/admin/categories',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    allCategories = response.categories;
+                    renderPlaceCategories();
+                } else {
+                    showNotification('Ошибка загрузки категорий', 'danger');
+                }
+            }
+        });
+    }
+
+    function renderPlaceCategories() {
+        let html = '';
+        allCategories.forEach(cat => {
+            const checked = window.placeCategoriesSlugs && window.placeCategoriesSlugs.includes(cat.slug);
+            if (checked) selectedCategoryIds.add(cat.id);
+            html += `
+                <div class="form-check mb-2">
+                    <input class="form-check-input place-category-checkbox" type="checkbox"
+                           value="${cat.id}" id="place_cat_${cat.id}" ${checked ? 'checked' : ''}>
+                    <label class="form-check-label" for="place_cat_${cat.id}">
+                        ${escapeHtml(cat.name)} <span class="text-muted small">(${cat.places_count || 0})</span>
+                    </label>
+                </div>
+            `;
+        });
+        $('#place-categories-container').html(html);
+
+        $('.place-category-checkbox').change(function() {
+            const id = parseInt($(this).val());
+            if ($(this).is(':checked')) {
+                selectedCategoryIds.add(id);
+            } else {
+                selectedCategoryIds.delete(id);
+            }
+        });
+    }
+    function buildBreadcrumbs() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const list = urlParams.get('list');       // 'places'
+        // Для мест пока нет фильтра по статусу, но можно предусмотреть
+        const placeId = {{ place_id }};
+
+        let breadcrumbHtml = '<li class="breadcrumb-item"><a href="/admin">Главная</a></li>';
+
+        if (list === 'places') {
+            breadcrumbHtml += '<li class="breadcrumb-item"><a href="/admin/places">Редактировать места</a></li>';
+        } else {
+            breadcrumbHtml += '<li class="breadcrumb-item"><a href="/admin/places">Редактировать места</a></li>';
+        }
+
+        breadcrumbHtml += `<li class="breadcrumb-item active" aria-current="page">ID ${placeId}</li>`;
+        $('#breadcrumb').html(breadcrumbHtml);
+    }
+
+    function renderPhotosGrid() {
+        let html = '';
+        placePhotos.forEach((photo, index) => {
+            const isSelected = (photo === placeMainPhoto);
+            html += `
+                <div class="photo-item ${isSelected ? 'selected' : ''}" data-url="${photo}" onclick="selectMainPhoto('${photo}', this)">
+                    <img src="${photo}" alt="Фото" onerror="this.src='/static/img/no-image.png'; this.onerror=null;">
+                    <button type="button" class="remove-btn" onclick="removePhoto('${photo}', event)">&times;</button>
+                </div>
+            `;
+        });
+        $('#place-photos-grid').html(html);
+    }
+
+    window.selectMainPhoto = function(url, element) {
+        $('.photo-item').removeClass('selected');
+        $(element).addClass('selected');
+        placeMainPhoto = url;
+        $('#place_main_photo_url').val(url);
+    };
+
+    window.removePhoto = function(url, event) {
+        event.stopPropagation();
+        placePhotos = placePhotos.filter(p => p !== url);
+        if (placeMainPhoto === url) {
+            placeMainPhoto = placePhotos.length > 0 ? placePhotos[0] : '';
+            $('#place_main_photo_url').val(placeMainPhoto);
+        }
+        renderPhotosGrid();
+    };
+
+    function addPhotoByUrl() {
+        const url = $('#place_photos_add_url').val().trim();
+        if (url && !placePhotos.includes(url)) {
+            placePhotos.push(url);
+            if (!placeMainPhoto) {
+                placeMainPhoto = url;
+                $('#place_main_photo_url').val(url);
+            }
+            renderPhotosGrid();
+            $('#place_photos_add_url').val('');
+        }
+    }
+
+    function initFileUpload() {
+        const fileInput = $('#place-photos-file')[0];
+        const uploadArea = $('#place-file-upload-area')[0];
+        if (!uploadArea) return;
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect();
+            }
+        });
+
+        $(fileInput).on('change', handleFileSelect);
+    }
+
+    function handleFileSelect() {
+        const fileInput = $('#place-photos-file')[0];
+        const files = Array.from(fileInput.files);
+        for (const file of files) {
+            if (file.size > 10 * 1024 * 1024) {
+                showNotification(`Файл ${file.name} слишком большой (максимум 10MB)`, 'danger');
+                return;
+            }
+        }
+        files.forEach(file => {
+            if (!placeUploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                placeUploadedFiles.push(file);
+                uploadPhoto(file);
+            }
+        });
+    }
+
+    function uploadPhoto(file) {
+        const formData = new FormData();
+        formData.append('photo', file);
+        formData.append('suggestion_id', 0);
+
+        $.ajax({
+            url: '/api/admin/suggestions/upload-photo',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    placePhotos.push(response.url);
+                    if (!placeMainPhoto) {
+                        placeMainPhoto = response.url;
+                        $('#place_main_photo_url').val(response.url);
+                    }
+                    renderPhotosGrid();
+                    showNotification('Фото загружено', 'success');
+                } else {
+                    showNotification(response.error || 'Ошибка загрузки', 'danger');
+                }
+            },
+            error: function() {
+                showNotification('Ошибка сервера при загрузке', 'danger');
+            }
+        });
+    }
+
+    function collectFormData() {
+        const coords = {
+            lat: parseFloat($('#place_lat').val()) || null,
+            lng: parseFloat($('#place_lng').val()) || null
+        };
+        return {
+            title: $('#place_title').val(),
+            short_title: $('#place_short_title').val(),
+            slug: $('#place_slug').val(),
+            address: $('#place_address').val(),
+            timetable: $('#place_timetable').val(),
+            phone: $('#place_phone').val(),
+            description: $('#place_description').val(),
+            body_text: $('#place_body_text').val(),
+            foreign_url: $('#place_foreign_url').val(),
+            coords: (coords.lat && coords.lng) ? coords : null,
+            // is_closed полностью удалён
+            categories: allCategories
+                .filter(cat => selectedCategoryIds.has(cat.id))
+                .map(cat => cat.slug),
+            photos: placePhotos,
+            main_photo_url: placeMainPhoto
+        };
+    }
+
+    function savePlace() {
+        const updates = collectFormData();
+
+        if (!updates.slug || updates.slug.trim() === '') {
+            showNotification('URL-адрес (slug) не может быть пустым', 'danger');
+            return;
+        }
+
+        $.ajax({
+            url: `/api/admin/place/${placeId}/update`,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ updates: updates }),
+            success: function(response) {
+                if (response.success) {
+                    // Показываем сообщение об успехе рядом с кнопкой
+                    $('#save-message').text('Изменения сохранены').fadeIn();
+                    setTimeout(() => {
+                        $('#save-message').fadeOut();
+                    }, 3000);
+                } else {
+                    showNotification(response.error || 'Ошибка сохранения', 'danger');
+                }
+            },
+            error: function(xhr) {
+                let msg = 'Ошибка сервера';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    msg = xhr.responseJSON.error;
+                }
+                showNotification(msg, 'danger');
+            }
+        });
+    }
+
+    function generateSlug(title) {
+        return title
+            .toLowerCase()
+            .replace(/[^a-zа-яё0-9\s-]/gi, '')
+            .replace(/\s+/g, '-')
+            .replace(/--+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .substring(0, 100);
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function showNotification(message, type) {
+        const alertClass = `alert alert-${type}`;
+        const icon = type === 'success' ? 'fa-check-circle' : (type === 'danger' ? 'fa-exclamation-circle' : 'fa-info-circle');
+        const html = `<div class="${alertClass} alert-dismissible fade show d-flex align-items-center" role="alert">
+                        <i class="fas ${icon} me-2"></i> ${escapeHtml(message)}
+                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                      </div>`;
+        $('#notification-area').html(html);
+        setTimeout(() => $('.alert').alert('close'), 5000);
+    }
+</script>
+</body>
+</html>

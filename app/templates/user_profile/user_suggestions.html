@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Предложить место / Сообщить об ошибке | Атмосфера Петербурга</title>
+
+    <meta name="description" content="Не знаете, куда пойти в Петербурге? Находите интересные места, стройте маршруты и открывайте город по-новому.">
+    <meta name="keywords" content="места Санкт-Петербург, куда сходить в Петербурге, интересные места СПб, прогулки по Петербургу, 
+    маршруты по СПб, что посмотреть в Санкт-Петербурге, кафе Петербург, парки СПб, достопримечательности Петербурга, куда пойти в Питере, Питер, куда сходить спб, спб, куда идти, улицы питера, куда пойти питер, места">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='profile/user_suggestions.css') }}">
+
+</head>
+<body>
+
+<!-- Оверлей для мобильного меню -->
+<div class="navbar-mobile-overlay"></div>
+
+<!-- Шапка без фона -->
+<header class="navbar-section">
+    <nav class="navbar navbar-expand-lg navbar-desktop">
+        <div class="container">
+            <!-- Бургер-меню для мобильных -->
+            <button class="navbar-toggler" type="button" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Десктопное меню -->
+            <div class="navbar-desktop-content">
+                <div class="navbar-left">
+                    <a href="/" class="nav-link {% if active_page == 'index' %}active{% endif %}">
+                        Главная
+                        {% if active_page == 'index' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    <a href="/places" class="nav-link {% if active_page == 'places' %}active{% endif %}">
+                        Места
+                        {% if active_page == 'places' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+
+                    <!-- Избранное -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/favorites" class="nav-link {% if active_page == 'favorites' %}active{% endif %}">
+                        Избранное
+                        {% if active_page == 'favorites' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'favorites' %}active{% endif %}">
+                        Избранное
+                        {% if active_page == 'favorites' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Уже посещал -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/visited" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Уже посещал
+                        {% if active_page == 'visited' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Уже посещал
+                        {% if active_page == 'visited' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Маршруты -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/routes" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                       Маршруты
+                        {% if active_page == 'routes' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'visited' %}active{% endif %}">
+                        Маршруты
+                        {% if active_page == 'routes' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Предложить место -->
+                    {% if current_user.is_authenticated %}
+                    <a href="/suggest" class="nav-link {% if active_page == 'suggest' %}active{% endif %}">
+                        Предложить место
+                        {% if active_page == 'suggest' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="/login" class="nav-link {% if active_page == 'suggest' %}active{% endif %}">
+                        Предложить место
+                        {% if active_page == 'suggest' %}<div class="nav-underline"></div>{% endif %}
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="navbar-right">
+                    <div class="user-menu">
+                        {% if current_user.is_authenticated %}
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center p-1" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if current_user.avatar_url %}
+                                <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-circle">
+                                {% else %}
+                                <div class="avatar-circle-sm">
+                                    {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                </div>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li class="dropdown-header px-3 py-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if current_user.avatar_url %}
+                                        <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-sm me-2">
+                                        {% else %}
+                                        <div class="avatar-circle-xs me-2">
+                                            {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ current_user.username }}</div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Личный кабинет</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Выйти</a></li>
+                            </ul>
+                        </div>
+                        {% else %}
+                        <div class="auth-links">
+                            <a href="/login" class="btn-login">Войти</a>
+                            <a href="/register" class="btn-register">Регистрация</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Мобильное меню -->
+            <div class="navbar-mobile-content" id="navbarMobileContent">
+                <div class="mobile-menu-container">
+                    {% if current_user.is_authenticated %}
+                    <!-- Информация о пользователе -->
+                    <div class="mobile-user-info">
+                        <div class="mobile-user-avatar">
+                            {% if current_user.avatar_url %}
+                            <img src="{{ current_user.avatar_url }}" alt="Аватар" class="mobile-avatar-icon">
+                            {% else %}
+                            <div class="mobile-avatar-circle">
+                                {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="mobile-user-name">
+                            {{ current_user.username }}
+                        </div>
+                        <a href="/profile" class="mobile-profile-link">
+                            <i class="fas fa-user me-2"></i>Личный кабинет
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Основные ссылки меню -->
+                    <div class="mobile-nav-links">
+                        <a href="/" class="mobile-nav-link">
+                            <span class="mobile-link-text">Главная</span>
+                        </a>
+                        <a href="/places" class="mobile-nav-link">
+                            <span class="mobile-link-text">Места</span>
+                        </a>
+
+                        <!-- Избранное -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/favorites" class="mobile-nav-link">
+                            <span class="mobile-link-text">Избранное</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Избранное</span>
+                        </a>
+                        {% endif %}
+
+                        <!-- Уже посещал -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/visited" class="mobile-nav-link">
+                            <span class="mobile-link-text">Уже посещал</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Уже посещал</span>
+                        </a>
+                        {% endif %}
+
+                        {% if current_user.is_authenticated %}
+                        <a href="/routes" class="mobile-nav-link">
+                            <span class="mobile-link-text">Маршруты</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Маршруты</span>
+                        </a>
+                        {% endif %}
+
+                        <!-- Предложить место -->
+                        {% if current_user.is_authenticated %}
+                        <a href="/suggest" class="mobile-nav-link">
+                            <span class="mobile-link-text">Предложить место</span>
+                        </a>
+                        {% else %}
+                        <a href="/login" class="mobile-nav-link">
+                            <span class="mobile-link-text">Предложить место</span>
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Кнопки входа/выхода -->
+                    <div class="mobile-auth-section">
+                        {% if current_user.is_authenticated %}
+                        <a href="/logout" class="mobile-logout-link">
+                            <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                        </a>
+                        {% else %}
+                        <div class="mobile-auth-buttons">
+                            <a href="/login" class="mobile-login-btn">Войти</a>
+                            <a href="/register" class="mobile-register-btn">Регистрация</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Основной контент -->
+<div class="container">
+    <div class="header">
+        <h1>Помогите сделать нашу базу лучше!</h1>
+        <p>Предложите новое место или сообщите об ошибке в существующем</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn {% if active_tab == 'suggest' %}active{% endif %}"
+                data-tab="suggest-place">Предложить место</button>
+        <button class="tab-btn {% if active_tab == 'report' %}active{% endif %}"
+                data-tab="report-error">Сообщить об ошибке</button>
+    </div>
+
+    <div class="content-wrapper">
+        <!-- Форма предложения места -->
+        <div class="tab-content {% if active_tab == 'suggest' %}active{% endif %}" id="suggest-place-tab">
+            <div class="form-container">
+                <h2> Нашли интересное место, которого нет в нашем каталоге?<br> Заполните форму, и мы добавим его после проверки.</h2>
+
+                <div class="info-box">
+                    <h3>Что нужно указать:</h3>
+                    <ul>
+                        <li>Название места (например: "Кафе 'Уютное'")</li>
+                        <li>Подробное описание</li>
+                        <li>Точный адрес</li>
+                        <li>Хотя бы одну фотографию</li>
+                        <li>Категорию (ресторан, музей, парк и т.д.)</li>
+                    </ul>
+                </div>
+
+
+
+                <form id="suggestion-form">
+                    <div class="form-group">
+                        <label for="user_title" class="required">Название места</label>
+                        <input type="text" id="user_title" name="user_title" required
+                               placeholder="Например: Ресторан 'Вкусная еда'">
+                        <div class="form-hint">Укажите полное название места</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="user_description" class="required">Описание</label>
+                        <textarea id="user_description" name="user_description" required
+                                  placeholder="Опишите место: чем оно интересно, особенности, атмосфера..."></textarea>
+                        <div class="form-hint">Расскажите подробно о месте</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="user_address" class="required">Адрес</label>
+                        <input type="text" id="user_address" name="user_address" required
+                               placeholder="Например: ул. Примерная, д. 10">
+                        <div class="form-hint">Полный адрес с номером дома</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="user_timetable">Режим работы</label>
+                        <input type="text" id="user_timetable" name="user_timetable"
+                               placeholder="Например: Пн-Пт: 9:00-22:00, Сб-Вс: 10:00-23:00">
+                        <div class="form-hint">Укажите часы работы по дням недели</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="user_phone">Телефон</label>
+                        <input type="tel" id="user_phone" name="user_phone"
+                               placeholder="+7 (XXX) XXX-XX-XX">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="user_foreign_url">Сайт / Соцсети</label>
+                        <input type="url" id="user_foreign_url" name="user_foreign_url"
+                               placeholder="https://example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="user_photos_files">Загрузите фотографии</label>
+                        <input type="file" id="user_photos_files" name="user_photos"
+                               multiple accept="image/*" style="display: none;">
+
+                        <div id="file-upload-area" class="file-upload-area">
+                            <div class="upload-placeholder">
+                                <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                                <div class="upload-text">Перетащите фото сюда или нажмите для выбора</div>
+                                <div class="upload-hint">Можно загрузить несколько файлов (JPG, PNG, GIF, WebP)</div>
+                                <div class="upload-hint">Максимальный размер файла: 10MB</div>
+                            </div>
+                            <div id="file-preview" class="file-preview"></div>
+                        </div>
+
+                        <label for="user_photos_url" style="margin-top: 20px;">Или укажите ссылки на фото (через запятую)</label>
+                        <textarea id="user_photos_url" name="user_photos_url" rows="2"
+                                  placeholder="https://example.com/photo1.jpg, https://example.com/photo2.jpg"></textarea>
+                        <div class="form-hint">Если у вас уже есть фото в интернете</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">Категории</label>
+                        <div class="form-hint">
+                            Нажмите на поле ниже, чтобы открыть список категорий.
+                            Можно выбрать несколько категорий.
+                        </div>
+
+                        <div class="categories-search-container">
+                            <div class="category-select-trigger" onclick="toggleCategoriesDropdown()">
+                                <span id="category-placeholder">Нажмите для выбора категорий...</span>
+                                <span class="dropdown-arrow">▼</span>
+                            </div>
+
+                            <div id="categories-dropdown" class="categories-dropdown" style="display: none;">
+                                <div class="categories-dropdown-header">
+                                    <div style="font-weight: 600; margin-bottom: 10px;">Выберите категории</div>
+                                    <input type="text" id="category-filter" placeholder="Поиск категорий..." autocomplete="off">
+                                </div>
+
+                                <div id="categories-list" class="categories-list">
+                                    <div class="loading">Загрузка категорий...</div>
+                                </div>
+
+                                <div class="categories-dropdown-footer">
+                                    <button type="button" onclick="applySelectedCategories(event)" onsubmit="return false;">Готово</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="selected-categories" class="selected-categories">
+                            <!-- Выбранные категории будут отображаться здесь -->
+                        </div>
+
+                        <input type="hidden" id="category_ids" name="category_ids" value="">
+
+
+                    </div>
+
+                    <div id="suggestion-message" class="message"></div>
+
+                    <button type="submit" class="submit-btn" id="suggestion-submit-btn">
+                        Отправить на модерацию
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Форма сообщения об ошибке -->
+        <div class="tab-content {% if active_tab == 'report' %}active{% endif %}" id="report-error-tab">
+            <div class="form-container">
+                <h2 class="error"> Нашли неточность в описании места? <br>Сообщите нам, и мы исправим ошибку.</h2>
+
+                <div class="info-box error">
+                    <h3>Какие ошибки можно сообщать:</h3>
+                    <ul>
+                        <li>Некорректная информация (адрес, телефон, описание)</li>
+                        <li>Место закрыто или не работает</li>
+                        <li>Ошибка в расписании работы</li>
+                        <li>Устаревшие фотографии</li>
+                        <li>Любые другие неточности</li>
+                    </ul>
+                </div>
+
+
+
+                <form id="report-form">
+                    <div class="form-group">
+                        <label for="place-search" class="required">Найдите место</label>
+                        <div class="search-container">
+                            <input type="text" id="place-search"
+                                   placeholder="Начните вводить название места..."
+                                   autocomplete="off">
+                            <div id="search-results"></div>
+                        </div>
+                        <div class="form-hint">Введите название места, в котором нашли ошибку</div>
+
+                        <div id="selected-place" class="selected-place">
+                            <div class="selected-place-title" id="selected-place-title"></div>
+                            <div class="selected-place-address" id="selected-place-address"></div>
+                        </div>
+                        <input type="hidden" id="place_id" name="place_id">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">Тема сообщения</label>
+                        <div class="subject-options">
+                            <div class="subject-option" data-value="Некорректная информация">
+                                Некорректная информация
+                            </div>
+                            <div class="subject-option" data-value="Закрыто/не работает">
+                                Закрыто/не работает
+                            </div>
+                            <div class="subject-option" data-value="Ошибка в описании">
+                                Ошибка в описании
+                            </div>
+                            <div class="subject-option" data-value="Другое">
+                                Другое
+                            </div>
+                        </div>
+                        <input type="text" id="subject" name="subject"
+                               placeholder="Укажите тему сообщения" style="display: none;">
+                        <div class="form-hint">Выберите тему или введите свою</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message-text" class="required">Подробное описание ошибку</label>
+                        <textarea id="message-text" name="message"
+                                  placeholder="Опишите подробно, что не так или что нужно исправить..."></textarea>
+                        <div class="form-hint">Максимум 2000 символов</div>
+                        <div id="char-count" class="char-count">
+                            0/2000 символов
+                        </div>
+                    </div>
+
+                    <div id="report-message" class="message"></div>
+
+                    <button type="submit" class="submit-btn error" id="report-submit-btn">
+                        Отправить сообщение
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для уведомлений -->
+<div id="success-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Успешно!</h5>
+            <button type="button" class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="modal-message">Спасибо, ваше предложение отправлено на модерацию.</p>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript библиотеки -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // ============ ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ============
+    let categories = [];
+    let selectedCategoryIds = new Set();
+    let uploadedFiles = [];
+    let selectedPlace = null;
+    let selectedSubject = '';
+
+    $(document).ready(function() {
+        // ============ УПРАВЛЕНИЕ ВКЛАДКАМИ ============
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+
+                // Убираем активный класс у всех кнопок
+                tabBtns.forEach(b => b.classList.remove('active'));
+                // Добавляем активный класс текущей кнопке
+                this.classList.add('active');
+
+                // Скрываем все содержимое вкладок
+                tabContents.forEach(content => content.classList.remove('active'));
+                // Показываем нужное содержимое
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+
+                // Если переключились на вкладку с предложением места, загружаем категории
+                if (tabId === 'suggest-place') {
+                    loadCategories();
+                }
+            });
+        });
+
+
+        // ============ ФОРМА ПРЕДЛОЖЕНИЯ МЕСТА ============
+        // Загружаем категории при загрузке страницы
+        loadCategories();
+
+        // ============ ФОРМА СООБЩЕНИЯ ОБ ОШИБКЕ ============
+        const placeSearch = document.getElementById('place-search');
+        const searchResults = document.getElementById('search-results');
+        const selectedPlaceDiv = document.getElementById('selected-place');
+        const placeIdInput = document.getElementById('place_id');
+        const subjectInput = document.getElementById('subject');
+        const messageText = document.getElementById('message-text');
+        const charCount = document.getElementById('char-count');
+        let searchTimeout = null;
+
+        // Поиск мест
+        placeSearch.addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+
+            clearTimeout(searchTimeout);
+
+            if (query.length < 2) {
+                searchResults.innerHTML = '';
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                searchPlaces(query);
+            }, 300);
+        });
+
+        // Обработка выбора темы
+        document.querySelectorAll('.subject-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // Снимаем выделение со всех
+                document.querySelectorAll('.subject-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+
+                // Выделяем выбранную
+                this.classList.add('selected');
+
+                // Устанавливаем значение
+                selectedSubject = this.getAttribute('data-value');
+                subjectInput.value = selectedSubject;
+
+                // Если выбрано "Другое", показываем поле для ввода
+                if (selectedSubject === 'Другое') {
+                    subjectInput.style.display = 'block';
+                    subjectInput.value = '';
+                    subjectInput.focus();
+                } else {
+                    subjectInput.style.display = 'none';
+                }
+            });
+        });
+
+        // Счетчик символов
+        messageText.addEventListener('input', function() {
+            const length = this.value.length;
+            charCount.textContent = `${length}/2000 символов`;
+
+            if (length > 2000) {
+                charCount.style.color = '#e74c3c';
+            } else {
+                charCount.style.color = '#7f8c8d';
+            }
+        });
+
+        // Закрытие результатов поиска при клике вне
+        document.addEventListener('click', function(e) {
+            const categoriesSearchContainer = document.querySelector('.categories-search-container');
+            const categoriesDropdown = document.getElementById('categories-dropdown');
+
+            if (categoriesSearchContainer && categoriesDropdown &&
+                !categoriesSearchContainer.contains(e.target)) {
+                categoriesDropdown.style.display = 'none';
+            }
+
+            if (!placeSearch.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+
+        // ============ ЗАГРУЗКА ФАЙЛОВ ============
+        const fileInput = document.getElementById('user_photos_files');
+        const uploadArea = document.getElementById('file-upload-area');
+        const filePreview = document.getElementById('file-preview');
+
+        // Обработчик клика на область загрузки
+        if (uploadArea) {
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+        }
+
+        // Обработчик выбора файлов
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Drag & Drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect({ target: fileInput });
+            }
+        });
+
+
+        // ============ ОБРАБОТЧИКИ ФОРМ ============
+
+        // Форма предложения места
+        const suggestionForm = document.getElementById('suggestion-form');
+        if (suggestionForm) {
+            suggestionForm.addEventListener('submit', handleSuggestionSubmit);
+        }
+
+        // Форма сообщения об ошибке
+        const reportForm = document.getElementById('report-form');
+        if (reportForm) {
+            reportForm.addEventListener('submit', handleReportSubmit);
+        }
+
+        // ============ УПРАВЛЕНИЕ МОБИЛЬНЫМ МЕНЮ ============
+        let isMenuOpen = false;
+        const $toggler = $('.navbar-toggler');
+        const $mobileMenu = $('.navbar-mobile-content');
+        const $overlay = $('.navbar-mobile-overlay');
+
+        // Функция открытия меню
+        function openMenu() {
+            if (isMenuOpen) return;
+
+            isMenuOpen = true;
+            $toggler.attr('aria-expanded', 'true');
+            $('body').css('overflow', 'hidden');
+
+            // Показываем оверлей
+            $overlay.css('display', 'block');
+            setTimeout(() => {
+                $overlay.css('opacity', '1');
+            }, 10);
+
+            // Показываем меню
+            $mobileMenu.css('display', 'block');
+            setTimeout(() => {
+                $mobileMenu.addClass('show');
+            }, 10);
+        }
+
+        // Функция закрытия меню
+        function closeMenu() {
+            if (!isMenuOpen) return;
+
+            isMenuOpen = false;
+            $toggler.attr('aria-expanded', 'false');
+
+            // Скрываем меню
+            $mobileMenu.removeClass('show');
+            setTimeout(() => {
+                $mobileMenu.css('display', 'none');
+            }, 300);
+
+            // Скрываем оверлей
+            $overlay.css('opacity', '0');
+            setTimeout(() => {
+                $overlay.css('display', 'none');
+                $('body').css('overflow', '');
+            }, 300);
+        }
+
+        // Обработчик клика на бургер
+        $toggler.click(function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (!isMenuOpen) {
+                openMenu();
+            } else {
+                closeMenu();
+            }
+        });
+
+        // Закрытие при клике на оверлей
+        $overlay.click(function() {
+            closeMenu();
+        });
+
+        // Закрытие при нажатии ESC
+        $(document).keydown(function(e) {
+            if (e.key === 'Escape' && isMenuOpen) {
+                closeMenu();
+            }
+        });
+    });
+
+    // ============ ФУНКЦИИ ДЛЯ КАТЕГОРИЙ ============
+
+    async function loadCategories() {
+        try {
+            const response = await fetch('/api/categories');
+            const data = await response.json();
+
+            if (data.success) {
+                categories = data.categories;
+            } else {
+                console.error('Ошибка загрузки категорий:', data.error);
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки категорий:', error);
+        }
+    }
+
+    window.toggleCategoriesDropdown = function() {
+        const dropdown = document.getElementById('categories-dropdown');
+        const trigger = document.querySelector('.category-select-trigger');
+
+        if (dropdown.style.display === 'flex' || dropdown.style.display === '') {
+            dropdown.style.display = 'none';
+            trigger.classList.remove('active');
+        } else {
+            dropdown.style.display = 'flex';
+            trigger.classList.add('active');
+
+            // Если категории еще не загружены, загружаем
+            if (categories.length === 0) {
+                loadCategories().then(() => {
+                    renderCategoriesList();
+                });
+            } else {
+                renderCategoriesList();
+            }
+
+            // Фокусируемся на поле фильтра
+            setTimeout(() => {
+                const filterInput = document.getElementById('category-filter');
+                if (filterInput) filterInput.focus();
+            }, 100);
+        }
+    };
+
+    window.applySelectedCategories = function(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        const dropdown = document.getElementById('categories-dropdown');
+        const trigger = document.querySelector('.category-select-trigger');
+
+        dropdown.style.display = 'none';
+        trigger.classList.remove('active');
+    };
+
+    function renderCategoriesList() {
+        const categoriesList = document.getElementById('categories-list');
+        if (!categoriesList) {
+            console.error('Элемент categories-list не найден');
+            return;
+        }
+
+        const filterInput = document.getElementById('category-filter');
+        const filterTerm = filterInput ? filterInput.value.toLowerCase() : '';
+
+        let filteredCategories = categories;
+        if (filterTerm) {
+            filteredCategories = categories.filter(category =>
+                category.name.toLowerCase().includes(filterTerm)
+            );
+        }
+
+        if (filteredCategories.length === 0) {
+            categoriesList.innerHTML = '<div class="no-categories">Категории не найдены</div>';
+            return;
+        }
+
+        categoriesList.innerHTML = filteredCategories.map(category => `
+        <div class="category-dropdown-option ${selectedCategoryIds.has(category.id) ? 'selected' : ''}"
+             onclick="toggleCategory(${category.id}, event)">
+            <div class="category-checkbox">${selectedCategoryIds.has(category.id) ? '✓' : ''}</div>
+            <div class="category-name">${category.name}</div>
+        </div>
+    `).join('');
+    }
+
+    window.toggleCategory = function(categoryId, event) {
+        if (event) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        if (selectedCategoryIds.has(categoryId)) {
+            selectedCategoryIds.delete(categoryId);
+        } else {
+            selectedCategoryIds.add(categoryId);
+        }
+
+        renderCategoriesList();
+        updateSelectedCategoriesDisplay();
+    };
+
+    window.removeCategory = function(categoryId) {
+        selectedCategoryIds.delete(categoryId);
+        updateSelectedCategoriesDisplay();
+        renderCategoriesList();
+    };
+
+    function updateSelectedCategoriesDisplay() {
+        const container = document.getElementById('selected-categories');
+        const placeholder = document.getElementById('category-placeholder');
+        const hiddenInput = document.getElementById('category_ids');
+
+        if (!container || !placeholder || !hiddenInput) return;
+
+        hiddenInput.value = Array.from(selectedCategoryIds).join(',');
+
+        if (selectedCategoryIds.size === 0) {
+            placeholder.textContent = 'Нажмите для выбора категорий...';
+            container.innerHTML = '<div style="color: #7f8c8d; font-style: italic; padding: 10px;">Категории не выбраны</div>';
+            return;
+        }
+
+        const selectedCategories = categories.filter(cat => selectedCategoryIds.has(cat.id));
+
+        if (selectedCategories.length === 1) {
+            placeholder.textContent = selectedCategories[0].name;
+        } else {
+            placeholder.textContent = `Выбрано ${selectedCategories.length} категорий`;
+        }
+
+        container.innerHTML = selectedCategories.map(category => `
+        <div class="selected-category-tag">
+            ${category.name}
+            <button class="remove-btn" onclick="removeCategory(${category.id})">×</button>
+        </div>
+    `).join('');
+    }
+
+    // Обработчик фильтрации категорий
+    document.addEventListener('DOMContentLoaded', function() {
+        const categoryFilter = document.getElementById('category-filter');
+        if (categoryFilter) {
+            categoryFilter.addEventListener('input', function() {
+                renderCategoriesList();
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('categories-dropdown');
+            const triggerContainer = document.querySelector('.categories-search-container');
+
+            if (dropdown && dropdown.style.display === 'flex' &&
+                !triggerContainer.contains(e.target)) {
+                dropdown.style.display = 'none';
+                const trigger = document.querySelector('.category-select-trigger');
+                if (trigger) trigger.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const dropdown = document.getElementById('categories-dropdown');
+                const trigger = document.querySelector('.category-select-trigger');
+
+                if (dropdown && dropdown.style.display === 'flex') {
+                    dropdown.style.display = 'none';
+                    if (trigger) trigger.classList.remove('active');
+                }
+            }
+        });
+
+        loadCategories();
+    });
+
+    // ============ ФУНКЦИИ ДЛЯ ФАЙЛОВ ============
+
+    function handleFileSelect(e) {
+        const files = Array.from(e.target.files);
+
+        for (const file of files) {
+            if (file.size > 10 * 1024 * 1024) {
+                showMessage('suggestion-message', `Файл ${file.name} слишком большой (максимум 10MB)`, 'error');
+                return;
+            }
+        }
+
+        files.forEach(file => {
+            if (!uploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                uploadedFiles.push(file);
+            }
+        });
+
+        updateFilePreview();
+    }
+
+    function updateFilePreview() {
+        const filePreview = document.getElementById('file-preview');
+        const uploadPlaceholder = document.querySelector('.upload-placeholder');
+
+        if (!filePreview) return;
+
+        filePreview.innerHTML = '';
+
+        if (uploadedFiles.length === 0) {
+            if (uploadPlaceholder) {
+                uploadPlaceholder.style.display = 'block';
+            }
+            return;
+        }
+
+        if (uploadPlaceholder) {
+            uploadPlaceholder.style.display = 'none';
+        }
+
+        uploadedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'file-preview-item';
+                previewItem.innerHTML = `
+                <img src="${e.target.result}" alt="${file.name}">
+                <button class="remove-btn" onclick="removeFile(${index})">×</button>
+                <div class="file-name">${file.name}</div>
+            `;
+                filePreview.appendChild(previewItem);
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+
+    window.removeFile = function(index) {
+        uploadedFiles.splice(index, 1);
+        updateFilePreview();
+    };
+
+    // ============ ФУНКЦИИ ДЛЯ ФОРМ ============
+
+    async function handleSuggestionSubmit(e) {
+        e.preventDefault();
+
+        const submitBtn = document.getElementById('suggestion-submit-btn');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Отправка...';
+
+        const formData = new FormData();
+
+        formData.append('user_title', document.getElementById('user_title').value.trim());
+        formData.append('user_description', document.getElementById('user_description').value.trim());
+        formData.append('user_address', document.getElementById('user_address').value.trim());
+        formData.append('user_timetable', document.getElementById('user_timetable').value.trim());
+        formData.append('user_phone', document.getElementById('user_phone').value.trim());
+        formData.append('user_foreign_url', document.getElementById('user_foreign_url').value.trim());
+
+        const photosUrlInput = document.getElementById('user_photos_url');
+        if (photosUrlInput) {
+            formData.append('user_photos_url', photosUrlInput.value.trim());
+        }
+
+        formData.append('category_ids', Array.from(selectedCategoryIds).join(','));
+
+        uploadedFiles.forEach(file => {
+            formData.append('user_photos', file);
+        });
+
+        if (!formData.get('user_title') || !formData.get('user_description') || !formData.get('user_address')) {
+            showMessage('suggestion-message', 'Заполните все обязательные поля', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            return;
+        }
+
+        if (selectedCategoryIds.size === 0) {
+            showMessage('suggestion-message', 'Выберите хотя бы одну категорию', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/suggest-place', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showModal('Спасибо, ваше предложение отправлено на модерацию.');
+                e.target.reset();
+                selectedCategoryIds.clear();
+                uploadedFiles = [];
+                updateFilePreview();
+                updateSelectedCategoriesDisplay();
+                loadCategories();
+            } else {
+                showMessage('suggestion-message', data.error || 'Произошла ошибка', 'error');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            showMessage('suggestion-message', 'Ошибка сети. Проверьте подключение к интернету.', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    }
+
+    async function handleReportSubmit(e) {
+        e.preventDefault();
+
+        const submitBtn = document.getElementById('report-submit-btn');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Отправка...';
+
+        const formData = {
+            place_id: document.getElementById('place_id').value,
+            subject: document.getElementById('subject').style.display === 'block' ?
+                document.getElementById('subject').value.trim() : selectedSubject,
+            message: document.getElementById('message-text').value.trim()
+        };
+
+        if (!formData.place_id) {
+            showMessage('report-message', 'Выберите место из списка', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            return;
+        }
+
+        if (!formData.subject || formData.subject.length === 0) {
+            showMessage('report-message', 'Укажите тему сообщения', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            return;
+        }
+
+        if (!formData.message || formData.message.length === 0) {
+            showMessage('report-message', 'Опишите ошибку', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            return;
+        }
+
+        if (formData.message.length > 2000) {
+            showMessage('report-message', 'Сообщение слишком длинное (максимум 2000 символов)', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/report-error', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showModal('Спасибо, ваше сообщение об ошибке отправлено.');
+                e.target.reset();
+                selectedPlace = null;
+                document.getElementById('selected-place').style.display = 'none';
+                document.getElementById('subject').value = '';
+                document.querySelectorAll('.subject-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                document.getElementById('char-count').textContent = '0/2000 символов';
+            } else {
+                showMessage('report-message', data.error || 'Произошла ошибка', 'error');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            showMessage('report-message', 'Ошибка сети. Проверьте подключение к интернету.', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    }
+
+    // ============ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ============
+
+    async function searchPlaces(query) {
+        try {
+            const response = await fetch(`/api/places/search?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+
+            const searchResults = document.getElementById('search-results');
+
+            if (data.success) {
+                if (data.places.length === 0) {
+                    searchResults.innerHTML = '<div class="search-result-item">Места не найдены</div>';
+                } else {
+                    searchResults.innerHTML = data.places.map(place => `
+                    <div class="search-result-item" data-place-id="${place.id}">
+                        ${place.photo_url ?
+                        `<img src="${place.photo_url}" alt="${place.title}" class="place-photo">` :
+                        '<div class="place-photo" style="background: #eee;"></div>'
+                    }
+                        <div class="place-info">
+                            <div class="place-title">${place.title}</div>
+                            <div class="place-address">${place.address || 'Адрес не указан'}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                    document.querySelectorAll('.search-result-item[data-place-id]').forEach(item => {
+                        item.addEventListener('click', function() {
+                            const placeId = parseInt(this.getAttribute('data-place-id'));
+                            const placeTitle = this.querySelector('.place-title').textContent;
+                            const placeAddress = this.querySelector('.place-address').textContent;
+
+                            selectPlace(placeId, placeTitle, placeAddress);
+                        });
+                    });
+                }
+                searchResults.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Ошибка поиска:', error);
+            document.getElementById('search-results').innerHTML = '<div class="search-result-item">Ошибка при поиске</div>';
+            document.getElementById('search-results').style.display = 'block';
+        }
+    }
+
+    function selectPlace(id, title, address) {
+        selectedPlace = { id, title, address };
+
+        document.getElementById('selected-place-title').textContent = title;
+        document.getElementById('selected-place-address').textContent = address;
+        document.getElementById('selected-place').style.display = 'block';
+        document.getElementById('place_id').value = id;
+
+        document.getElementById('search-results').style.display = 'none';
+        document.getElementById('place-search').value = '';
+    }
+
+    function showMessage(elementId, text, type) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        element.textContent = text;
+        element.className = `message ${type}`;
+        element.style.display = 'block';
+
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, 5000);
+    }
+
+    // Функции для модального окна
+    function showModal(message) {
+        const modal = document.getElementById('success-modal');
+        const msgEl = document.getElementById('modal-message');
+        if (msgEl) msgEl.textContent = message || 'Спасибо, ваше предложение отправлено на модерацию.';
+        if (modal) {
+            modal.style.display = 'flex';
+            setTimeout(closeModal, 3000);
+        }
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('success-modal');
+        if (modal) modal.style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

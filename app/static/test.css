@@ -1,0 +1,738 @@
+/* ========== ОСНОВНЫЕ СТИЛИ (базовый уровень – для десктопов 1200px и выше) ========== */
+body {
+    background: #FDFAFA;
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.test-container {
+    max-width: 1000px;
+    margin: 60px auto;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.test-header {
+    background: linear-gradient(90deg, #5a5b52 0%, #3E3F38 100%);
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+.test-header h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.test-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.question-container {
+    padding: 30px;
+}
+
+.question-text {
+    font-size: 1.4rem;
+    margin-bottom: 25px;
+    color: #333;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+/* карточки вариантов */
+.option-card {
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.option-card:hover {
+    border-color: #3E3F38;
+    background-color: #fafafa;
+}
+
+.option-card.selected {
+    border-color: #3E3F38;
+    background-color: #f0f0f0;
+}
+
+.option-checkbox {
+    margin-right: 15px;
+    width: 20px;
+    height: 20px;
+    accent-color: #3E3F38;
+}
+
+.option-checkbox:focus {
+    border-color: #3E3F38;
+    outline: none;
+}
+
+.option-text {
+    font-size: 1.1rem;
+    margin: 0;
+    flex: 1;
+    line-height: 1.4;
+}
+
+/* навигация */
+.test-navigation {
+    padding-bottom: 10px;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: transparent;
+    color: #555;
+    font-weight: 500;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    outline: none !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-back:hover {
+    background: #f8f9fa;
+    border-color: #ccc;
+    color: #333;
+}
+
+.btn-back:active {
+    background: #e9ecef;
+    transform: scale(0.98);
+}
+
+.btn-back:focus-visible {
+    outline: 2px solid rgba(0,0,0,0.2) !important;
+    outline-offset: 2px !important;
+}
+
+.btn-next {
+    background: linear-gradient(90deg, #5a5b52 0%, #3E3F38 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: transform 0.2s;
+}
+
+.btn-next:hover {
+    transform: translateY(-2px);
+    color: white;
+}
+
+.btn-next:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* прогресс (если будет показан) */
+.progress-container {
+    padding: 15px 30px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+
+/* результаты */
+.results-container {
+    padding: 30px;
+}
+
+.results-container h2 {
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+/* загрузка */
+.loading {
+    text-align: center;
+    padding: 40px;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3E3F38;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* карточки мест */
+.place-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    background: white;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.place-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.place-card-inner {
+    display: flex;
+    min-height: 200px;
+}
+
+.place-photo-container {
+    flex: 0 0 300px;
+    max-width: 300px;
+    position: relative;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.place-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.place-photo-placeholder {
+    text-align: center;
+    color: #adb5bd;
+    padding: 20px;
+}
+
+.place-photo-placeholder i {
+    font-size: 48px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.place-photo-placeholder span {
+    display: block;
+    font-size: 0.9rem;
+}
+
+.place-info {
+    flex: 1;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+}
+
+.place-title {
+    color: #2d3748;
+    font-size: 1.5rem;
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.place-categories {
+    margin-bottom: 15px;
+}
+
+.place-category {
+    display: inline-block;
+    background: #3E3F38;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.place-description {
+    color: #4a5568;
+    line-height: 1.6;
+    margin: 0 0 15px 0;
+    flex-grow: 1;
+    font-size: 1rem;
+}
+
+.place-details {
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid #edf2f7;
+}
+
+.place-address,
+.place-timetable {
+    display: flex;
+    align-items: center;
+    color: #718096;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+}
+
+.place-address i,
+.place-timetable i {
+    width: 20px;
+    margin-right: 10px;
+    color: #a0aec0;
+}
+
+.place-actions {
+    margin-top: 20px;
+}
+
+.place-actions .btn-primary {
+    background: linear-gradient(90deg, #5a5b52 0%, #3E3F38 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    text-decoration: none;
+}
+
+.place-actions .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(62, 63, 56, 0.3);
+}
+
+/* ========== МЕДИА-ЗАПРОСЫ ========== */
+
+/* Очень широкие экраны (от 1441px) */
+@media (min-width: 1441px) {
+    .test-container {
+        max-width: 1200px;
+        margin: 80px auto;
+    }
+    .test-header {
+        padding: 40px;
+    }
+    .test-header h1 {
+        font-size: 2.5rem;
+    }
+    .test-header p {
+        font-size: 1.3rem;
+    }
+    .question-text {
+        font-size: 1.8rem;
+    }
+    .option-text {
+        font-size: 1.3rem;
+    }
+    .btn-next {
+        font-size: 1.3rem;
+        padding: 14px 40px;
+    }
+    .results-container h2 {
+        font-size: 2.2rem;
+    }
+    .place-title {
+        font-size: 1.8rem;
+    }
+    .place-description {
+        font-size: 1.1rem;
+    }
+    .place-address,
+    .place-timetable {
+        font-size: 1rem;
+    }
+}
+
+/* От 1025px до 1440px — оставляем базовые стили (они уже заданы) */
+/* Но можно добавить небольшие корректировки при необходимости */
+
+/* До 1024px (планшеты landscape) */
+@media (max-width: 1024px) {
+    .test-container {
+        max-width: 95%;
+        margin: 40px auto;
+    }
+    .test-header {
+        padding: 25px;
+    }
+    .test-header h1 {
+        font-size: 1.8rem;
+    }
+    .test-header p {
+        font-size: 1rem;
+    }
+    .question-container {
+        padding: 25px;
+    }
+    .question-text {
+        font-size: 1.3rem;
+    }
+    .place-photo-container {
+        flex: 0 0 280px;
+        max-width: 280px;
+    }
+    .place-info {
+        padding: 20px;
+    }
+    .place-title {
+        font-size: 1.4rem;
+    }
+}
+
+/* До 992px */
+@media (max-width: 992px) {
+    .test-container {
+        margin: 30px auto;
+    }
+    .test-header h1 {
+        font-size: 1.7rem;
+    }
+    .question-text {
+        font-size: 1.25rem;
+    }
+    .option-card {
+        padding: 12px;
+    }
+    .option-text {
+        font-size: 1rem;
+    }
+    .btn-next {
+        font-size: 1rem;
+        padding: 10px 25px;
+    }
+    .place-photo-container {
+        flex: 0 0 260px;
+        max-width: 260px;
+    }
+}
+
+/* До 768px (планшеты вертикально) */
+@media (max-width: 768px) {
+    .test-header {
+        padding: 20px;
+    }
+    .test-header h1 {
+        font-size: 1.5rem;
+    }
+    .test-header p {
+        font-size: 0.95rem;
+    }
+    .question-container {
+        padding: 20px;
+    }
+    .question-text {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+    }
+    .option-card {
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+    .option-checkbox {
+        width: 18px;
+        height: 18px;
+        margin-right: 12px;
+    }
+    .btn-back {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+    .results-container {
+        padding: 20px;
+    }
+    .results-container h2 {
+        font-size: 1.5rem;
+    }
+
+    /* перестраиваем карточку места */
+    .place-card-inner {
+        flex-direction: column;
+    }
+    .place-photo-container {
+        flex: 0 0 200px;
+        max-width: 100%;
+        width: 100%;
+    }
+    .place-info {
+        padding: 20px;
+    }
+    .place-title {
+        font-size: 1.3rem;
+    }
+    .place-description {
+        font-size: 0.95rem;
+    }
+    .place-address,
+    .place-timetable {
+        font-size: 0.9rem;
+    }
+}
+
+/* До 576px (смартфоны крупные) */
+@media (max-width: 576px) {
+    .test-container {
+        border-radius: 12px;
+        margin: 20px auto;
+    }
+    .test-header {
+        padding: 20px 15px;
+    }
+    .test-header h1 {
+        font-size: 1.4rem;
+    }
+    .test-header p {
+        font-size: 0.9rem;
+    }
+    .question-container {
+        padding: 20px 15px;
+    }
+    .question-text {
+        font-size: 1.1rem;
+        margin-bottom: 18px;
+    }
+    .option-card {
+        padding: 10px;
+    }
+    .option-checkbox {
+        width: 18px;
+        height: 18px;
+        margin-right: 10px;
+    }
+    .option-text {
+        font-size: 0.95rem;
+    }
+    .btn-next {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 1rem;
+    }
+    .test-navigation {
+        text-align: left;
+        margin-bottom: 10px;
+    }
+    .btn-back {
+        padding: 8px 14px;
+        font-size: 14px;
+    }
+    .results-container {
+        padding: 20px 15px;
+    }
+    .results-container h2 {
+        font-size: 1.4rem;
+        margin-bottom: 20px;
+    }
+    .place-card {
+        margin-bottom: 20px;
+    }
+    .place-photo-container {
+        flex: 0 0 180px;
+    }
+    .place-info {
+        padding: 15px;
+    }
+    .place-title {
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+    }
+    .place-category {
+        font-size: 0.75rem;
+        padding: 4px 12px;
+    }
+    .place-description {
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+    }
+    .place-address,
+    .place-timetable {
+        font-size: 0.85rem;
+    }
+    .place-actions .btn-primary {
+        padding: 8px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+/* До 500px */
+@media (max-width: 500px) {
+    .test-header h1 {
+        font-size: 1.4rem;
+    }
+    .results-container h2 {
+        font-size: 1.4rem;
+    }
+    .test-header p {
+        font-size: 0.85rem;
+    }
+    .question-text {
+        font-size: 1rem;
+    }
+    .option-card {
+        padding: 8px;
+    }
+    .option-checkbox {
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+    }
+    .option-text {
+        font-size: 0.9rem;
+    }
+    .btn-next {
+        font-size: 0.95rem;
+        padding: 10px 15px;
+    }
+    .place-title {
+        font-size: 1.1rem;
+    }
+    .place-photo-container {
+        flex: 0 0 160px;
+    }
+    .place-category {
+        font-size: 0.7rem;
+        padding: 3px 10px;
+    }
+}
+
+/* До 425px */
+@media (max-width: 425px) {
+    .test-header {
+        padding: 15px 10px;
+    }
+    .test-header h1 {
+        font-size: 1.3rem;
+    }
+    .results-container h2 {
+        font-size: 1.3rem;
+    }
+    .test-header p {
+        font-size: 0.8rem;
+    }
+    .question-container {
+        padding: 15px 10px;
+    }
+    .question-text {
+        font-size: 1rem;
+        margin-bottom: 15px;
+    }
+    .option-card {
+        padding: 8px 6px;
+    }
+    .option-checkbox {
+        width: 16px;
+        height: 16px;
+        margin-right: 6px;
+    }
+    .option-text {
+        font-size: 0.85rem;
+    }
+    .btn-next {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+    .place-photo-container {
+        flex: 0 0 140px;
+    }
+    .place-info {
+        padding: 12px;
+    }
+    .place-title {
+        font-size: 1rem;
+    }
+    .place-description {
+        font-size: 0.85rem;
+    }
+    .place-address,
+    .place-timetable {
+        font-size: 0.8rem;
+    }
+}
+
+/* До 375px */
+@media (max-width: 375px) {
+    .test-header h1 {
+        font-size: 1.2rem;
+    }
+    .results-container h2 {
+        font-size: 1.2rem;
+    }
+    .test-header p {
+        font-size: 0.75rem;
+    }
+    .question-text {
+        font-size: 0.95rem;
+    }
+    .option-text {
+        font-size: 0.8rem;
+    }
+    .btn-next {
+        font-size: 0.85rem;
+        padding: 8px;
+    }
+    .place-photo-container {
+        flex: 0 0 120px;
+    }
+    .place-title {
+        font-size: 0.95rem;
+    }
+    .place-description {
+        font-size: 0.8rem;
+    }
+}
+
+/* До 360px (самые маленькие) */
+@media (max-width: 360px) {
+    .test-header h1 {
+        font-size: 1.2rem;
+    }
+    .results-container h2 {
+        font-size: 1.2rem;
+    }
+    .test-header p {
+        font-size: 0.7rem;
+    }
+    .question-text {
+        font-size: 0.9rem;
+    }
+    .option-text {
+        font-size: 0.75rem;
+    }
+    .btn-next {
+        font-size: 0.8rem;
+        padding: 8px 5px;
+    }
+    .place-photo-container {
+        flex: 0 0 100px;
+    }
+    .place-title {
+        font-size: 0.9rem;
+    }
+    .place-category {
+        font-size: 0.65rem;
+        padding: 2px 8px;
+    }
+    .place-description {
+        font-size: 0.75rem;
+    }
+}

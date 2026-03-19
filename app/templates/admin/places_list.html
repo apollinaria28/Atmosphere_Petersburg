@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление местами | Админ-панель</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap&subset=cyrillic" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='adapt/place_list_adapt.css') }}">
+    <style>
+        /* дополнительные стили только для этой страницы */
+        .place-photo {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .no-photo {
+            width: 60px;
+            height: 60px;
+            background: #e9ecef;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #adb5bd;
+        }
+    </style>
+</head>
+<body>
+<!-- Десктопный сайдбар -->
+<div class="sidebar">
+    <div class="sidebar-brand">Админ-панель</div>
+    <div class="sidebar-user">
+        <div class="user-name">{{ current_user.get_display_name() }}</div>
+        <div class="user-email">{{ current_user.email }}</div>
+    </div>
+    <ul class="sidebar-nav">
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.dashboard') }}" class="sidebar-nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                Главная
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.places_list') }}" class="sidebar-nav-link {% if active_page == 'places' %}active{% endif %}">
+                Редактировать места
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.suggestions') }}" class="sidebar-nav-link {% if active_page == 'suggestions' %}active{% endif %}">
+                Предложения мест
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('admin.reports') }}" class="sidebar-nav-link {% if active_page == 'reports' %}active{% endif %}">
+                Сообщения об ошибках
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-nav-link text-danger">
+                Выйти
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Бургер-кнопка для мобильных -->
+<button class="navbar-toggler" type="button" aria-label="Toggle navigation" id="mobile-menu-toggle">
+    <span class="navbar-toggler-icon"></span>
+</button>
+
+
+<!-- Мобильное меню -->
+<div class="navbar-mobile-content" id="mobile-menu">
+
+    <div class="mobile-user-info">
+        <div class="mobile-user-name">{{ current_user.get_display_name() }}</div>
+        <div class="mobile-user-email">{{ current_user.email }}</div>
+    </div>
+    <ul class="mobile-nav-links">
+        <li><a href="{{ url_for('admin.dashboard') }}" class="mobile-nav-link">Главная</a></li>
+        <li><a href="{{ url_for('admin.places_list') }}" class="mobile-nav-link">Редактировать места</a></li>
+        <li><a href="{{ url_for('admin.suggestions') }}" class="mobile-nav-link">Предложения мест</a></li>
+        <li><a href="{{ url_for('admin.reports') }}" class="mobile-nav-link">Сообщения об ошибках</a></li>
+    </ul>
+    <a href="{{ url_for('auth.logout') }}" class="mobile-logout-link">Выйти</a>
+</div>
+
+
+
+<div class="main-content">
+    <h1 class="mb-4">Редактирование мест</h1>
+
+    <!-- Карточка поиска -->
+    <div class="filter-card">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-8">
+                <label class="form-label fw-semibold"><i class="fas fa-search me-1"></i>Поиск по названию или адресу</label>
+                <div class="input-group">
+                    <input type="text" id="search-input" class="form-control form-control-custom" placeholder="Введите название или адрес...">
+                    <button class="btn btn-custom-primary" id="search-btn"><i class="fas fa-search"></i> Найти</button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-custom-outline w-100" id="reset-filters"><i class="fas fa-undo me-1"></i>Сбросить поиск</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица мест -->
+    <div class="card-custom p-0">
+        <div id="loading" class="text-center py-5">
+            <div class="spinner-border" style="color: #3E3F38;" role="status"></div>
+            <p class="mt-2 text-muted">Загрузка мест...</p>
+        </div>
+
+        <div id="places-table-wrapper" style="display: none;">
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                    <tr><th>ID</th><th>Фото</th><th>Название</th><th>Адрес</th><th>Обновлено</th><th>Действия</th></tr>
+                    </thead>
+                    <tbody id="places-table-body"></tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                <div class="text-muted small" id="pagination-info"></div>
+                <nav id="pagination" class="pagination-custom"></nav>
+            </div>
+        </div>
+
+        <div id="no-places" class="text-center py-5" style="display: none;">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h5 class="fw-normal">Места не найдены</h5>
+            <p class="text-muted">Попробуйте изменить поисковый запрос</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let currentPage = 1;
+    let searchQuery = '';
+
+    $(document).ready(function() {
+        const $toggle = $('#mobile-menu-toggle');
+        const $menu = $('#mobile-menu');
+
+        function openMenu() {
+            $toggle.attr('aria-expanded', 'true');
+            $menu.addClass('show');
+            $('body').css('overflow', 'hidden');
+        }
+
+        function closeMenu() {
+            $toggle.attr('aria-expanded', 'false');
+            $menu.removeClass('show');
+            $('body').css('overflow', '');
+        }
+
+        $toggle.on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if ($menu.hasClass('show')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+
+        // Закрытие при клике вне меню
+        $(document).on('click', function(e) {
+            if ($menu.hasClass('show') &&
+                !$menu.is(e.target) &&
+                $menu.has(e.target).length === 0 &&
+                !$toggle.is(e.target) &&
+                $toggle.has(e.target).length === 0) {
+                closeMenu();
+            }
+        });
+
+        // Закрытие по Esc
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape' && $menu.hasClass('show')) {
+                closeMenu();
+            }
+        });
+
+        loadPlaces();
+
+        $('#search-btn').click(function() {
+            searchQuery = $('#search-input').val().trim();
+            currentPage = 1;
+            loadPlaces();
+        });
+
+        $('#search-input').keypress(function(e) {
+            if (e.which === 13) $('#search-btn').click();
+        });
+
+        $('#reset-filters').click(function() {
+            $('#search-input').val('');
+            searchQuery = '';
+            currentPage = 1;
+            loadPlaces();
+        });
+
+        $(document).on('click', '.page-link', function(e) {
+            e.preventDefault();
+            const page = $(this).data('page');
+            if (page) { currentPage = page; loadPlaces(); }
+        });
+    });
+
+    function loadPlaces() {
+        $('#loading').show(); $('#places-table-wrapper').hide(); $('#no-places').hide();
+        $.ajax({
+            url: '/api/admin/places',
+            data: { page: currentPage, search: searchQuery },
+            success: function(response) {
+                if (response.success) renderPlaces(response.places, response.pagination);
+                else showNotification('Ошибка загрузки: ' + response.error, 'danger');
+            },
+            error: function() { showNotification('Ошибка сервера при загрузке', 'danger'); },
+            complete: function() { $('#loading').hide(); }
+        });
+    }
+
+    function renderPlaces(places, pagination) {
+        if (places.length === 0) {
+            $('#no-places').show(); $('#places-table-wrapper').hide(); $('#pagination').empty(); $('#pagination-info').empty();
+            return;
+        }
+        $('#no-places').hide(); $('#places-table-wrapper').show();
+
+        let html = '';
+        places.forEach(place => {
+            let photoHtml = place.main_photo_url
+                ? `<img src="${escapeHtml(place.main_photo_url)}" class="place-photo" onerror="this.src='/static/img/no-image.png';">`
+                : `<div class="no-photo"><i class="fas fa-image"></i></div>`;
+
+            const date = place.updated_at ? new Date(place.updated_at).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric'}) : '—';
+
+            html += `<tr>
+                    <td class="fw-semibold">${place.id}</td>
+                    <td>${photoHtml}</td>
+                    <td><a href="/place/${place.id}" target="_blank" class="text-reset text-decoration-none fw-semibold">${escapeHtml(place.title || 'Без названия')}</a></td>
+                    <td>${escapeHtml(place.address || '')}</td>
+                    <td class="text-muted small">${date}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/admin/place/${place.id}" class="btn-icon-only" title="Редактировать"><i class="fas fa-edit"></i></a>
+                            <a href="/place/${place.id}" target="_blank" class="btn-icon-only" title="Перейти на сайт"><i class="fas fa-external-link-alt"></i></a>
+                        </div>
+                    </td>
+                </tr>`;
+        });
+        $('#places-table-body').html(html);
+        renderPagination(pagination);
+    }
+
+    function renderPagination(p) {
+        const from = (p.page - 1) * p.per_page + 1;
+        const to = Math.min(p.page * p.per_page, p.total);
+        $('#pagination-info').text(`Показано ${from}–${to} из ${p.total} мест`);
+
+        let pagHtml = '<ul class="pagination">';
+        pagHtml += p.has_prev ? `<li class="page-item"><a class="page-link" href="#" data-page="${p.page-1}">&laquo;</a></li>` : '<li class="page-item disabled"><span class="page-link">&laquo;</span></li>';
+
+        let start = Math.max(1, p.page - 2);
+        let end = Math.min(p.total_pages, start + 4);
+        for (let i = start; i <= end; i++) {
+            pagHtml += `<li class="page-item ${i === p.page ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+        }
+
+        pagHtml += p.has_next ? `<li class="page-item"><a class="page-link" href="#" data-page="${p.page+1}">&raquo;</a></li>` : '<li class="page-item disabled"><span class="page-link">&raquo;</span></li>';
+        pagHtml += '</ul>';
+        $('#pagination').html(pagHtml);
+    }
+
+    function showNotification(message, type) {
+        const icon = type === 'success' ? 'fa-check-circle' : (type === 'danger' ? 'fa-exclamation-circle' : 'fa-info-circle');
+        const html = `<div class="alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 shadow" style="z-index: 9999; min-width:300px;">
+                <i class="fas ${icon} me-2"></i> ${escapeHtml(message)}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`;
+        $('body').append(html);
+        setTimeout(() => $('.alert').alert('close'), 4000);
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return String(text).replace(/[&<>"]/g, function(m) {
+            if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; if (m === '"') return '&quot;';
+            return m;
+        });
+    }
+</script>
+</body>
+</html>

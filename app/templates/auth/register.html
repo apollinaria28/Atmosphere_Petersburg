@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация | Атмосфера Петербурга</title>
+
+   <meta name="description" content="Не знаете, куда пойти в Петербурге? Находите интересные места, стройте маршруты и открывайте город по-новому.">
+    <meta name="keywords" content="места Санкт-Петербург, куда сходить в Петербурге, интересные места СПб, прогулки по Петербургу, 
+    маршруты по СПб, что посмотреть в Санкт-Петербурге, кафе Петербург, парки СПб, достопримечательности Петербурга, куда пойти в Питере, Питер, куда сходить спб, спб, куда идти, улицы питера, куда пойти питер, места">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='auth/register.css') }}">
+</head>
+<body>
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <!-- <h1>Петербургская Атмосфера</h1> -->
+            <p>Скорее зарегистрируйся, чтобы не упустить интересные места СПБ</p>
+        </div>
+
+        <div class="auth-body">
+            <div class="text-center mb-4">
+                <!-- <div class="auth-logo">
+                    <i class="fas fa-user-plus"></i>
+                </div> -->
+                <h2>Создать аккаунт</h2>
+                <p class="text-muted">Заполните форму ниже для регистрации</p>
+            </div>
+
+            <!-- ШАГ 1: Форма регистрации -->
+            <form id="registerForm">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email *</label>
+                    <input type="email" class="form-control" id="email" name="email"
+                           placeholder="ваш@email.com" required>
+                    <div class="form-text">Мы ни с кем не делимся вашим email</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="username" class="form-label">Имя пользователя (опционально)</label>
+                    <input type="text" class="form-control" id="username" name="username"
+                           placeholder="ivan_petrov">
+                    <div class="form-text">Уникальное имя для входа, если не укажете - будет использоваться email</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Пароль *</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="password" name="password"
+                               placeholder="Не менее 6 символов" required minlength="6">
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="form-text">Минимум 6 символов, рекомендуем использовать буквы и цифры</div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="confirm_password" class="form-label">Подтвердите пароль *</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password"
+                               placeholder="Повторите пароль" required minlength="6">
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="form-text">Пароли должны совпадать</div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="terms" required>
+                        <label class="form-check-label" for="terms">
+                            Я согласен с <a href="/static/doc/privacy_policy.pdf" >политикой конфиденциальности</a>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-auth" id="registerButton">
+                    <span id="buttonText">Создать аккаунт</span>
+                    <span id="loadingSpinner" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+            </form>
+
+            <!-- ШАГ 2: Подтверждение кода (изначально скрыт) -->
+            <div id="verifyStep" style="display: none;">
+                <h4 class="text-center mb-3">Подтверждение email</h4>
+                <p class="text-center text-muted">Мы отправили код на <strong id="verifyEmail"></strong></p>
+                <form id="verifyForm">
+                    <div class="mb-3">
+                        <label for="code" class="form-label">Введите 6-значный код</label>
+                        <input type="text" class="form-control text-center" id="code" maxlength="6" placeholder="000000" required>
+                    </div>
+                    <button type="submit" class="btn-auth" id="verifyButton">
+                        <span id="verifyButtonText">Подтвердить</span>
+                        <span id="verifyLoadingSpinner" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                </form>
+                <div class="text-center mt-3">
+                    <button class="btn btn-link" id="resendCodeBtn">Отправить код повторно</button>
+                </div>
+                <div class="text-center mt-2">
+                    <a href="#" onclick="showStep1()" class="text-muted small">← Вернуться к регистрации</a>
+                </div>
+            </div>
+
+            <!-- Ссылки внизу (видны всегда) -->
+            <div class="auth-footer">
+                Уже есть аккаунт? <a href="/login">Войти</a>
+                <div class="mt-3">
+                    <a href="/" class="text-muted">
+                        <i class="fas fa-arrow-left"></i> Вернуться на главную
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для сообщений -->
+<div class="modal fade" id="messageModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Уведомление</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalMessage">
+                Сообщение
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Функция показа/скрытия пароля
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const icon = field.nextElementSibling.querySelector('i');
+
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // Функция показа сообщения в модалке
+    // Функция показа сообщения в модалке
+    function showMessage(title, message, type = 'info') {
+        $('#modalTitle').text(title);
+        $('#modalMessage').text(message);
+
+        const modalHeader = $('.modal-header');
+        modalHeader.removeClass('bg-success bg-danger bg-warning bg-info text-white text-dark');
+
+        switch(type) {
+            case 'success':
+                modalHeader.addClass('bg-success text-white');
+                break;
+            case 'error':
+                modalHeader.addClass('bg-danger text-white');
+                break;
+            case 'warning':
+                modalHeader.addClass('bg-warning text-dark');
+                break;
+            default:
+                modalHeader.addClass('bg-info text-white');
+        }
+
+        const modal = new bootstrap.Modal(document.getElementById('messageModal'));
+        modal.show();
+
+        // Автоматически скрываем успешные сообщения через 2 секунды
+        if (type === 'success') {
+            setTimeout(() => {
+                modal.hide();
+            }, 2000);
+        }
+    }
+
+    // Переключение между шагами
+    // Переключение между шагами
+    function showStep1() {
+        $('#registerForm').show();
+        $('.text-center.mb-4').show();        // показать логотип и заголовки
+        $('.auth-footer').show();              // показать ссылки внизу
+        $('#verifyStep').hide();
+        $('.text-center.mt-2').hide();
+    }
+
+    function showStep2(email) {
+        $('#verifyEmail').text(email);
+        $('#registerForm').hide();
+        $('.text-center.mb-4').hide();        // скрыть логотип и заголовки
+        $('.auth-footer').hide();              // скрыть ссылки внизу
+        $('#verifyStep').show();
+        $('#code').val('').focus();
+        $('.text-center.mt-2').show();
+    }
+
+    // Глобальная переменная для хранения email
+    let currentEmail = '';
+
+    $(document).ready(function() {
+        // Обработка формы регистрации (шаг 1)
+        $('#registerForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const email = $('#email').val().trim();
+            const username = $('#username').val().trim();
+            const password = $('#password').val();
+            const confirmPassword = $('#confirm_password').val();
+
+            // Валидация
+            if (!email || !password || !confirmPassword) {
+                showMessage('Ошибка', 'Заполните все обязательные поля', 'error');
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showMessage('Ошибка', 'Введите корректный email', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('Ошибка', 'Пароль должен содержать минимум 6 символов', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showMessage('Ошибка', 'Пароли не совпадают', 'error');
+                return;
+            }
+
+            if (!$('#terms').is(':checked')) {
+                showMessage('Ошибка', 'Необходимо принять условия использования', 'error');
+                return;
+            }
+
+            // Показываем загрузку
+            $('#buttonText').hide();
+            $('#loadingSpinner').show();
+            $('#registerButton').prop('disabled', true);
+
+            // Отправляем запрос
+            $.ajax({
+                url: '/api/register',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    email: email,
+                    username: username || null,
+                    password: password
+                }),
+                success: function(response) {
+                    $('#buttonText').show();
+                    $('#loadingSpinner').hide();
+                    $('#registerButton').prop('disabled', false);
+
+                    if (response.success) {
+                        currentEmail = email;
+                        showMessage('Успех', response.message, 'success');
+                        // Переходим ко второму шагу
+                        showStep2(email);
+                    } else {
+                        showMessage('Ошибка', response.error, 'error');
+                    }
+                },
+                error: function() {
+                    showMessage('Ошибка', 'Произошла ошибка при регистрации. Попробуйте позже.', 'error');
+                    $('#buttonText').show();
+                    $('#loadingSpinner').hide();
+                    $('#registerButton').prop('disabled', false);
+                }
+            });
+        });
+
+        // Обработка формы подтверждения кода (шаг 2)
+        $('#verifyForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const code = $('#code').val().trim();
+            if (!code || code.length !== 6) {
+                showMessage('Ошибка', 'Введите 6-значный код', 'error');
+                return;
+            }
+
+            // Показываем загрузку
+            $('#verifyButtonText').hide();
+            $('#verifyLoadingSpinner').show();
+            $('#verifyButton').prop('disabled', true);
+
+            $.ajax({
+                url: '/api/verify-email',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    email: currentEmail,
+                    code: code
+                }),
+                success: function(response) {
+                    $('#verifyButtonText').show();
+                    $('#verifyLoadingSpinner').hide();
+                    $('#verifyButton').prop('disabled', false);
+
+                    if (response.success) {
+                        showMessage('Успех!', response.message, 'success');
+                        setTimeout(() => {
+                            window.location.href = '/profile';
+                        }, 1500);
+                    } else {
+                        showMessage('Ошибка', response.error, 'error');
+                        $('#code').val('').focus();
+                    }
+                },
+                error: function() {
+                    showMessage('Ошибка', 'Не удалось проверить код. Попробуйте позже.', 'error');
+                    $('#verifyButtonText').show();
+                    $('#verifyLoadingSpinner').hide();
+                    $('#verifyButton').prop('disabled', false);
+                }
+            });
+        });
+
+        // Повторная отправка кода
+        $('#resendCodeBtn').on('click', function() {
+            if (!currentEmail) return;
+
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Отправка...');
+
+            $.ajax({
+                url: '/api/resend-code',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ email: currentEmail }),
+                success: function(response) {
+                    $('#resendCodeBtn').prop('disabled', false).text('Отправить код повторно');
+                    if (response.success) {
+                        showMessage('Код отправлен', response.message, 'success');
+                    } else {
+                        showMessage('Ошибка', response.error, 'error');
+                    }
+                },
+                error: function() {
+                    $('#resendCodeBtn').prop('disabled', false).text('Отправить код повторно');
+                    showMessage('Ошибка', 'Не удалось отправить код. Попробуйте позже.', 'error');
+                }
+            });
+        });
+
+        // Автофокус на email
+        $('#email').focus();
+    });
+</script>
+</body>
+</html>

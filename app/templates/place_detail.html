@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ place.title }} - Места Петербурга</title>
+
+    <meta name="description" content="Не знаете, куда пойти в Петербурге? Находите интересные места, стройте маршруты и открывайте город по-новому.">
+    <meta name="keywords" content="места Санкт-Петербург, куда сходить в Петербурге, интересные места СПб, прогулки по Петербургу, 
+    маршруты по СПб, что посмотреть в Санкт-Петербурге, кафе Петербург, парки СПб, достопримечательности Петербурга, куда пойти в Питере, Питер, куда сходить спб, спб, куда идти, улицы питера, куда пойти питер, места">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='place_detail.css') }}">
+    
+    <!-- Leaflet для карты -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* ===== МОДАЛКА-УВЕДОМЛЕНИЕ ===== */
+.info-modal-content {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+    overflow: hidden;
+    font-family: 'Montserrat', sans-serif;
+}
+.info-modal-icon {
+    font-size: 2.4rem;
+    margin-bottom: 10px;
+    line-height: 1;
+}
+.info-modal-text {
+    font-size: .93rem;
+    font-weight: 500;
+    color: #3E3F38;
+    line-height: 1.55;
+}
+.info-modal-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    background: #3E3F38;
+    color: #fff;
+    border: none;
+    border-radius: 40px;
+    padding: .55rem 1.4rem;
+    font-size: .88rem;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .2s, transform .15s;
+}
+.info-modal-btn-primary:hover {
+    background: #2d2e2a;
+    color: #fff;
+    transform: translateY(-1px);
+}
+.info-modal-btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f3f5;
+    color: #495057;
+    border: 1.5px solid #dee2e6;
+    border-radius: 40px;
+    padding: .55rem 1.4rem;
+    font-size: .88rem;
+    font-weight: 500;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .2s;
+    margin-left: 8px;
+}
+.info-modal-btn-cancel:hover { background: #e9ecef; color: #495057; }
+</style>
+</head>
+<body>
+
+<!-- Модальное окно для просмотра фото (оригинальное) -->
+<div class="modal fade" id="photoModal" tabindex="-1">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close btn-close-large" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <button class="modal-nav-btn" id="prevBtn" onclick="prevPhotoModal()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="modal-nav-btn" id="nextBtn" onclick="nextPhotoModal()">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid" alt="" loading="lazy">
+            </div>
+            <div class="modal-footer border-0">
+                <span id="modalCounter" class="fw-bold photo-counter"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно-уведомление (универсальное) -->
+<div class="modal fade" id="infoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content info-modal-content">
+            <div class="modal-body text-center px-4 pt-4 pb-2">
+                <div id="infoModal-text" class="info-modal-text"></div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4 pt-2" id="infoModal-footer"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для ближайших мест (новое) -->
+<div class="modal fade" id="nearbyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ближайшие места</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; max-height: 80vh;">
+                <div id="nearby-map" style="height: 450px;"></div>
+                <div id="nearby-places-list" class="mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для добавления в маршрут (новое) -->
+<div class="modal fade" id="addToRouteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content atr-modal">
+            <div class="modal-header atr-header">
+                <div class="atr-title-wrap">
+                    <i class="fas fa-route atr-title-icon"></i>
+                    <h5 class="modal-title atr-title">Добавить в маршрут</h5>
+                </div>
+                <button type="button" class="btn-close atr-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body atr-body">
+
+                <!-- Секция: существующие маршруты -->
+                <div class="atr-section">
+                    <div class="atr-section-label">Выберите маршрут</div>
+                    <!-- Скрытый select (используется для совместимости с JS) -->
+                    <select id="existing-route-select" style="display:none;"></select>
+                    <!-- Кастомный дропдаун -->
+                    <div class="atr-dropdown" id="atr-dropdown">
+                        <button type="button" class="atr-dropdown-trigger" id="atr-trigger">
+                            <span id="atr-trigger-text">Выберите маршрут...</span>
+                            <i class="fas fa-chevron-down atr-chevron" id="atr-chevron"></i>
+                        </button>
+                        <div class="atr-dropdown-menu" id="atr-menu">
+                            <!-- Опции вставляются через JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Разделитель -->
+                <div class="atr-divider">
+                    <span>или</span>
+                </div>
+
+                <!-- Секция: новый маршрут -->
+                <div class="atr-section">
+                    <div class="atr-section-label">Создайте новый маршрут</div>
+                    <div class="atr-input-wrap">
+                        <i class="fas fa-plus atr-input-icon"></i>
+                        <input type="text"
+                               class="atr-input"
+                               id="new-route-name"
+                               placeholder="Название маршрута...">
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer atr-footer">
+                <button type="button" class="atr-btn-cancel" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="atr-btn-confirm" id="confirm-add-to-route">
+                    <i class="fas fa-check me-2"></i>Добавить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Шапка с фоном-фотографией (оригинальная) -->
+<div class="place-header">
+    <div class="navbar-mobile-overlay"></div>
+    <header class="hero-section">
+        <div class="hero-overlay"></div>
+        <nav class="navbar navbar-expand-lg navbar-desktop">
+            <div class="container">
+                <button class="navbar-toggler" type="button" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-desktop-content">
+                    <div class="navbar-left">
+                        <a href="/" class="nav-link">Главная</a>
+                        <a href="/places" class="nav-link">Места</a>
+                        <a href="/favorites" class="nav-link">Избранное</a>
+                        <a href="/visited" class="nav-link">Уже посещал</a>
+                        <a href="/routes" class="nav-link">Маршруты</a>
+                        <a href="/suggest" class="nav-link">Предложить место</a>
+                    </div>
+                    <div class="navbar-right">
+                        <div class="user-menu">
+                            {% if current_user.is_authenticated %}
+                            <div class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center p-1" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {% if current_user.avatar_url %}
+                                    <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-circle">
+                                    {% else %}
+                                    <div class="avatar-circle-sm">
+                                        {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                    </div>
+                                    {% endif %}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li class="dropdown-header px-3 py-2">
+                                        <div class="d-flex align-items-center">
+                                            {% if current_user.avatar_url %}
+                                            <img src="{{ current_user.avatar_url }}" alt="Аватар" class="avatar-icon-sm me-2">
+                                            {% else %}
+                                            <div class="avatar-circle-xs me-2">
+                                                {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-bold">{{ current_user.username }}</div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Личный кабинет</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Выйти</a></li>
+                                </ul>
+                            </div>
+                            {% else %}
+                            <div class="auth-links">
+                                <a href="/login" class="btn-login">Войти</a>
+                                <a href="/register" class="btn-register">Регистрация</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="navbar-mobile-content" id="navbarMobileContent">
+                    <div class="mobile-menu-container">
+                        {% if current_user.is_authenticated %}
+                        <div class="mobile-user-info">
+                            <div class="mobile-user-avatar">
+                                {% if current_user.avatar_url %}
+                                <img src="{{ current_user.avatar_url }}" alt="Аватар" class="mobile-avatar-icon">
+                                {% else %}
+                                <div class="mobile-avatar-circle">
+                                    {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="mobile-user-name">
+                                {{ current_user.username }}
+                            </div>
+                            <a href="/profile" class="mobile-profile-link">
+                                <i class="fas fa-user me-2"></i>Личный кабинет
+                            </a>
+                        </div>
+                        {% endif %}
+                        <div class="mobile-nav-links">
+                            <a href="/" class="mobile-nav-link"><span class="mobile-link-text">Главная</span></a>
+                            <a href="/places" class="mobile-nav-link"><span class="mobile-link-text">Места</span></a>
+                            <a href="/favorites" class="mobile-nav-link"><span class="mobile-link-text">Избранное</span></a>
+                            <a href="/visited" class="mobile-nav-link"><span class="mobile-link-text">Уже посещал</span></a>
+                            <a href="/routes" class="mobile-nav-link"><span class="mobile-link-text">Маршруты</span></a>
+                            <a href="/suggest" class="mobile-nav-link"><span class="mobile-link-text">Предложить место</span></a>
+                        </div>
+                        <div class="mobile-auth-section">
+                            {% if current_user.is_authenticated %}
+                            <a href="/logout" class="mobile-logout-link"><i class="fas fa-sign-out-alt me-2"></i>Выйти</a>
+                            {% else %}
+                            <div class="mobile-auth-buttons">
+                                <a href="/login" class="mobile-login-btn">Войти</a>
+                                <a href="/register" class="mobile-register-btn">Регистрация</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    {% if all_photos and all_photos|length > 0 %}
+    <img src="{{ all_photos[0].url }}" class="place-header-bg" alt="{{ place.title }}">
+    {% endif %}
+
+    <div class="container place-header-content">
+        <nav aria-label="breadcrumb" class="mt-3 mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Главная</a></li>
+                {% set breadcrumb_map = {
+                    'favorites': {'url': '/favorites', 'name': 'Избранное'},
+                    'visited':   {'url': '/visited',   'name': 'Посещённые'},
+                    'test':      {'url': '/test',      'name': 'Тест'},
+                    'places':    {'url': '/places',    'name': 'Места'},
+                    'routes':    {'url': '/routes',    'name': 'Маршруты'}
+                } %}
+                {% if from_page == 'nearby' and back_place %}
+                <li class="breadcrumb-item">
+                    <a href="/place/{{ back_place.id }}?open_nearby=1">{{ back_place.title }}</a>
+                </li>
+                {% elif from_page and from_page != 'index' and from_page in breadcrumb_map %}
+                <li class="breadcrumb-item"><a href="{{ breadcrumb_map[from_page].url }}">{{ breadcrumb_map[from_page].name }}</a></li>
+                {% elif not from_page or from_page == 'places' %}
+                <li class="breadcrumb-item"><a href="/places">Места</a></li>
+                {% endif %}
+                <li class="breadcrumb-item" aria-current="page">{{ place.title }}</li>
+            </ol>
+        </nav>
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="display-5 mb-3 text-white">{{ place.title }}</h1>
+                {% if place.address %}
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-map-marker-alt me-2"></i><span>{{ place.address }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- БЛОК: ГАЛЛЕРЕЯ ФОТОГРАФИЙ -->
+    <section class="photo-gallery-section">
+        {% if gallery_photos and gallery_photos|length > 0 %}
+        <div class="gallery-container" id="galleryContainer">
+            <div class="gallery-track" id="galleryTrack">
+                {% for photo in gallery_photos %}
+                <div class="gallery-item" data-index="{{ loop.index0 }}">
+                    <img src="{{ photo.url }}" class="gallery-img" alt="{{ photo.description }}" loading="lazy" onclick="openPhotoModal({{ loop.index0 }})">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="no-photos">
+            <i class="fas fa-camera-slash fa-4x mb-3"></i>
+            <h4>Фотографии отсутствуют</h4>
+            <p class="text-muted">К сожалению, для этого места еще нет фотографий</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <div class="row">
+        <!-- БЛОК: ОПИСАНИЕ -->
+        <div class="col-lg-8">
+            {% if place.description %}
+            <section class="info-card mb-4">
+                <h2 class="mb-2">Описание</h2>
+                <div class="description-box">{{ place.description|safe }}</div>
+            </section>
+            {% endif %}
+            {% if clean_body_text %}
+            <section class="info-card mb-4">
+                <h2 class="mb-2">Подробное описание</h2>
+                <div class="description-box">{{ clean_body_text|safe }}</div>
+            </section>
+            {% endif %}
+        </div>
+
+        <!-- БЛОК: ИНФОРМАЦИЯ И ДЕЙСТВИЯ -->
+        <div class="col-lg-4">
+            <section class="info-card">
+                <h2 class="mb-4">Информация</h2>
+                <div class="info-row">
+                    <div class="info-label">Режим работы</div>
+                    <div class="info-value">{% if place.timetable %}{{ place.timetable }}{% else %}<span class="empty-value">Не указан</span>{% endif %}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Телефон</div>
+                    <div class="info-value">{% if place.phone %}{{ place.phone }}{% else %}<span class="empty-value">Не указан</span>{% endif %}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Адрес</div>
+                    <div class="info-value">{% if place.address %}{{ place.address }}{% else %}<span class="empty-value">Не указан</span>{% endif %}</div>
+                </div>
+                {% if subway_info and subway_info|length > 0 %}
+                <div class="info-row">
+                    <div class="info-label">Метро</div>
+                    <div class="info-value">
+                        {% for station in subway_info %}
+                        <span class="subway-badge" style="background-color: {{ station.color }};">
+                            <span class="subway-dot" style="background-color: white;"></span>
+                            {{ station.name }}
+                            {% if station.distance %}<small class="ms-1">({{ station.distance }} км)</small>{% endif %}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                {% if place.foreign_url %}
+                <div class="info-row">
+                    <div class="info-label">Сайт</div>
+                    <div class="info-value"><a href="{{ place.foreign_url }}" target="_blank" class="text-decoration-none">Перейти на сайт <i class="fas fa-external-link-alt fa-xs"></i></a></div>
+                </div>
+                {% endif %}
+            </section>
+            <!-- ГРУППА 2: внешние карты -->
+            {% if place.address or (coords_info and coords_info.lat) %}
+            <div class="map-btns-row mt-3">
+                {% if place.address %}
+                <a href="https://yandex.ru/maps/?text={{ place.address|urlencode }}" target="_blank" class="map-btn">
+                     <i class="fas fa-map-marked-alt"></i>
+                    <span>На карте</span>
+                </a>
+                {% endif %}
+                <!-- {% if coords_info and coords_info.lat and coords_info.lon %}
+                <a href="https://yandex.ru/maps/?pt={{ coords_info.lon }},{{ coords_info.lat }}&z=15" target="_blank" class="map-btn">
+                    
+                    <span>На карте</span>
+                </a>
+                {% endif %} -->
+            </div>
+            {% endif %}
+
+            <!-- ГРУППА 1: личные действия — посещено и избранное -->
+            <div class="action-group mt-3">
+                {% if current_user.is_authenticated %}
+                <div class="action-btn-wrap place-visited" data-place-id="{{ place.id }}" title="Отметить как посещенное">
+                    <i class="far fa-check-circle visited-icon action-icon"></i>
+                    <span class="action-label">Посещено</span>
+                </div>
+                <div class="action-btn-wrap place-heart" data-place-id="{{ place.id }}" title="Добавить в избранное">
+                    <i class="far fa-heart action-icon"></i>
+                    <span class="action-label">Избранное</span>
+                </div>
+                {% else %}
+                <a href="/login" class="action-btn-wrap place-visited" title="Войдите, чтобы отметить как посещенное">
+                    <i class="far fa-check-circle visited-icon action-icon"></i>
+                    <span class="action-label">Посещено</span>
+                </a>
+                <a href="/login" class="action-btn-wrap place-heart" title="Войдите, чтобы добавить в избранное">
+                    <i class="far fa-heart action-icon"></i>
+                    <span class="action-label">Избранное</span>
+                </a>
+                {% endif %}
+            </div>
+
+            
+
+            <!-- ГРУППА 3: маршруты -->
+            <div class="d-grid gap-2 mt-3">
+                <button class="btn btn-primary" id="nearby-btn" data-place-id="{{ place.id }}">
+                    <!-- <i class="fas fa-map-marker-alt me-2"></i> -->Ближайшие места
+                </button>
+                <button class="btn btn-success" id="add-to-route-btn" data-place-id="{{ place.id }}">
+                    <!-- <i class="fas fa-route me-2"></i> --> Добавить в маршрут
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-5 pt-4 border-top text-center text-muted">
+        <!-- Футер -->
+    </footer>
+        <!-- Тост: успех/ошибка -->
+    <div id="toast-wrap" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;display:none;">
+        <div id="toast-box" style="background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.18);padding:32px 48px;text-align:center;min-width:280px;">
+            <div id="toast-msg" style="font-size:1rem;font-weight:500;color:#222;font-family:'Montserrat',sans-serif;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Оригинальный скрипт (галерея, избранное, посещённое, мобильное меню) -->
+<script>
+    // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
+    const allPhotos = [{% for photo in all_photos %}{ url: "{{ photo.url }}", description: "{{ photo.description }}", type: "{{ photo.type }}" },{% endfor %}];
+    const galleryPhotos = allPhotos.filter(photo => photo.type !== 'main');
+    const totalSlides = galleryPhotos.length;
+    let modalPhotoIndex = 0;
+    let photoModal = null;
+    let isModalOpen = false;
+    let lastTap = 0;
+    let isZoomed = false;
+    let touchStartX = 0;
+    let touchEndX = 0;
+    let isMouseOverGallery = false;
+    let isDragging = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+    let wheelTimeout = null;
+
+    const placeId = {{ place.id }};
+    const isAuthenticated = {% if current_user.is_authenticated %}true{% else %}false{% endif %};
+
+    // ========== ФУНКЦИИ УВЕДОМЛЕНИЙ ==========
+    function showNotification(message, type = 'success') {
+        const notif = document.createElement('div');
+        notif.className = `notification ${type}`;
+        notif.textContent = message;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.classList.add('show'), 10);
+        setTimeout(() => {
+            notif.classList.remove('show');
+            setTimeout(() => notif.remove(), 300);
+        }, 2000);
+    }
+
+    // ========== ФУНКЦИИ ДЛЯ ИЗБРАННОГО И ПОСЕЩЁННОГО ==========
+    function toggleFavorite(placeId, element) {
+        if (!isAuthenticated) { window.location.href = '/login'; return; }
+        const heart = element;
+        heart.classList.toggle('active');
+        const icon = heart.querySelector('i');
+        icon.classList.toggle('far');
+        icon.classList.toggle('fas');
+        const isNowActive = heart.classList.contains('active');
+        fetch('/api/favorites/toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ place_id: placeId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                heart.classList.toggle('active');
+                icon.classList.toggle('far');
+                icon.classList.toggle('fas');
+                showNotification('Ошибка при сохранении', 'error');
+            } else {
+                showNotification(isNowActive ? 'Добавлено в избранное' : 'Удалено из избранного', 'success');
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            heart.classList.toggle('active');
+            icon.classList.toggle('far');
+            icon.classList.toggle('fas');
+            showNotification('Ошибка соединения', 'error');
+        });
+    }
+
+    function toggleVisited(placeId, element) {
+        if (!isAuthenticated) { window.location.href = '/login'; return; }
+        const visited = element;
+        visited.classList.toggle('active');
+        const icon = visited.querySelector('i');
+        icon.classList.toggle('far');
+        icon.classList.toggle('fas');
+        const isNowActive = visited.classList.contains('active');
+        fetch('/api/visited/toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ place_id: placeId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                visited.classList.toggle('active');
+                icon.classList.toggle('far');
+                icon.classList.toggle('fas');
+                showNotification('Ошибка при сохранении', 'error');
+            } else {
+                showNotification(isNowActive ? 'Добавлено в уже посещённое' : 'Удалено из посещённого', 'success');
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            visited.classList.toggle('active');
+            icon.classList.toggle('far');
+            icon.classList.toggle('fas');
+            showNotification('Ошибка соединения', 'error');
+        });
+    }
+
+    function loadInitialStatus() {
+        if (!isAuthenticated) return;
+        fetch(`/api/favorites/status?place_ids=${placeId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.favorites.includes(placeId)) {
+                    const heart = document.querySelector('.place-heart:not([href])');
+                    if (heart) {
+                        heart.classList.add('active');
+                        heart.querySelector('i').classList.remove('far');
+                        heart.querySelector('i').classList.add('fas');
+                    }
+                }
+            })
+            .catch(err => console.error('Ошибка загрузки статуса избранного:', err));
+        fetch(`/api/visited/status?place_ids=${placeId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.visited.includes(placeId)) {
+                    const visited = document.querySelector('.place-visited:not([href])');
+                    if (visited) {
+                        visited.classList.add('active');
+                        visited.querySelector('i').classList.remove('far');
+                        visited.querySelector('i').classList.add('fas');
+                    }
+                }
+            })
+            .catch(err => console.error('Ошибка загрузки статуса посещённого:', err));
+    }
+
+    // ========== ФУНКЦИИ ДЛЯ ГАЛЕРЕИ ==========
+    function lockBodyScroll() { if (window.innerWidth > 768) document.body.style.overflow = 'hidden'; }
+    function unlockBodyScroll() { if (window.innerWidth > 768) document.body.style.overflow = ''; }
+    function setupGallery() {
+        const galleryContainer = document.getElementById('galleryContainer');
+        const galleryTrack = document.getElementById('galleryTrack');
+        if (!galleryContainer || !galleryTrack) return;
+        galleryContainer.style.cursor = 'grab';
+        galleryContainer.addEventListener('mouseenter', () => { isMouseOverGallery = true; lockBodyScroll(); });
+        galleryContainer.addEventListener('mouseleave', () => { isMouseOverGallery = false; if (!isDragging) unlockBodyScroll(); });
+        galleryContainer.addEventListener('mousedown', (e) => { isDragging = true; startX = e.pageX; startScrollLeft = galleryContainer.scrollLeft; galleryContainer.style.cursor = 'grabbing'; e.preventDefault(); });
+        document.addEventListener('mousemove', (e) => { if (!isDragging) return; const x = e.pageX; const walk = (x - startX) * 2; galleryContainer.scrollLeft = startScrollLeft - walk; });
+        document.addEventListener('mouseup', () => { isDragging = false; galleryContainer.style.cursor = 'grab'; if (!isMouseOverGallery) unlockBodyScroll(); });
+        galleryContainer.addEventListener('wheel', (e) => { if (isMouseOverGallery) { e.preventDefault(); galleryContainer.scrollLeft += e.deltaY; clearTimeout(wheelTimeout); wheelTimeout = setTimeout(() => { if (isMouseOverGallery) lockBodyScroll(); }, 100); } }, { passive: false });
+        galleryContainer.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; startScrollLeft = galleryContainer.scrollLeft; }, { passive: true });
+        galleryContainer.addEventListener('touchmove', (e) => { if (!e.cancelable) return; const x = e.touches[0].clientX; const walk = (x - startX) * 2; galleryContainer.scrollLeft = startScrollLeft - walk; }, { passive: false });
+    }
+
+    function openPhotoModal(index) {
+        if (index < 0 || index >= totalSlides) return;
+        modalPhotoIndex = index;
+        updateModal();
+        if (photoModal) photoModal.show();
+    }
+    function updateModal() {
+        const photo = galleryPhotos[modalPhotoIndex];
+        if (!photo) return;
+        const modalImage = document.getElementById('modalImage');
+        isZoomed = false;
+        modalImage.style.transform = 'scale(1)';
+        modalImage.style.cursor = 'zoom-in';
+        modalImage.style.opacity = '0.5';
+        modalImage.src = photo.url;
+        modalImage.alt = photo.description;
+        document.getElementById('modalCounter').textContent = `${modalPhotoIndex + 1} / ${totalSlides}`;
+    }
+    function prevPhotoModal() { modalPhotoIndex = (modalPhotoIndex > 0) ? modalPhotoIndex - 1 : totalSlides - 1; updateModal(); }
+    function nextPhotoModal() { modalPhotoIndex = (modalPhotoIndex < totalSlides - 1) ? modalPhotoIndex + 1 : 0; updateModal(); }
+    function disableBodyScroll() { document.body.style.overflow = 'hidden'; document.documentElement.style.overflow = 'hidden'; isModalOpen = true; }
+    function enableBodyScroll() { document.body.style.overflow = ''; document.documentElement.style.overflow = ''; isModalOpen = false; }
+    function handleSwipe() {
+        if (!isModalOpen) return;
+        const swipeThreshold = 50;
+        if (touchEndX < touchStartX - swipeThreshold) nextPhotoModal();
+        else if (touchEndX > touchStartX + swipeThreshold) prevPhotoModal();
+    }
+    function toggleZoom() {
+        const modalImage = document.getElementById('modalImage');
+        isZoomed = !isZoomed;
+        modalImage.style.cursor = isZoomed ? 'zoom-out' : 'zoom-in';
+        modalImage.style.transform = isZoomed ? 'scale(1.5)' : 'scale(1)';
+        modalImage.style.transition = 'transform 0.3s ease';
+    }
+
+    // ========== ИНИЦИАЛИЗАЦИЯ ПОСЛЕ ЗАГРУЗКИ DOM ==========
+    document.addEventListener('DOMContentLoaded', function() {
+        loadInitialStatus();
+        const heartDiv = document.querySelector('.place-heart:not([href])');
+        if (heartDiv) heartDiv.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); toggleFavorite(placeId, this); });
+        const visitedDiv = document.querySelector('.place-visited:not([href])');
+        if (visitedDiv) visitedDiv.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); toggleVisited(placeId, this); });
+
+        if (totalSlides > 0) {
+            const modalElement = document.getElementById('photoModal');
+            if (modalElement) {
+                photoModal = new bootstrap.Modal(modalElement, { keyboard: true, backdrop: true, focus: false });
+            }
+            setupGallery();
+            document.querySelectorAll('.gallery-img').forEach(img => {
+                img.addEventListener('error', function() {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkZvdG8gbmUgemFncnV6aGVubzwvdGV4dD48L3N2Zz4=';
+                    this.onerror = null;
+                });
+            });
+        }
+
+        const photoModalElement = document.getElementById('photoModal');
+        if (photoModalElement) {
+            photoModalElement.addEventListener('show.bs.modal', disableBodyScroll);
+            photoModalElement.addEventListener('hidden.bs.modal', enableBodyScroll);
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (document.getElementById('photoModal')?.classList.contains('show')) {
+            if (e.key === 'ArrowLeft') prevPhotoModal();
+            else if (e.key === 'ArrowRight') nextPhotoModal();
+            else if (e.key === 'Escape') { if (photoModal) photoModal.hide(); }
+        }
+    });
+
+    document.addEventListener('wheel', function(e) {
+        if (!isModalOpen) return;
+        e.preventDefault(); e.stopPropagation();
+        if (e.deltaY > 0) nextPhotoModal(); else prevPhotoModal();
+    }, { passive: false });
+
+    const modalElement = document.getElementById('photoModal');
+    if (modalElement) {
+        modalElement.addEventListener('touchstart', function(e) { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+        modalElement.addEventListener('touchend', function(e) { touchEndX = e.changedTouches[0].screenX; handleSwipe(); }, { passive: true });
+    }
+
+    const modalImage = document.getElementById('modalImage');
+    if (modalImage) {
+        modalImage.addEventListener('click', function(e) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0) { toggleZoom(); e.preventDefault(); }
+            lastTap = currentTime;
+        });
+        modalImage.addEventListener('load', function() { this.style.opacity = '1'; });
+    }
+</script>
+
+<!-- Скрипт для мобильного меню (оригинальный на jQuery) -->
+<script>
+    $(document).ready(function() {
+        let isMenuOpen = false;
+        const $toggler = $('.navbar-toggler');
+        const $mobileMenu = $('.navbar-mobile-content');
+        const $overlay = $('.navbar-mobile-overlay');
+
+        function openMenu() {
+            if (isMenuOpen) return;
+            isMenuOpen = true;
+            $toggler.attr('aria-expanded', 'true');
+            $('body').css('overflow', 'hidden');
+            $overlay.css('display', 'block');
+            setTimeout(() => $overlay.css('opacity', '1'), 10);
+            $mobileMenu.css('display', 'block');
+            setTimeout(() => $mobileMenu.addClass('show'), 10);
+        }
+        function closeMenu() {
+            if (!isMenuOpen) return;
+            isMenuOpen = false;
+            $toggler.attr('aria-expanded', 'false');
+            $mobileMenu.removeClass('show');
+            setTimeout(() => $mobileMenu.css('display', 'none'), 300);
+            $overlay.css('opacity', '0');
+            setTimeout(() => { $overlay.css('display', 'none'); $('body').css('overflow', ''); }, 300);
+        }
+        $toggler.click(function(e) {
+            e.preventDefault(); e.stopPropagation();
+            !isMenuOpen ? openMenu() : closeMenu();
+        });
+        $overlay.click(function() { closeMenu(); });
+        $(document).keydown(function(e) { if (e.key === 'Escape' && isMenuOpen) closeMenu(); });
+    });
+
+    
+</script>
+
+<!-- НОВЫЙ СКРИПТ: Функционал маршрутов (ближайшие места, добавление в маршрут) -->
+<script>
+    // Координаты текущего места (из контекста)
+    const currentCoords = {
+        lat: {{ place.coords.lat | default('null') if place.coords and place.coords.lat else 'null' }},
+        lon: {{ place.coords.lon | default('null') if place.coords and place.coords.lon else 'null' }}
+    };
+
+    // Функция показа модалки с ближайшими местами
+    function showNearbyModal(places, currentCoords) {
+        const listDiv = document.getElementById('nearby-places-list');
+        if (!listDiv) return;
+    
+        // Генерация списка мест в виде карточек
+        listDiv.innerHTML = places.map(p => {
+            const photoUrl = p.main_photo_url || (p.photos && p.photos[0]?.url) || '/static/images/placeholder.jpg';
+            const description = p.description ? p.description.substring(0, 100) + '…' : 'Нет описания';
+            return `
+                <div class="card mb-3 place-card" data-place-id="${p.id}" id="place-card-${p.id}">
+                    <div class="row g-0">
+                        <div class="col-4">
+                            <img src="${photoUrl}" class="img-fluid  place-card-img" alt="${p.title}"
+                                 onerror="this.src='/static/images/placeholder.jpg'">
+                        </div>
+                        <div class="col-8">
+                            <div class="card-body py-2">
+                                <h6 class="card-title">${p.title}</h6>
+                                <p class="card-text small">${description}</p>
+                                <p class="card-text"><small class="text-muted">${p.distance} м</small></p>
+                                <button class="btn btn-sm add-place-from-list" data-place-id="${p.id}">Добавить в маршрут</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+    
+        const modalEl = document.getElementById('nearbyModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    
+        modalEl.addEventListener('shown.bs.modal', function initMap() {
+            modalEl.removeEventListener('shown.bs.modal', initMap);
+
+            // Уничтожаем старую карту если есть
+            if (window._nearbyMap) {
+                window._nearbyMap.remove();
+                window._nearbyMap = null;
+            }
+
+            // Пересоздаём div карты чтобы Leaflet не ругался на повторную инициализацию
+            const mapContainer = document.getElementById('nearby-map');
+            mapContainer.innerHTML = '';
+
+            window._nearbyMap = L.map('nearby-map', { tap: false }).setView([currentCoords.lat, currentCoords.lon], 13);
+            const map = window._nearbyMap;
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            // Иконки
+            const defaultIcon = L.icon({
+                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+            });
+            const selectedIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+            });
+            const redIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+            });
+
+            // Маркер текущего места (красный, без клика)
+            const currentMarker = L.marker([currentCoords.lat, currentCoords.lon], { icon: redIcon })
+                .bindPopup('<b>Вы здесь</b>')
+                .addTo(map);
+            currentMarker._isCurrent = true;
+
+            currentMarker.on('click', function() {
+                if (selectedMarker === currentMarker) {
+                    currentMarker.closePopup();
+                    showAllCards();
+                } else {
+                    
+                    selectedMarker = currentMarker;
+                    // Скрываем все карточки и показываем жёлтый блок "Вы здесь"
+                    document.querySelectorAll('.place-card').forEach(c => c.style.display = 'none');
+                    hintEl.innerHTML = '<i class="fas fa-map-marker-alt me-1" style="color:red"></i><b>Вы смотрите это место</b> — отправная точка. Нажмите ещё раз чтобы показать все места.';
+                    hintEl.style.cssText = 'display:block; margin-bottom:8px; padding:6px 12px; background:#fff3cd; border-radius:6px; font-size:13px; color:#555;';
+                }
+            });
+
+            const allMarkers = [currentMarker];
+            let selectedMarker = null;
+
+            // Подсказка над списком
+            let hintEl = document.getElementById('nearby-filter-hint');
+            if (!hintEl) {
+                hintEl = document.createElement('div');
+                hintEl.id = 'nearby-filter-hint';
+                hintEl.style.cssText = 'display:none; margin-bottom:8px; padding:6px 12px; background:#e8f4f8; border-radius:6px; font-size:13px; color:#555;';
+                hintEl.innerHTML = '<i class="fas fa-info-circle me-1"></i>Нажмите на маркер ещё раз, чтобы показать все места';
+                listDiv.before(hintEl);
+            }
+
+            function showAllCards() {
+                document.querySelectorAll('.place-card').forEach(c => {
+                    c.style.display = '';
+                    c.style.outline = '';
+                });
+                hintEl.style.display = 'none';
+                hintEl.style.background = '#e8f4f8';  // ← вернуть исходный цвет
+                hintEl.innerHTML = '<i class="fas fa-info-circle me-1"></i>Нажмите на маркер ещё раз, чтобы показать все места';
+                if (selectedMarker && selectedMarker._icon) {
+                    selectedMarker._icon.classList.remove('marker-selected');
+                }
+                selectedMarker = null;
+            }
+
+            function focusCard(pid) {
+                document.querySelectorAll('.place-card').forEach(c => {
+                    if (String(c.dataset.placeId) === String(pid)) {
+                        c.style.display = '';
+                    } else {
+                        c.style.display = 'none';
+                        c.style.outline = '';
+                    }
+                });
+                hintEl.style.display = 'block';
+            }
+            // Делаем карточки кликабельными (переход на страницу места)
+            listDiv.querySelectorAll('.place-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (e.target.closest('.add-place-from-list')) return;
+                    showAllCards();
+                    const pid = this.dataset.placeId;
+                    // from=nearby — чтобы крошки знали откуда пришли
+                    // back= ID текущего места — чтобы вернуться обратно и открыть модалку
+                    window.location.href = `/place/${pid}?from=nearby&back=${placeId}`;
+                });
+            });
+
+            // Добавляем маркеры ближайших мест
+            places.forEach(p => {
+                const lat = parseFloat(p.coords?.lat);
+                const lon = parseFloat(p.coords?.lon);
+                if (isNaN(lat) || isNaN(lon)) return;
+
+                const marker = L.marker([lat, lon], { icon: defaultIcon }).addTo(map);
+                marker._placeId = p.id;
+
+                marker.bindPopup(
+                    `<b>${p.title}</b>` +
+                    (p.address ? `<br><small>${p.address}</small>` : '')
+                );
+
+                marker.on('click', function() {
+                    if (selectedMarker === marker) {
+                        marker.closePopup();
+                        showAllCards();
+                    } else {
+                        // Убираем выделение с предыдущего маркера через CSS
+                        if (selectedMarker && selectedMarker._icon) {
+                            selectedMarker._icon.classList.remove('marker-selected');
+                        }
+                        // Выделяем новый маркер через CSS — без смены иконки, без прыжков
+                        
+                        selectedMarker = marker;
+                        focusCard(p.id);
+                    }
+                });
+
+                allMarkers.push(marker);
+            });
+
+            // Автомасштабирование
+            const group = L.featureGroup(allMarkers);
+            map.fitBounds(group.getBounds().pad(0.15));
+
+            // Сброс при клике на пустую карту (не на маркер)
+            // minDist > 40 означает что кликнули не на маркер
+            // обрабатывается внутри DOM-обработчика ниже
+
+            // Определяем клик на маркер через latLngToContainerPoint
+            // актуально при любом зуме и панорамировании
+            document.getElementById('nearby-map').addEventListener('click', function(e) {
+                const mapRect = document.getElementById('nearby-map').getBoundingClientRect();
+                const clickX = e.clientX - mapRect.left;
+                const clickY = e.clientY - mapRect.top;
+
+                let closest = null;
+                let minDist = Infinity;
+                map.eachLayer(l => {
+                    if (!(l instanceof L.Marker) || (!l._placeId && !l._isCurrent)) return;
+                    const pt = map.latLngToContainerPoint(l.getLatLng());
+                    // точка привязки маркера — нижний центр иконки (iconAnchor [12,41])
+                    // поэтому сравниваем с pt напрямую
+                    const dist = Math.hypot(clickX - pt.x, clickY - pt.y);
+                    if (dist < minDist) { minDist = dist; closest = l; }
+                });
+
+                // 40px — зона срабатывания, покрывает всю иконку маркера
+                if (closest && minDist < 40) {
+                    closest.fire('click');
+                } else if (minDist >= 40) {
+                    // кликнули на пустую карту — сбрасываем выделение
+                    showAllCards();
+                }
+            });
+
+    
+            // Обработка кнопок в попапах (добавить в маршрут)
+            map.on('popupopen', function() {
+                document.querySelectorAll('.add-from-popup').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const placeId = this.dataset.placeId;
+                        fetch('/api/routes')
+                            .then(res => res.json())
+                            .then(routes => showAddToRouteModal(placeId, routes))
+                            .catch(err => console.error(err));
+                    });
+                });
+            });
+    
+            // Сброс при закрытии модалки
+            modalEl.addEventListener('hidden.bs.modal', function() {
+                showAllCards();
+            }, { once: true });
+
+        });
+    }
+
+    
+    // Функция показа модалки выбора маршрута (для одного или нескольких мест)
+    function showInfoModal(icon, text, buttons) {
+        document.getElementById('infoModal-text').textContent = text;
+
+        const footer = document.getElementById('infoModal-footer');
+        footer.innerHTML = buttons.map(btn => {
+            if (btn.href) {
+                return `<a href="${btn.href}" class="${btn.primary ? 'info-modal-btn-primary' : 'info-modal-btn-cancel'}">${btn.label}</a>`;
+            }
+            return `<button type="button" class="${btn.primary ? 'info-modal-btn-primary' : 'info-modal-btn-cancel'}" data-bs-dismiss="modal">${btn.label}</button>`;
+        }).join('');
+
+        new bootstrap.Modal(document.getElementById('infoModal')).show();
+    }
+
+    let atrOpen = false;
+
+    function atrSetRoutes(routes) {
+        const select = document.getElementById('existing-route-select');
+        const menu = document.getElementById('atr-menu');
+
+        // Обновляем скрытый select для совместимости
+        select.innerHTML = '<option value=""></option>' +
+            routes.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+
+        // Сбрасываем триггер
+        document.getElementById('atr-trigger-text').textContent = 'Выберите маршрут...';
+        document.getElementById('atr-trigger-text').dataset.value = '';
+        document.getElementById('atr-trigger').classList.remove('atr-dropdown-trigger--selected');
+
+        // Строим кастомное меню
+        if (!routes || routes.length === 0) {
+            menu.innerHTML = `<div class="atr-option atr-option--empty">
+                <i class="fas fa-info-circle me-2"></i>Нет сохранённых маршрутов
+            </div>`;
+        } else {
+            menu.innerHTML = routes.map(r => `
+                <div class="atr-option" data-value="${r.id}" data-label="${r.name}">
+                    <i class="fas fa-route atr-option-icon"></i>
+                    <span>${r.name}</span>
+                    <i class="fas fa-check atr-option-check"></i>
+                </div>`).join('');
+
+            menu.querySelectorAll('.atr-option').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    const val = this.dataset.value;
+                    const label = this.dataset.label;
+                    // Снять выделение со всех
+                    menu.querySelectorAll('.atr-option').forEach(o => o.classList.remove('atr-option--active'));
+                    this.classList.add('atr-option--active');
+                    // Обновить триггер
+                    document.getElementById('atr-trigger-text').textContent = label;
+                    document.getElementById('atr-trigger-text').dataset.value = val;
+                    document.getElementById('atr-trigger').classList.add('atr-dropdown-trigger--selected');
+                    // Обновить скрытый select
+                    document.getElementById('existing-route-select').value = val;
+                    // Снять заполнение нового маршрута
+                    document.getElementById('new-route-name').value = '';
+                    // Закрыть меню
+                    atrCloseMenu();
+                });
+            });
+        }
+    }
+
+    function atrToggleMenu() {
+        atrOpen ? atrCloseMenu() : atrOpenMenu();
+    }
+
+    function atrOpenMenu() {
+        atrOpen = true;
+        document.getElementById('atr-menu').classList.add('atr-menu--open');
+        document.getElementById('atr-chevron').style.transform = 'rotate(180deg)';
+    }
+
+    function atrCloseMenu() {
+        atrOpen = false;
+        document.getElementById('atr-menu').classList.remove('atr-menu--open');
+        document.getElementById('atr-chevron').style.transform = 'rotate(0deg)';
+    }
+
+    // Клик по триггеру
+    document.getElementById('atr-trigger')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        atrToggleMenu();
+    });
+
+    // Закрытие при клике вне
+    document.addEventListener('click', function(e) {
+        if (!document.getElementById('atr-dropdown')?.contains(e.target)) {
+            atrCloseMenu();
+        }
+    });
+
+    document.getElementById('addToRouteModal')?.addEventListener('hidden.bs.modal', function() {
+        atrCloseMenu();
+        document.getElementById('new-route-name').value = '';
+    });
+
+    // Если пользователь начал вводить новый — сбросить выбор существующего
+    document.getElementById('new-route-name')?.addEventListener('input', function() {
+        if (this.value.trim()) {
+            document.getElementById('existing-route-select').value = '';
+            document.getElementById('atr-trigger-text').textContent = 'Выберите маршрут...';
+            document.getElementById('atr-trigger-text').dataset.value = '';
+            document.getElementById('atr-trigger').classList.remove('atr-dropdown-trigger--selected');
+            document.getElementById('atr-menu').querySelectorAll('.atr-option')
+                .forEach(o => o.classList.remove('atr-option--active'));
+        }
+    });
+
+    function showAddToRouteModal(placeId, routes) {
+        atrSetRoutes(routes);
+        document.getElementById('confirm-add-to-route').dataset.placeIds = JSON.stringify([placeId]);
+        new bootstrap.Modal(document.getElementById('addToRouteModal')).show();
+    }
+
+    function showAddToRouteModalMultiple(placeIds, routes) {
+        atrSetRoutes(routes);
+        document.getElementById('confirm-add-to-route').dataset.placeIds = JSON.stringify(placeIds);
+        new bootstrap.Modal(document.getElementById('addToRouteModal')).show();
+    }
+    function showToast(msg, success = true) {
+        document.getElementById('toast-msg').textContent = msg;
+        const wrap = document.getElementById('toast-wrap');
+        wrap.style.display = 'block';
+        setTimeout(() => { wrap.style.display = 'none'; }, 2500);
+    }
+
+    function addPlacesToRoute(routeId, placeIds) {
+        fetch(`/api/routes/${routeId}/places`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ place_ids: placeIds })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.message) {
+                bootstrap.Modal.getInstance(document.getElementById('addToRouteModal')).hide();
+                showToast('Место успешно добавлено в маршрут');
+            } else {
+                showToast('Ошибка при добавлении', false);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Ошибка соединения', false);
+        });
+    }
+
+    // обработчик для кнопок в карточках списка
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('add-place-from-list')) {
+            const placeId = e.target.dataset.placeId;
+            fetch('/api/routes')
+                .then(res => res.json())
+                .then(routes => showAddToRouteModal(placeId, routes))
+                .catch(err => console.error(err));
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Кнопка "Ближайшие места"
+        // Автооткрытие модалки ближайших мест если вернулись по крошке
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('open_nearby') === '1' && currentCoords.lat && currentCoords.lon) {
+            fetch(`/api/places/${placeId}/nearby?radius=2000&limit=10`)
+                .then(res => res.json())
+                .then(places => showNearbyModal(places, currentCoords))
+                .catch(err => console.error(err));
+        }
+
+        document.getElementById('nearby-btn')?.addEventListener('click', function() {
+            if (!isAuthenticated) {
+                showInfoModal(
+                    '🔒',
+                    'Войдите, чтобы посмотреть ближайшие места',
+                    [{ label: 'Войти', href: '/login', primary: true }, { label: 'Отмена', dismiss: true }]
+                );
+                return;
+            }
+            if (!currentCoords.lat || !currentCoords.lon) {
+                showInfoModal(
+                    'Не можем провести расчёты — у этого места не указаны координаты',
+                    [{ label: 'Понятно', dismiss: true }]
+                );
+                return;
+            }
+            fetch(`/api/places/${placeId}/nearby?radius=2000&limit=10`)
+                .then(res => res.json())
+                .then(places => showNearbyModal(places, currentCoords))
+                .catch(err => console.error(err));
+        });
+
+        // Кнопка "Добавить в маршрут"
+        document.getElementById('add-to-route-btn')?.addEventListener('click', function() {
+            if (!isAuthenticated) {
+                showInfoModal(
+                    'Войдите, чтобы добавить место в маршрут',
+                    [{ label: 'Войти', href: '/login', primary: true }, { label: 'Отмена', dismiss: true }]
+                );
+                return;
+            }
+            fetch('/api/routes')
+                .then(res => res.json())
+                .then(routes => showAddToRouteModal(placeId, routes))
+                .catch(err => console.error(err));
+        });
+
+        // Добавление выбранных из списка ближайших
+        document.getElementById('add-selected-to-route')?.addEventListener('click', function() {
+            const selected = Array.from(document.querySelectorAll('.place-checkbox:checked')).map(cb => cb.value);
+            if (selected.length === 0) {
+                alert('Выберите хотя бы одно место');
+                return;
+            }
+            fetch('/api/routes')
+                .then(res => res.json())
+                .then(routes => {
+                    document.getElementById('confirm-add-to-route').dataset.placeIds = JSON.stringify(selected);
+                    new bootstrap.Modal(document.getElementById('addToRouteModal')).show();
+                })
+                .catch(err => console.error(err));
+        });
+
+        // Подтверждение добавления в маршрут
+        document.getElementById('confirm-add-to-route')?.addEventListener('click', function() {
+            const placeIds = JSON.parse(this.dataset.placeIds || '[]');
+            const existingRouteId = document.getElementById('existing-route-select').value;
+            const newRouteName = document.getElementById('new-route-name').value;
+
+            if (existingRouteId) {
+                addPlacesToRoute(existingRouteId, placeIds);
+            } else if (newRouteName) {
+                fetch('/api/routes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: newRouteName })
+                })
+                .then(res => res.json())
+                .then(route => addPlacesToRoute(route.id, placeIds))
+                .catch(err => console.error(err));
+            } else {
+                alert('Выберите маршрут или введите название нового');
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
