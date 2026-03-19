@@ -4,9 +4,9 @@ services:
     image: postgres:15
     container_name: spb_postgres
     environment:
-      POSTGRES_USER: apollinaria
-      POSTGRES_PASSWORD: love*betty28
-      POSTGRES_DB: spb_places
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5433:5432"
     volumes:
