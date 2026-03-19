@@ -4,9 +4,9 @@ services:
     image: postgres:15
     container_name: spb_postgres
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5433:5432"
     volumes:
@@ -14,7 +14,19 @@ services:
       - ./init-db:/docker-entrypoint-initdb.d
     restart: unless-stopped
 
+  web:
+    build: .
+    container_name: spb_web
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./app/static/uploads:/app/app/static/uploads
+      - ./app/static/avatars:/app/app/static/avatars
+    restart: unless-stopped
+
 volumes:
   postgres_data:
-
-
