@@ -920,3 +920,11 @@ a:hover{
         white-space: nowrap;
     }
 }
+
+.navbar-mobile-content .mobile-user-info img,
+.navbar-mobile-content .mobile-user-info .user-avatar,
+.navbar-mobile-content .mobile-user-info [class*="avatar"],
+.navbar-mobile-content .mobile-user-info [class*="photo"] {
+    background-color: var(--primary-soft) !important;
+    color: var(--primary-dark) !important;
+}
