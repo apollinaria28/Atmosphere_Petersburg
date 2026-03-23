@@ -2,7 +2,7 @@ import traceback
 import secrets
 import logging
 import psycopg2.extras
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, make_response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -22,7 +22,11 @@ def register_page():
     """Страница регистрации."""
     if current_user.is_authenticated:
         return redirect(url_for('profile.profile_page'))
-    return render_template('auth/register.html')
+    response = make_response(render_template('auth/register.html'))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 
 @auth_bp.route('/login')
@@ -31,7 +35,11 @@ def login_page():
     """Страница входа."""
     if current_user.is_authenticated:
         return redirect(url_for('profile.profile_page'))
-    return render_template('auth/login.html')
+    response = make_response(render_template('auth/login.html'))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 
 @auth_bp.route('/logout')
@@ -40,6 +48,47 @@ def logout():
     """Выход из системы."""
     logout_user()
     return redirect(url_for('main.index'))
+
+
+@auth_bp.route('/api/check-username', methods=['POST'])
+@limiter.limit("60 per minute")
+def check_username():
+    """Проверка доступности имени пользователя (используется при вводе в реальном времени)."""
+    import re
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'available': False, 'error': 'Неверный формат запроса'})
+
+    username = (data.get('username') or '').strip()
+
+    if not username:
+        return jsonify({'available': False, 'error': 'Имя не может быть пустым'})
+
+    pattern = re.compile(r'^[a-zA-Zа-яА-ЯёЁ][a-zA-Zа-яА-ЯёЁ0-9_.\- ]{0,29}$')
+    if not pattern.match(username):
+        return jsonify({'available': False, 'error': 'Недопустимые символы в имени'})
+
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM users WHERE username = %s", (username,))
+        if cur.fetchone():
+            return jsonify({'available': False})
+
+        # Проверяем только незавершённые регистрации с действующим кодом
+        cur.execute("""
+            SELECT email FROM email_verifications
+            WHERE username = %s AND expires_at > NOW()
+        """, (username,))
+        if cur.fetchone():
+            return jsonify({'available': False})
+
+        return jsonify({'available': True})
+    except Exception as e:
+        print(f"Ошибка check-username: {e}")
+        return jsonify({'available': False, 'error': 'Ошибка сервера'}), 500
+    finally:
+        conn.close()
 
 
 @auth_bp.route('/api/register', methods=['POST'])
@@ -69,7 +118,7 @@ def register():
         if not is_valid_name(username):
             return jsonify({
                 'success': False,
-                'error': 'Имя должно содержать только русские или английские буквы и не превышать 30 символов'
+                'error': 'Имя должно содержать только русские или английские буквы, цифры, _, пробел. Начинаться с буквы. До 30 символов.'
             })
 
         # Валидация пароля
@@ -87,12 +136,20 @@ def register():
         if cur.fetchone():
             return jsonify({'success': False, 'error': 'Пользователь с таким email уже существует'})
 
-        # Проверяем, не занят ли username
+        # Проверяем, не занят ли username в таблице users
         cur.execute("SELECT id FROM users WHERE username = %s", (username,))
         if cur.fetchone():
             return jsonify({'success': False, 'error': 'Это имя пользователя уже занято'})
 
-        # ИСПРАВЛЕНО: 6-значный код вместо 4-значного (было 10 000 вариантов, стало 1 000 000)
+        # Проверяем, не занят ли username другой незавершённой регистрацией
+        # (исключаем текущий email — он может переотправлять код для себя)
+        cur.execute("""
+            SELECT email FROM email_verifications
+            WHERE username = %s AND email != %s AND expires_at > NOW()
+        """, (username, email))
+        if cur.fetchone():
+            return jsonify({'success': False, 'error': 'Это имя пользователя уже занято'})
+
         code = f"{secrets.randbelow(1000000):06d}"
         code_hash = generate_password_hash(code)
 
@@ -131,6 +188,54 @@ def register():
         print(f"Ошибка при регистрации: {e}")
         traceback.print_exc()
         return jsonify({'success': False, 'error': 'Внутренняя ошибка сервера. Попробуйте позже.'})
+    finally:
+        conn.close()
+
+
+@auth_bp.route('/api/register-status', methods=['POST'])
+def register_status():
+    """Проверяет, есть ли незавершённая регистрация для данного email."""
+    data = request.get_json(silent=True)
+    email = (data.get('email') or '').lower().strip() if data else ''
+    if not email:
+        return jsonify({'pending': False})
+
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur.execute("""
+            SELECT email, username FROM email_verifications
+            WHERE email = %s AND expires_at > NOW()
+        """, (email,))
+        row = cur.fetchone()
+        if row:
+            return jsonify({'pending': True, 'email': row['email'], 'username': row['username']})
+        return jsonify({'pending': False})
+    except Exception as e:
+        print(f"Ошибка register-status: {e}")
+        return jsonify({'pending': False})
+    finally:
+        conn.close()
+
+
+@auth_bp.route('/api/register-cancel', methods=['POST'])
+def register_cancel():
+    """Удаляет незавершённую регистрацию, чтобы пользователь мог начать заново."""
+    data = request.get_json(silent=True)
+    email = (data.get('email') or '').lower().strip() if data else ''
+    if not email:
+        return jsonify({'success': False})
+
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM email_verifications WHERE email = %s", (email,))
+        conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Ошибка register-cancel: {e}")
+        conn.rollback()
+        return jsonify({'success': False})
     finally:
         conn.close()
 
@@ -213,7 +318,6 @@ def resend_code():
         if not cur.fetchone():
             return jsonify({'success': False, 'error': 'Для этого email не начата регистрация'})
 
-        # ИСПРАВЛЕНО: 6-значный код вместо 4-значного
         new_code = f"{secrets.randbelow(1000000):06d}"
         new_code_hash = generate_password_hash(new_code)
 
@@ -248,7 +352,6 @@ def resend_code():
         conn.close()
 
 
-# ИСПРАВЛЕНО: добавлен rate limiting — раньше эндпоинт был полностью без защиты от брутфорса
 @auth_bp.route('/api/login', methods=['POST'])
 @limiter.limit("5 per minute; 20 per hour")
 def login():
@@ -281,9 +384,6 @@ def login():
         user = User(user_data)
         login_user(user, remember=data.get('remember', False))
 
-        # ИСПРАВЛЕНО: убрана передача роли в ответе — злоумышленник не узнает,
-        # что аккаунт является администраторским. Редирект на /admin обрабатывается
-        # на клиенте через защищённый эндпоинт /api/me (доступен только после логина).
         return jsonify({
             'success': True,
             'message': 'Вход выполнен успешно'
@@ -332,7 +432,6 @@ def forgot_password():
             # Для безопасности всегда отвечаем успехом, но не отправляем код
             return jsonify({'success': True, 'message': 'Если email зарегистрирован, код отправлен'})
 
-        # ИСПРАВЛЕНО: 6-значный код вместо 4-значного
         code = f"{secrets.randbelow(1000000):06d}"
         code_hash = generate_password_hash(code)
 
@@ -381,7 +480,7 @@ def reset_password():
 
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-        # ИСПРАВЛЕНО: блокируем сброс пароля администратора через публичный эндпоинт
+        # Блокируем сброс пароля администратора через публичный эндпоинт
         cur.execute("SELECT role FROM users WHERE email = %s", (email,))
         user_role_row = cur.fetchone()
         if user_role_row and user_role_row['role'] == 'admin':
@@ -393,8 +492,6 @@ def reset_password():
                 'error': 'Сброс пароля через эту форму недоступен. Обратитесь к системному администратору.'
             })
 
-        # ИСПРАВЛЕНО: была опечатка — переменная называлась reset_record,
-        # а ниже использовался несуществующий record → NameError в рантайме
         cur.execute("""
             SELECT * FROM password_resets
             WHERE email = %s AND expires_at > NOW()

@@ -28,7 +28,7 @@
     margin: 0 auto;
 }
 
-/* Десктопное меню - всегда видимо на десктопе */
+/* Десктопное меню */
 .navbar-desktop-content {
     display: flex;
     justify-content: space-between;
@@ -70,12 +70,8 @@
 }
 
 @keyframes slideIn {
-    from {
-        transform: scaleX(0);
-    }
-    to {
-        transform: scaleX(1);
-    }
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
 }
 
 /* Правая часть навигации */
@@ -98,7 +94,8 @@
     display: none;
 }
 
-/* Аватарки */
+/* ===== АВАТАРКИ ===== */
+
 .avatar-icon-circle {
     width: 50px;
     height: 50px;
@@ -152,7 +149,8 @@
     font-size: 16px;
 }
 
-/* Кнопки входа/регистрации */
+/* ===== КНОПКИ ВХОДА/РЕГИСТРАЦИИ ===== */
+
 .auth-links {
     display: flex;
     gap: 10px;
@@ -184,7 +182,8 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Выпадающее меню */
+/* ===== ВЫПАДАЮЩЕЕ МЕНЮ ===== */
+
 .dropdown-menu {
     min-width: 280px;
     border: 1px solid rgba(66, 86, 96, 0.1);
@@ -204,39 +203,14 @@
     padding: 10px 16px;
     border-radius: 6px;
     margin: 2px 8px;
-    /*transition: all 0.2s;*/
     color: #FDFAFA;
 }
 
-/* ===== ПЕРЕОПРЕДЕЛЕНИЕ АКТИВНОГО СОСТОЯНИЯ DROPDOWN ===== */
-/*.navbar-section .dropdown-menu .dropdown-item.active,*/
-/*.navbar-section .dropdown-menu .dropdown-item:active {*/
-/*    background-color: rgba(255, 255, 255, 0.1) !important; !* тот же цвет, что и при hover *!*/
-/*    color: #FDFAFA !important;*/
-/*}*/
-
-/*!* Если нужно убрать синий фон и при фокусе *!*/
-/*.navbar-section .dropdown-menu .dropdown-item:focus {*/
-/*    background-color: rgba(255, 255, 255, 0.1) !important;*/
-/*    color: #FDFAFA !important;*/
-/*}*/
-
-/* Чтобы при наведении на активный пункт он не становился синим */
-
-.navbar-section .dropdown-menu .dropdown-item:active:hover {
-    background-color: transparent !important;
-    color: #FDFAFA !important;
-}
-
+.navbar-section .dropdown-menu .dropdown-item:active,
 .navbar-section .dropdown-menu .dropdown-item:hover {
     background-color: transparent !important;
     color: #FDFAFA !important;
 }
-
-/*.dropdown-item:hover {*/
-/*    !*background-color: rgba(255, 255, 255, 0.1);*!*/
-/*    transform: translateX(3px);*/
-/*}*/
 
 .dropdown-divider {
     margin: 8px 16px;
@@ -263,9 +237,8 @@
     animation: slideDown 0.25s ease-out;
 }
 
-/* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
+/* ===== БУРГЕР-МЕНЮ (скрыт на десктопе) ===== */
 
-/* Бургер-меню (скрыт на десктопе) */
 .navbar-toggler {
     display: none;
     position: absolute;
@@ -273,11 +246,17 @@
     top: 20px;
     background: none;
     border: none;
+    border-radius: 0;
     padding: 10px;
     z-index: 1002;
     cursor: pointer;
     outline: none !important;
     box-shadow: none !important;
+    /* iOS: убираем синюю вспышку при тапе */
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+    /* iOS: убираем задержку 300мс */
+    touch-action: manipulation;
 }
 
 .navbar-toggler-icon {
@@ -285,6 +264,7 @@
     width: 30px;
     height: 3px;
     background-color: #FDFAFA;
+    background-image: none;
     position: relative;
     transition: all 0.3s;
 }
@@ -300,47 +280,97 @@
     transition: all 0.3s;
 }
 
-.navbar-toggler-icon::before {
-    top: -8px;
-}
+.navbar-toggler-icon::before { top: -8px; }
+.navbar-toggler-icon::after  { bottom: -8px; }
 
-.navbar-toggler-icon::after {
-    bottom: -8px;
-}
+/* ===== ОВЕРЛЕЙ (затемнение страницы при открытом меню) ===== */
 
-/* Оверлей для мобильного меню */
 .navbar-mobile-overlay {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    /* iOS: 100dvh корректно учитывает адресную строку */
+    height: 100vh;
+    height: 100dvh;
+    height: -webkit-fill-available;
     background: rgba(0, 0, 0, 0.7);
     z-index: 999;
     opacity: 0;
     transition: opacity 0.3s ease;
+    /* iOS: позволяет тапать по оверлею для закрытия */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
-/* Мобильное меню (скрыто на десктопе) */
+/* ===== МОБИЛЬНОЕ МЕНЮ (скрыто на десктопе) ===== */
+
 .navbar-mobile-content {
     display: none;
 }
 
-/* ===== МЕДИА-ЗАПРОСЫ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ ===== */
+/* ===== БЛОКИРОВКА СКРОЛЛА СТРАНИЦЫ ПРИ ОТКРЫТОМ МЕНЮ ===== */
+/* Класс добавляется на body через JS при открытии меню */
+body.menu-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
+/* ===== МЕДИАЗАПРОСЫ ===== */
+
+@media (max-width: 1399px) and (min-width: 993px) {
+    body.logged-out .navbar-desktop-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    body.logged-out .navbar-left {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 12px;
+    }
+
+    body.logged-out .navbar-right {
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+        margin-top: 0;
+        padding-top: 0;
+    }
+
+    body.logged-out .auth-links {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-start;
+        margin-left: 10px;
+    }
+
+    body.logged-out .btn-login,
+    body.logged-out .btn-register {
+        padding: 8px 20px;
+    }
+    .navbar-left .nav-link {
+        font-size: 16px;
+    }
+}
+
 
 @media (max-width: 992px) {
-    /* Скрываем десктопное меню на мобильных */
+
+    /* Скрываем десктопное меню */
     .navbar-desktop-content {
         display: none !important;
     }
 
-    /* Показываем бургер на мобильных */
+    /* Показываем бургер */
     .navbar-toggler {
         display: block;
     }
 
-    /* Анимация бургера при открытии */
+    /* Анимация бургера → крестик */
     .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
         background-color: transparent;
     }
@@ -361,31 +391,38 @@
         opacity: 1;
     }
 
-    /* Стили для мобильного меню */
+    /* Само мобильное меню */
     .navbar-mobile-content {
         display: block !important;
         position: fixed;
         top: 0;
         right: -320px;
         width: 320px;
+        /* iOS: корректная высота с учётом адресной строки */
         height: 100vh;
+        height: 100dvh;
+        height: -webkit-fill-available;
         background: #3E3F38;
         padding: 80px 30px 30px;
         transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1000;
         overflow-y: auto;
+        /* iOS: плавный инерционный скролл внутри меню */
+        -webkit-overflow-scrolling: touch;
         box-shadow: -5px 0 30px rgba(0, 0, 0, 0.3);
+        box-sizing: border-box;
     }
 
     .navbar-mobile-content.show {
         right: 0;
     }
 
-    /* Контейнер мобильного меню */
+    /* Внутренний контейнер меню */
     .mobile-menu-container {
         display: flex;
         flex-direction: column;
-        height: 100%;
+        /* min-height вместо height — меню не схлопывается если контента мало */
+        min-height: 100%;
         padding-bottom: 30px;
     }
 
@@ -439,6 +476,7 @@
         border-radius: 8px;
         font-size: 16px;
         transition: all 0.3s;
+        touch-action: manipulation;
     }
 
     .mobile-profile-link:hover {
@@ -448,7 +486,6 @@
     .mobile-nav-links {
         flex-grow: 1;
         margin-bottom: 30px;
-        overflow-y: auto;
     }
 
     .mobile-nav-link {
@@ -459,6 +496,9 @@
         border-bottom: 1px solid rgba(253, 250, 250, 0.1);
         transition: all 0.3s;
         font-size: 18px;
+        /* iOS: убираем задержку на ссылках */
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
     }
 
     .mobile-nav-link:last-child {
@@ -473,7 +513,7 @@
     }
 
     .mobile-auth-section {
-        margin-top: auto;
+        margin-top: 20px;
         flex-shrink: 0;
         padding-top: 20px;
         border-top: 1px solid rgba(253, 250, 250, 0.15);
@@ -491,6 +531,8 @@
         font-weight: 500;
         font-size: 18px;
         transition: all 0.3s;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
     }
 
     .mobile-auth-buttons {
@@ -509,6 +551,8 @@
         font-weight: 500;
         font-size: 18px;
         transition: all 0.3s;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
     }
 
     .mobile-login-btn {
@@ -522,25 +566,29 @@
         color: #353631;
         border: 1px solid #FDFAFA;
     }
+
+    /* Отступы navbar на планшетах */
+    .navbar {
+        padding: 30px 0;
+    }
 }
 
 /* ===== ДЕСКТОПНАЯ ВЕРСИЯ ===== */
 
 @media (min-width: 993px) {
-    /* Скрываем мобильное меню и бургер на десктопе */
     .navbar-toggler,
     .navbar-mobile-content,
     .navbar-mobile-overlay {
         display: none !important;
     }
 
-    /* Показываем десктопное меню */
     .navbar-desktop-content {
         display: flex !important;
     }
 }
 
-/* ===== ЕДИНОЕ ПОДЧЕРКИВАНИЕ ДЛЯ ВСЕХ СТРАНИЦ ===== */
+/* ===== ЕДИНОЕ ПОДЧЕРКИВАНИЕ АКТИВНОЙ ССЫЛКИ ===== */
+
 .navbar-section .navbar-desktop-content .navbar-left .nav-link .nav-underline {
     position: absolute !important;
     bottom: 0 !important;
@@ -549,89 +597,26 @@
     height: 2px !important;
     background-color: #FDFAFA !important;
     border-radius: 1px !important;
-    transform-origin: left !important;   /* ← АНИМАЦИЯ СЛЕВА НАПРАВО */
+    transform-origin: left !important;
     animation: slideInLeft 0.3s ease-out !important;
 }
 
 @keyframes slideInLeft {
-    from {
-        transform: scaleX(0);
-    }
-    to {
-        transform: scaleX(1);
-    }
-}
-@media (max-width: 1199px) and (min-width: 989px) {
-    .navbar-left .nav-link {
-        font-size: 16px;
-    }
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
 }
 
-/* ===== МЕДИА-ЗАПРОС ДЛЯ УСТРОЙСТВ С МАКСИМАЛЬНОЙ ШИРИНОЙ 768px ===== */
-@media (max-width: 768px) {
-    /* Стили для навбара */
-    .navbar {
-        padding: 30px 0px 30px 0px;
-    }
+/* ===== МЕДИАЗАПРОСЫ ===== */
 
-    .navbar .container {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .navbar-left {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 15px;
-    }
-
-    .navbar-left .nav-link {
-        font-size: 16px;
-        padding: 6px 0;
-    }
-
-    .navbar-right {
-        margin-top: 10px;
-    }
-
-    /* Дополнительные адаптивные стили для других элементов на странице,
-       но они не относятся напрямую к навбару, поэтому оставлены для контекста:
-       .search-container, .filter-section, .filter-dropdown, .filter-actions,
-       .load-more-btn, .no-results, .places-header и др. */
-}
-
-/* ===== ВТОРОЙ МЕДИА-ЗАПРОС ДЛЯ УСТРОЙСТВ С МАКСИМАЛЬНОЙ ШИРИНОЙ 768px ===== */
-@media (max-width: 768px) {
-    /* Повторная адаптация навбара (возможно, дублирование) */
-    .navbar {
-        padding: 30px 0px 30px 0px;
-    }
-
-    .navbar .container {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .navbar-left {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 15px;
-    }
-
-    .navbar-left .nav-link {
-        font-size: 16px;
-        padding: 6px 0;
-    }
-
-    .navbar-right {
-        margin-top: 10px;
-    }
-
-}
 
 @media (min-width: 769px) and (max-width: 992px) {
-    /* Повторная адаптация навбара (возможно, дублирование) */
     .navbar {
-        padding: 30px 0px 30px 0px;
+        padding: 30px 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 30px 0;
     }
 }

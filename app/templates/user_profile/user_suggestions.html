@@ -495,27 +495,17 @@
         tabBtns.forEach(btn => {
             btn.addEventListener('click', function() {
                 const tabId = this.getAttribute('data-tab');
-
-                // Убираем активный класс у всех кнопок
                 tabBtns.forEach(b => b.classList.remove('active'));
-                // Добавляем активный класс текущей кнопке
                 this.classList.add('active');
-
-                // Скрываем все содержимое вкладок
                 tabContents.forEach(content => content.classList.remove('active'));
-                // Показываем нужное содержимое
                 document.getElementById(`${tabId}-tab`).classList.add('active');
-
-                // Если переключились на вкладку с предложением места, загружаем категории
                 if (tabId === 'suggest-place') {
                     loadCategories();
                 }
             });
         });
 
-
         // ============ ФОРМА ПРЕДЛОЖЕНИЯ МЕСТА ============
-        // Загружаем категории при загрузке страницы
         loadCategories();
 
         // ============ ФОРМА СООБЩЕНИЯ ОБ ОШИБКЕ ============
@@ -528,39 +518,25 @@
         const charCount = document.getElementById('char-count');
         let searchTimeout = null;
 
-        // Поиск мест
         placeSearch.addEventListener('input', function(e) {
             const query = e.target.value.trim();
-
             clearTimeout(searchTimeout);
-
             if (query.length < 2) {
                 searchResults.innerHTML = '';
                 searchResults.style.display = 'none';
                 return;
             }
-
             searchTimeout = setTimeout(() => {
                 searchPlaces(query);
             }, 300);
         });
 
-        // Обработка выбора темы
         document.querySelectorAll('.subject-option').forEach(option => {
             option.addEventListener('click', function() {
-                // Снимаем выделение со всех
-                document.querySelectorAll('.subject-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
-
-                // Выделяем выбранную
+                document.querySelectorAll('.subject-option').forEach(opt => opt.classList.remove('selected'));
                 this.classList.add('selected');
-
-                // Устанавливаем значение
                 selectedSubject = this.getAttribute('data-value');
                 subjectInput.value = selectedSubject;
-
-                // Если выбрано "Другое", показываем поле для ввода
                 if (selectedSubject === 'Другое') {
                     subjectInput.style.display = 'block';
                     subjectInput.value = '';
@@ -571,28 +547,18 @@
             });
         });
 
-        // Счетчик символов
         messageText.addEventListener('input', function() {
             const length = this.value.length;
             charCount.textContent = `${length}/2000 символов`;
-
-            if (length > 2000) {
-                charCount.style.color = '#e74c3c';
-            } else {
-                charCount.style.color = '#7f8c8d';
-            }
+            charCount.style.color = length > 2000 ? '#e74c3c' : '#7f8c8d';
         });
 
-        // Закрытие результатов поиска при клике вне
         document.addEventListener('click', function(e) {
             const categoriesSearchContainer = document.querySelector('.categories-search-container');
             const categoriesDropdown = document.getElementById('categories-dropdown');
-
-            if (categoriesSearchContainer && categoriesDropdown &&
-                !categoriesSearchContainer.contains(e.target)) {
+            if (categoriesSearchContainer && categoriesDropdown && !categoriesSearchContainer.contains(e.target)) {
                 categoriesDropdown.style.display = 'none';
             }
-
             if (!placeSearch.contains(e.target) && !searchResults.contains(e.target)) {
                 searchResults.style.display = 'none';
             }
@@ -603,50 +569,30 @@
         const uploadArea = document.getElementById('file-upload-area');
         const filePreview = document.getElementById('file-preview');
 
-        // Обработчик клика на область загрузки
         if (uploadArea) {
-            uploadArea.addEventListener('click', () => {
-                fileInput.click();
-            });
+            uploadArea.addEventListener('click', () => fileInput.click());
         }
-
-        // Обработчик выбора файлов
         fileInput.addEventListener('change', handleFileSelect);
-
-        // Drag & Drop
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
         });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
-
             if (e.dataTransfer.files.length) {
                 fileInput.files = e.dataTransfer.files;
                 handleFileSelect({ target: fileInput });
             }
         });
 
-
         // ============ ОБРАБОТЧИКИ ФОРМ ============
-
-        // Форма предложения места
         const suggestionForm = document.getElementById('suggestion-form');
-        if (suggestionForm) {
-            suggestionForm.addEventListener('submit', handleSuggestionSubmit);
-        }
+        if (suggestionForm) suggestionForm.addEventListener('submit', handleSuggestionSubmit);
 
-        // Форма сообщения об ошибке
         const reportForm = document.getElementById('report-form');
-        if (reportForm) {
-            reportForm.addEventListener('submit', handleReportSubmit);
-        }
+        if (reportForm) reportForm.addEventListener('submit', handleReportSubmit);
 
         // ============ УПРАВЛЕНИЕ МОБИЛЬНЫМ МЕНЮ ============
         let isMenuOpen = false;
@@ -654,85 +600,48 @@
         const $mobileMenu = $('.navbar-mobile-content');
         const $overlay = $('.navbar-mobile-overlay');
 
-        // Функция открытия меню
         function openMenu() {
             if (isMenuOpen) return;
-
             isMenuOpen = true;
             $toggler.attr('aria-expanded', 'true');
-            $('body').css('overflow', 'hidden');
-
-            // Показываем оверлей
+            $('body').addClass('menu-open');
             $overlay.css('display', 'block');
-            setTimeout(() => {
-                $overlay.css('opacity', '1');
-            }, 10);
-
-            // Показываем меню
+            setTimeout(() => $overlay.css('opacity', '1'), 10);
             $mobileMenu.css('display', 'block');
-            setTimeout(() => {
-                $mobileMenu.addClass('show');
-            }, 10);
+            setTimeout(() => $mobileMenu.addClass('show'), 10);
         }
 
-        // Функция закрытия меню
         function closeMenu() {
             if (!isMenuOpen) return;
-
             isMenuOpen = false;
             $toggler.attr('aria-expanded', 'false');
-
-            // Скрываем меню
             $mobileMenu.removeClass('show');
-            setTimeout(() => {
-                $mobileMenu.css('display', 'none');
-            }, 300);
-
-            // Скрываем оверлей
+            setTimeout(() => $mobileMenu.css('display', 'none'), 300);
             $overlay.css('opacity', '0');
             setTimeout(() => {
                 $overlay.css('display', 'none');
-                $('body').css('overflow', '');
+                $('body').removeClass('menu-open');
             }, 300);
         }
 
-        // Обработчик клика на бургер
         $toggler.click(function(e) {
             e.preventDefault();
             e.stopPropagation();
-
-            if (!isMenuOpen) {
-                openMenu();
-            } else {
-                closeMenu();
-            }
+            !isMenuOpen ? openMenu() : closeMenu();
         });
 
-        // Закрытие при клике на оверлей
-        $overlay.click(function() {
-            closeMenu();
-        });
-
-        // Закрытие при нажатии ESC
+        $overlay.click(closeMenu);
         $(document).keydown(function(e) {
-            if (e.key === 'Escape' && isMenuOpen) {
-                closeMenu();
-            }
+            if (e.key === 'Escape' && isMenuOpen) closeMenu();
         });
-    });
+    }); // закрытие $(document).ready
 
     // ============ ФУНКЦИИ ДЛЯ КАТЕГОРИЙ ============
-
     async function loadCategories() {
         try {
             const response = await fetch('/api/categories');
             const data = await response.json();
-
-            if (data.success) {
-                categories = data.categories;
-            } else {
-                console.error('Ошибка загрузки категорий:', data.error);
-            }
+            if (data.success) categories = data.categories;
         } catch (error) {
             console.error('Ошибка загрузки категорий:', error);
         }
@@ -741,24 +650,17 @@
     window.toggleCategoriesDropdown = function() {
         const dropdown = document.getElementById('categories-dropdown');
         const trigger = document.querySelector('.category-select-trigger');
-
         if (dropdown.style.display === 'flex' || dropdown.style.display === '') {
             dropdown.style.display = 'none';
             trigger.classList.remove('active');
         } else {
             dropdown.style.display = 'flex';
             trigger.classList.add('active');
-
-            // Если категории еще не загружены, загружаем
             if (categories.length === 0) {
-                loadCategories().then(() => {
-                    renderCategoriesList();
-                });
+                loadCategories().then(() => renderCategoriesList());
             } else {
                 renderCategoriesList();
             }
-
-            // Фокусируемся на поле фильтра
             setTimeout(() => {
                 const filterInput = document.getElementById('category-filter');
                 if (filterInput) filterInput.focus();
@@ -773,40 +675,32 @@
         }
         const dropdown = document.getElementById('categories-dropdown');
         const trigger = document.querySelector('.category-select-trigger');
-
         dropdown.style.display = 'none';
         trigger.classList.remove('active');
     };
 
     function renderCategoriesList() {
         const categoriesList = document.getElementById('categories-list');
-        if (!categoriesList) {
-            console.error('Элемент categories-list не найден');
-            return;
-        }
-
+        if (!categoriesList) return;
         const filterInput = document.getElementById('category-filter');
         const filterTerm = filterInput ? filterInput.value.toLowerCase() : '';
-
         let filteredCategories = categories;
         if (filterTerm) {
             filteredCategories = categories.filter(category =>
                 category.name.toLowerCase().includes(filterTerm)
             );
         }
-
         if (filteredCategories.length === 0) {
             categoriesList.innerHTML = '<div class="no-categories">Категории не найдены</div>';
             return;
         }
-
         categoriesList.innerHTML = filteredCategories.map(category => `
-        <div class="category-dropdown-option ${selectedCategoryIds.has(category.id) ? 'selected' : ''}"
-             onclick="toggleCategory(${category.id}, event)">
-            <div class="category-checkbox">${selectedCategoryIds.has(category.id) ? '✓' : ''}</div>
-            <div class="category-name">${category.name}</div>
-        </div>
-    `).join('');
+            <div class="category-dropdown-option ${selectedCategoryIds.has(category.id) ? 'selected' : ''}"
+                 onclick="toggleCategory(${category.id}, event)">
+                <div class="category-checkbox">${selectedCategoryIds.has(category.id) ? '✓' : ''}</div>
+                <div class="category-name">${category.name}</div>
+            </div>
+        `).join('');
     }
 
     window.toggleCategory = function(categoryId, event) {
@@ -814,13 +708,11 @@
             event.stopPropagation();
             event.preventDefault();
         }
-
         if (selectedCategoryIds.has(categoryId)) {
             selectedCategoryIds.delete(categoryId);
         } else {
             selectedCategoryIds.add(categoryId);
         }
-
         renderCategoriesList();
         updateSelectedCategoriesDisplay();
     };
@@ -835,31 +727,25 @@
         const container = document.getElementById('selected-categories');
         const placeholder = document.getElementById('category-placeholder');
         const hiddenInput = document.getElementById('category_ids');
-
         if (!container || !placeholder || !hiddenInput) return;
-
         hiddenInput.value = Array.from(selectedCategoryIds).join(',');
-
         if (selectedCategoryIds.size === 0) {
             placeholder.textContent = 'Нажмите для выбора категорий...';
             container.innerHTML = '<div style="color: #7f8c8d; font-style: italic; padding: 10px;">Категории не выбраны</div>';
             return;
         }
-
         const selectedCategories = categories.filter(cat => selectedCategoryIds.has(cat.id));
-
         if (selectedCategories.length === 1) {
             placeholder.textContent = selectedCategories[0].name;
         } else {
             placeholder.textContent = `Выбрано ${selectedCategories.length} категорий`;
         }
-
         container.innerHTML = selectedCategories.map(category => `
-        <div class="selected-category-tag">
-            ${category.name}
-            <button class="remove-btn" onclick="removeCategory(${category.id})">×</button>
-        </div>
-    `).join('');
+            <div class="selected-category-tag">
+                ${category.name}
+                <button class="remove-btn" onclick="removeCategory(${category.id})">×</button>
+            </div>
+        `).join('');
     }
 
     // Обработчик фильтрации категорий
@@ -870,88 +756,67 @@
                 renderCategoriesList();
             });
         }
-
         document.addEventListener('click', function(e) {
             const dropdown = document.getElementById('categories-dropdown');
             const triggerContainer = document.querySelector('.categories-search-container');
-
-            if (dropdown && dropdown.style.display === 'flex' &&
-                !triggerContainer.contains(e.target)) {
+            if (dropdown && dropdown.style.display === 'flex' && !triggerContainer.contains(e.target)) {
                 dropdown.style.display = 'none';
                 const trigger = document.querySelector('.category-select-trigger');
                 if (trigger) trigger.classList.remove('active');
             }
         });
-
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 const dropdown = document.getElementById('categories-dropdown');
                 const trigger = document.querySelector('.category-select-trigger');
-
                 if (dropdown && dropdown.style.display === 'flex') {
                     dropdown.style.display = 'none';
                     if (trigger) trigger.classList.remove('active');
                 }
             }
         });
-
         loadCategories();
     });
 
     // ============ ФУНКЦИИ ДЛЯ ФАЙЛОВ ============
-
     function handleFileSelect(e) {
         const files = Array.from(e.target.files);
-
         for (const file of files) {
             if (file.size > 10 * 1024 * 1024) {
                 showMessage('suggestion-message', `Файл ${file.name} слишком большой (максимум 10MB)`, 'error');
                 return;
             }
         }
-
         files.forEach(file => {
             if (!uploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
                 uploadedFiles.push(file);
             }
         });
-
         updateFilePreview();
     }
 
     function updateFilePreview() {
         const filePreview = document.getElementById('file-preview');
         const uploadPlaceholder = document.querySelector('.upload-placeholder');
-
         if (!filePreview) return;
-
         filePreview.innerHTML = '';
-
         if (uploadedFiles.length === 0) {
-            if (uploadPlaceholder) {
-                uploadPlaceholder.style.display = 'block';
-            }
+            if (uploadPlaceholder) uploadPlaceholder.style.display = 'block';
             return;
         }
-
-        if (uploadPlaceholder) {
-            uploadPlaceholder.style.display = 'none';
-        }
-
+        if (uploadPlaceholder) uploadPlaceholder.style.display = 'none';
         uploadedFiles.forEach((file, index) => {
             const reader = new FileReader();
-
             reader.onload = (e) => {
                 const previewItem = document.createElement('div');
                 previewItem.className = 'file-preview-item';
                 previewItem.innerHTML = `
-                <img src="${e.target.result}" alt="${file.name}">
-                <button class="remove-btn" onclick="removeFile(${index})">×</button>
-                <div class="file-name">${file.name}</div>
-            `;
+                    <img src="${e.target.result}" alt="${file.name}">
+                    <button class="remove-btn" onclick="removeFile(${index})">×</button>
+                    <div class="file-name">${file.name}</div>
+                `;
                 filePreview.appendChild(previewItem);
             };
-
             reader.readAsDataURL(file);
         });
     }
@@ -962,57 +827,40 @@
     };
 
     // ============ ФУНКЦИИ ДЛЯ ФОРМ ============
-
     async function handleSuggestionSubmit(e) {
         e.preventDefault();
-
         const submitBtn = document.getElementById('suggestion-submit-btn');
         const originalText = submitBtn.textContent;
         submitBtn.disabled = true;
         submitBtn.textContent = 'Отправка...';
-
         const formData = new FormData();
-
         formData.append('user_title', document.getElementById('user_title').value.trim());
         formData.append('user_description', document.getElementById('user_description').value.trim());
         formData.append('user_address', document.getElementById('user_address').value.trim());
         formData.append('user_timetable', document.getElementById('user_timetable').value.trim());
         formData.append('user_phone', document.getElementById('user_phone').value.trim());
         formData.append('user_foreign_url', document.getElementById('user_foreign_url').value.trim());
-
         const photosUrlInput = document.getElementById('user_photos_url');
         if (photosUrlInput) {
             formData.append('user_photos_url', photosUrlInput.value.trim());
         }
-
         formData.append('category_ids', Array.from(selectedCategoryIds).join(','));
-
-        uploadedFiles.forEach(file => {
-            formData.append('user_photos', file);
-        });
-
+        uploadedFiles.forEach(file => formData.append('user_photos', file));
         if (!formData.get('user_title') || !formData.get('user_description') || !formData.get('user_address')) {
             showMessage('suggestion-message', 'Заполните все обязательные поля', 'error');
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
             return;
         }
-
         if (selectedCategoryIds.size === 0) {
             showMessage('suggestion-message', 'Выберите хотя бы одну категорию', 'error');
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
             return;
         }
-
         try {
-            const response = await fetch('/api/suggest-place', {
-                method: 'POST',
-                body: formData
-            });
-
+            const response = await fetch('/api/suggest-place', { method: 'POST', body: formData });
             const data = await response.json();
-
             if (data.success) {
                 showModal('Спасибо, ваше предложение отправлено на модерацию.');
                 e.target.reset();
@@ -1035,67 +883,49 @@
 
     async function handleReportSubmit(e) {
         e.preventDefault();
-
         const submitBtn = document.getElementById('report-submit-btn');
         const originalText = submitBtn.textContent;
         submitBtn.disabled = true;
         submitBtn.textContent = 'Отправка...';
-
         const formData = {
             place_id: document.getElementById('place_id').value,
-            subject: document.getElementById('subject').style.display === 'block' ?
-                document.getElementById('subject').value.trim() : selectedSubject,
+            subject: document.getElementById('subject').style.display === 'block' ? document.getElementById('subject').value.trim() : selectedSubject,
             message: document.getElementById('message-text').value.trim()
         };
-
         if (!formData.place_id) {
             showMessage('report-message', 'Выберите место из списка', 'error');
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
             return;
         }
-
         if (!formData.subject || formData.subject.length === 0) {
             showMessage('report-message', 'Укажите тему сообщения', 'error');
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
             return;
         }
-
         if (!formData.message || formData.message.length === 0) {
             showMessage('report-message', 'Опишите ошибку', 'error');
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
             return;
         }
-
         if (formData.message.length > 2000) {
             showMessage('report-message', 'Сообщение слишком длинное (максимум 2000 символов)', 'error');
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
             return;
         }
-
         try {
-            const response = await fetch('/api/report-error', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
-
+            const response = await fetch('/api/report-error', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
             const data = await response.json();
-
             if (data.success) {
                 showModal('Спасибо, ваше сообщение об ошибке отправлено.');
                 e.target.reset();
                 selectedPlace = null;
                 document.getElementById('selected-place').style.display = 'none';
                 document.getElementById('subject').value = '';
-                document.querySelectorAll('.subject-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
+                document.querySelectorAll('.subject-option').forEach(opt => opt.classList.remove('selected'));
                 document.getElementById('char-count').textContent = '0/2000 символов';
             } else {
                 showMessage('report-message', data.error || 'Произошла ошибка', 'error');
@@ -1110,37 +940,29 @@
     }
 
     // ============ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ============
-
     async function searchPlaces(query) {
         try {
             const response = await fetch(`/api/places/search?q=${encodeURIComponent(query)}`);
             const data = await response.json();
-
             const searchResults = document.getElementById('search-results');
-
             if (data.success) {
                 if (data.places.length === 0) {
                     searchResults.innerHTML = '<div class="search-result-item">Места не найдены</div>';
                 } else {
                     searchResults.innerHTML = data.places.map(place => `
-                    <div class="search-result-item" data-place-id="${place.id}">
-                        ${place.photo_url ?
-                        `<img src="${place.photo_url}" alt="${place.title}" class="place-photo">` :
-                        '<div class="place-photo" style="background: #eee;"></div>'
-                    }
-                        <div class="place-info">
-                            <div class="place-title">${place.title}</div>
-                            <div class="place-address">${place.address || 'Адрес не указан'}</div>
+                        <div class="search-result-item" data-place-id="${place.id}">
+                            ${place.photo_url ? `<img src="${place.photo_url}" alt="${place.title}" class="place-photo">` : '<div class="place-photo" style="background: #eee;"></div>'}
+                            <div class="place-info">
+                                <div class="place-title">${place.title}</div>
+                                <div class="place-address">${place.address || 'Адрес не указан'}</div>
+                            </div>
                         </div>
-                    </div>
-                `).join('');
-
+                    `).join('');
                     document.querySelectorAll('.search-result-item[data-place-id]').forEach(item => {
                         item.addEventListener('click', function() {
                             const placeId = parseInt(this.getAttribute('data-place-id'));
                             const placeTitle = this.querySelector('.place-title').textContent;
                             const placeAddress = this.querySelector('.place-address').textContent;
-
                             selectPlace(placeId, placeTitle, placeAddress);
                         });
                     });
@@ -1156,12 +978,10 @@
 
     function selectPlace(id, title, address) {
         selectedPlace = { id, title, address };
-
         document.getElementById('selected-place-title').textContent = title;
         document.getElementById('selected-place-address').textContent = address;
         document.getElementById('selected-place').style.display = 'block';
         document.getElementById('place_id').value = id;
-
         document.getElementById('search-results').style.display = 'none';
         document.getElementById('place-search').value = '';
     }
@@ -1169,19 +989,13 @@
     function showMessage(elementId, text, type) {
         const element = document.getElementById(elementId);
         if (!element) return;
-
         element.textContent = text;
         element.className = `message ${type}`;
         element.style.display = 'block';
-
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-        setTimeout(() => {
-            element.style.display = 'none';
-        }, 5000);
+        setTimeout(() => element.style.display = 'none', 5000);
     }
 
-    // Функции для модального окна
     function showModal(message) {
         const modal = document.getElementById('success-modal');
         const msgEl = document.getElementById('modal-message');

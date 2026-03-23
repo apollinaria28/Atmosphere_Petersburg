@@ -769,108 +769,50 @@
             setTimeout(function() { messageModal.hide(); }, 2000);
         }
     }
-    // Управление мобильным меню - исправленная версия
+    // Управление мобильным меню
     $(document).ready(function() {
         let isMenuOpen = false;
         const $toggler = $('.navbar-toggler');
         const $mobileMenu = $('.navbar-mobile-content');
         const $overlay = $('.navbar-mobile-overlay');
 
-        // Функция открытия меню
         function openMenu() {
             if (isMenuOpen) return;
-
             isMenuOpen = true;
             $toggler.attr('aria-expanded', 'true');
-            $('body').css('overflow', 'hidden');
+            $('body').addClass('menu-open');
 
-            // Показываем оверлей
             $overlay.css('display', 'block');
-            setTimeout(() => {
-                $overlay.css('opacity', '1');
-            }, 10);
+            setTimeout(() => $overlay.css('opacity', '1'), 10);
 
-            // Показываем меню
             $mobileMenu.css('display', 'block');
-            setTimeout(() => {
-                $mobileMenu.addClass('show');
-            }, 10);
+            setTimeout(() => $mobileMenu.addClass('show'), 10);
         }
 
-        // Функция закрытия меню
         function closeMenu() {
             if (!isMenuOpen) return;
-
             isMenuOpen = false;
             $toggler.attr('aria-expanded', 'false');
-
-            // Скрываем меню
             $mobileMenu.removeClass('show');
-            setTimeout(() => {
-                $mobileMenu.css('display', 'none');
-            }, 300);
-
-            // Скрываем оверлей
+            setTimeout(() => $mobileMenu.css('display', 'none'), 300);
             $overlay.css('opacity', '0');
             setTimeout(() => {
                 $overlay.css('display', 'none');
-                $('body').css('overflow', '');
+                $('body').removeClass('menu-open');
             }, 300);
         }
 
-        // Обработчик клика на бургер
         $toggler.click(function(e) {
             e.preventDefault();
             e.stopPropagation();
-
-            if (!isMenuOpen) {
-                openMenu();
-            } else {
-                closeMenu();
-            }
+            !isMenuOpen ? openMenu() : closeMenu();
         });
 
-        // Закрытие при клике на оверлей
-        $overlay.click(function() {
-            closeMenu();
-        });
-
-        // Закрытие при клике на ссылки в меню
-        $(document).on('click', '.mobile-nav-link, .mobile-logout-link, .mobile-profile-link, .mobile-login-btn, .mobile-register-btn', function(e) {
-            if ($(e.target).closest('.mobile-auth-section').length) {
-                // Даем время на выполнение клика перед закрытием
-                setTimeout(() => {
-                    closeMenu();
-                }, 100);
-            } else {
-                closeMenu();
-            }
-        });
-
-        // Закрытие при нажатии ESC
+        $overlay.click(closeMenu);
         $(document).keydown(function(e) {
-            if (e.key === 'Escape' && isMenuOpen) {
-                closeMenu();
-            }
+            if (e.key === 'Escape' && isMenuOpen) closeMenu();
         });
-
-        // Отслеживание скролла для фона навбара
-        $(window).scroll(function() {
-            if ($(window).scrollTop() > 50) {
-                $('.navbar').addClass('scrolled');
-            } else {
-                $('.navbar').removeClass('scrolled');
-            }
-        });
-
-        // Инициализация при загрузке
-        if ($(window).scrollTop() > 50) {
-            $('.navbar').addClass('scrolled');
-        }
-
-
     });
-
     // ── Удаление аккаунта ──
     $('#openDeleteModalBtn').on('click', function () {
         const editModal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));

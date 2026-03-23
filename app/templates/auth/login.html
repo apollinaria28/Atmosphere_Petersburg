@@ -199,6 +199,21 @@
         });
 
         $('#email').focus();
+
+        // Защита от возврата через кнопку "назад" если пользователь уже авторизован
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) {
+                $.ajax({
+                    url: '/api/me',
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success && response.user) {
+                            window.location.replace('/');
+                        }
+                    }
+                });
+            }
+        });
     });
 </script>
 </body>

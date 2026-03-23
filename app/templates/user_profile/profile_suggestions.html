@@ -508,19 +508,21 @@
         const toggler = document.querySelector('.navbar-toggler');
         const mobileMenu = document.querySelector('.navbar-mobile-content');
         const overlay = document.querySelector('.navbar-mobile-overlay');
-
+    
         if (toggler && mobileMenu && overlay) {
             function openMenu() {
                 if (isMenuOpen) return;
                 isMenuOpen = true;
                 toggler.setAttribute('aria-expanded', 'true');
-                document.body.style.overflow = 'hidden';
+                document.body.classList.add('menu-open');
+    
                 overlay.style.display = 'block';
                 setTimeout(() => overlay.style.opacity = '1', 10);
+    
                 mobileMenu.style.display = 'block';
                 setTimeout(() => mobileMenu.classList.add('show'), 10);
             }
-
+    
             function closeMenu() {
                 if (!isMenuOpen) return;
                 isMenuOpen = false;
@@ -530,10 +532,10 @@
                 overlay.style.opacity = '0';
                 setTimeout(() => {
                     overlay.style.display = 'none';
-                    document.body.style.overflow = '';
+                    document.body.classList.remove('menu-open');
                 }, 300);
             }
-
+    
             toggler.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -543,38 +545,15 @@
                     closeMenu();
                 }
             });
-
+    
             overlay.addEventListener('click', closeMenu);
-
+    
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && isMenuOpen) {
-                    closeMenu();
-                }
+                if (e.key === 'Escape' && isMenuOpen) closeMenu();
             });
         }
-
-        // Добавляем стили для анимаций (можно вынести в отдельный CSS-файл, но добавим динамически)
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-            .notification-content {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-            .notification-content i {
-                font-size: 20px;
-            }
-        `;
-        document.head.appendChild(style);
     })();
+    
 </script>
 </body>
 </html>
