@@ -318,79 +318,58 @@
             loadReports(currentPage, currentStatus);
         });
 
-        // ============ НАЧАЛО: КОД УПРАВЛЕНИЯ МОБИЛЬНЫМ МЕНЮ ============
-        let isMenuOpen = false;
-        const toggler = document.querySelector('.navbar-toggler');
-        const mobileMenu = document.querySelector('.navbar-mobile-content');
-        const overlay = document.querySelector('.navbar-mobile-overlay');
+        // ============ УПРАВЛЕНИЕ МОБИЛЬНЫМ МЕНЮ ============
+        (function() {
+            let isMenuOpen = false;
+            const toggler = document.querySelector('.navbar-toggler');
+            const mobileMenu = document.querySelector('.navbar-mobile-content');
+            const overlay = document.querySelector('.navbar-mobile-overlay');
 
-        if (toggler && mobileMenu && overlay) {
-            function openMenu() {
-                if (isMenuOpen) return;
-                isMenuOpen = true;
-                toggler.setAttribute('aria-expanded', 'true');
-                document.body.style.overflow = 'hidden';
-                overlay.style.display = 'block';
-                setTimeout(() => overlay.style.opacity = '1', 10);
-                mobileMenu.style.display = 'block';
-                setTimeout(() => mobileMenu.classList.add('show'), 10);
-            }
+            if (toggler && mobileMenu && overlay) {
+                function openMenu() {
+                    if (isMenuOpen) return;
+                    isMenuOpen = true;
+                    toggler.setAttribute('aria-expanded', 'true');
+                    document.body.classList.add('menu-open');
 
-            function closeMenu() {
-                if (!isMenuOpen) return;
-                isMenuOpen = false;
-                toggler.setAttribute('aria-expanded', 'false');
-                mobileMenu.classList.remove('show');
-                setTimeout(() => mobileMenu.style.display = 'none', 300);
-                overlay.style.opacity = '0';
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    document.body.style.overflow = '';
-                }, 300);
-            }
+                    overlay.style.display = 'block';
+                    setTimeout(() => overlay.style.opacity = '1', 10);
 
-            toggler.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!isMenuOpen) {
-                    openMenu();
-                } else {
-                    closeMenu();
+                    mobileMenu.style.display = 'block';
+                    setTimeout(() => mobileMenu.classList.add('show'), 10);
                 }
-            });
 
-            overlay.addEventListener('click', closeMenu);
-
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && isMenuOpen) {
-                    closeMenu();
+                function closeMenu() {
+                    if (!isMenuOpen) return;
+                    isMenuOpen = false;
+                    toggler.setAttribute('aria-expanded', 'false');
+                    mobileMenu.classList.remove('show');
+                    setTimeout(() => mobileMenu.style.display = 'none', 300);
+                    overlay.style.opacity = '0';
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        document.body.classList.remove('menu-open');
+                    }, 300);
                 }
-            });
-        }
 
-        // Добавляем стили для анимаций (можно вынести в отдельный CSS-файл, но добавим динамически)
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
+                toggler.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!isMenuOpen) {
+                        openMenu();
+                    } else {
+                        closeMenu();
+                    }
+                });
+
+                overlay.addEventListener('click', closeMenu);
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && isMenuOpen) closeMenu();
+                });
             }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-            .notification-content {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-            .notification-content i {
-                font-size: 20px;
-            }
-        `;
-        document.head.appendChild(style);
-        // ============ КОНЕЦ КОДА МОБИЛЬНОГО МЕНЮ ============
-    });
+        })();
+    }); 
 
     function loadReports(page, status) {
         $('#reports-list-container').html(`

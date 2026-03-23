@@ -405,17 +405,19 @@
         }
 
         // ============ УПРАВЛЕНИЕ МОБИЛЬНЫМ МЕНЮ ============
-        let isMenuOpen = false;
-        const toggler = document.querySelector('.navbar-toggler');
-        const mobileMenu = document.querySelector('.navbar-mobile-content');
-        const overlay = document.querySelector('.navbar-mobile-overlay');
+        (function() {
+            let isMenuOpen = false;
+            const toggler = document.querySelector('.navbar-toggler');
+            const mobileMenu = document.querySelector('.navbar-mobile-content');
+            const overlay = document.querySelector('.navbar-mobile-overlay');
 
-        if (toggler && mobileMenu && overlay) {
+            if (!toggler || !mobileMenu || !overlay) return;
+
             function openMenu() {
                 if (isMenuOpen) return;
                 isMenuOpen = true;
                 toggler.setAttribute('aria-expanded', 'true');
-                document.body.style.overflow = 'hidden';
+                document.body.classList.add('menu-open');
                 overlay.style.display = 'block';
                 setTimeout(() => overlay.style.opacity = '1', 10);
                 mobileMenu.style.display = 'block';
@@ -431,28 +433,21 @@
                 overlay.style.opacity = '0';
                 setTimeout(() => {
                     overlay.style.display = 'none';
-                    document.body.style.overflow = '';
+                    document.body.classList.remove('menu-open');
                 }, 300);
             }
 
             toggler.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (!isMenuOpen) {
-                    openMenu();
-                } else {
-                    closeMenu();
-                }
+                if (!isMenuOpen) openMenu(); else closeMenu();
             });
 
             overlay.addEventListener('click', closeMenu);
-
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && isMenuOpen) {
-                    closeMenu();
-                }
+                if (e.key === 'Escape' && isMenuOpen) closeMenu();
             });
-        }
+        })();
 
         // Добавляем стили для анимаций (можно вынести в отдельный CSS-файл, но добавим динамически)
         const style = document.createElement('style');
@@ -776,7 +771,6 @@
         // Запускаем загрузку
         loadSuggestion();
     });
-    
 </script>
 </body>
 </html>

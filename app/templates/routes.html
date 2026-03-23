@@ -890,9 +890,11 @@
             if (isMenuOpen) return;
             isMenuOpen = true;
             $toggler.attr('aria-expanded', 'true');
-            $('body').css('overflow', 'hidden');
+            $('body').addClass('menu-open'); // ← добавление класса
+
             $overlay.css('display', 'block');
             setTimeout(() => $overlay.css('opacity', '1'), 10);
+
             $mobileMenu.css('display', 'block');
             setTimeout(() => $mobileMenu.addClass('show'), 10);
         }
@@ -904,10 +906,18 @@
             $mobileMenu.removeClass('show');
             setTimeout(() => $mobileMenu.css('display', 'none'), 300);
             $overlay.css('opacity', '0');
-            setTimeout(() => { $overlay.css('display', 'none'); $('body').css('overflow', ''); }, 300);
+            setTimeout(() => {
+                $overlay.css('display', 'none');
+                $('body').removeClass('menu-open'); // ← удаление класса
+            }, 300);
         }
 
-        $toggler.click(function(e) { e.preventDefault(); e.stopPropagation(); !isMenuOpen ? openMenu() : closeMenu(); });
+        $toggler.click(function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            !isMenuOpen ? openMenu() : closeMenu();
+        });
+
         $overlay.click(closeMenu);
         $(document).keydown(function(e) { if (e.key === 'Escape' && isMenuOpen) closeMenu(); });
     });

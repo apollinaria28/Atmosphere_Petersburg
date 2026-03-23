@@ -35,7 +35,7 @@ a:active {
     color: white;
     margin-bottom: 40px;
     overflow: hidden;
-    min-height: 50vh;
+    min-height: 60vh;
 }
 
 .place-header::before {
@@ -1152,7 +1152,7 @@ body.modal-open {
         height: 260px;
     }
     .place-header {
-        min-height: 40vh;
+        min-height: 55vh;
 
     }
 
@@ -1289,7 +1289,7 @@ body.modal-open {
     }
 
     .place-header {
-        min-height: 40vh;
+        min-height: 55vh;
     }
 
     /* Модальное окно на мобильных */
@@ -1405,7 +1405,7 @@ body.modal-open {
     }
 
     .place-header {
-        min-height: 35vh;
+        min-height: 45vh;
     }
 
     .place-header-content {
@@ -1448,7 +1448,7 @@ body.modal-open {
         font-size: 15px;
     }
     .place-header {
-        min-height: 35vh;
+        min-height: 45vh;
     }
 
 
@@ -1515,7 +1515,7 @@ body.modal-open {
         font-size: 15px;
     }
     .place-header {
-        min-height: 35vh;
+        min-height: 45vh;
     }
 
     .info-label, .info-value {

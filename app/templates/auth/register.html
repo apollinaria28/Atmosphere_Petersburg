@@ -22,33 +22,32 @@
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-header">
-            <!-- <h1>Петербургская Атмосфера</h1> -->
             <p>Скорее зарегистрируйся, чтобы не упустить интересные места СПБ</p>
         </div>
 
         <div class="auth-body">
-            <div class="text-center mb-4">
-                <!-- <div class="auth-logo">
-                    <i class="fas fa-user-plus"></i>
-                </div> -->
+            <div class="text-center mb-4" id="formTitle">
                 <h2>Создать аккаунт</h2>
                 <p class="text-muted">Заполните форму ниже для регистрации</p>
             </div>
 
             <!-- ШАГ 1: Форма регистрации -->
             <form id="registerForm">
+
+                <div class="mb-3">
+                    <label for="username" class="form-label fw-semibold">Имя пользователя *</label>
+                    <input type="text" class="form-control" id="username" name="username"
+                           placeholder="Иван или ivan_petrov" required maxlength="30" autocomplete="off">
+                    <div id="usernameFeedback" class="form-text mt-1">
+                        Придумайте уникальное имя — на русском или английском, до 30 символов
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label for="email" class="form-label">Email *</label>
                     <input type="email" class="form-control" id="email" name="email"
                            placeholder="ваш@email.com" required>
                     <div class="form-text">Мы ни с кем не делимся вашим email</div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="username" class="form-label">Имя пользователя (опционально)</label>
-                    <input type="text" class="form-control" id="username" name="username"
-                           placeholder="ivan_petrov">
-                    <div class="form-text">Уникальное имя для входа, если не укажете - будет использоваться email</div>
                 </div>
 
                 <div class="mb-3">
@@ -79,17 +78,21 @@
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="terms" required>
                         <label class="form-check-label" for="terms">
-                            Я согласен с <a href="/static/doc/privacy_policy.pdf" >политикой конфиденциальности</a>
+                            Я согласен с <a href="/static/doc/privacy_policy.pdf">политикой конфиденциальности</a>
                         </label>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-auth" id="registerButton">
+                <button type="submit" class="btn-auth" id="registerButton" disabled>
                     <span id="buttonText">Создать аккаунт</span>
                     <span id="loadingSpinner" style="display: none;">
                         <i class="fas fa-spinner fa-spin"></i>
                     </span>
                 </button>
+                <div class="form-text text-center mt-2" id="submitHint" style="color:#6c757d;">
+                    Введите имя пользователя, чтобы продолжить
+                </div>
+
             </form>
 
             <!-- ШАГ 2: Подтверждение кода (изначально скрыт) -->
@@ -112,7 +115,7 @@
                     <button class="btn btn-link" id="resendCodeBtn">Отправить код повторно</button>
                 </div>
                 <div class="text-center mt-2">
-                    <a href="#" onclick="showStep1()" class="text-muted small">← Вернуться к регистрации</a>
+                    <a href="#" id="backToRegisterBtn" class="text-muted small">← Изменить данные регистрации</a>
                 </div>
             </div>
 
@@ -147,165 +150,248 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Функция показа/скрытия пароля
+    // ─── Утилиты ────────────────────────────────────────────────────────────
+
     function togglePassword(fieldId) {
         const field = document.getElementById(fieldId);
         const icon = field.nextElementSibling.querySelector('i');
-
         if (field.type === 'password') {
             field.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
         } else {
             field.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
         }
     }
 
-    // Функция показа сообщения в модалке
-    // Функция показа сообщения в модалке
     function showMessage(title, message, type = 'info') {
         $('#modalTitle').text(title);
         $('#modalMessage').text(message);
-
-        const modalHeader = $('.modal-header');
-        modalHeader.removeClass('bg-success bg-danger bg-warning bg-info text-white text-dark');
-
-        switch(type) {
-            case 'success':
-                modalHeader.addClass('bg-success text-white');
-                break;
-            case 'error':
-                modalHeader.addClass('bg-danger text-white');
-                break;
-            case 'warning':
-                modalHeader.addClass('bg-warning text-dark');
-                break;
-            default:
-                modalHeader.addClass('bg-info text-white');
-        }
-
+        const hdr = $('.modal-header');
+        hdr.removeClass('bg-success bg-danger bg-warning bg-info text-white text-dark');
+        const map = { success: 'bg-success text-white', error: 'bg-danger text-white',
+                      warning: 'bg-warning text-dark', info: 'bg-info text-white' };
+        hdr.addClass(map[type] || map.info);
         const modal = new bootstrap.Modal(document.getElementById('messageModal'));
         modal.show();
-
-        // Автоматически скрываем успешные сообщения через 2 секунды
-        if (type === 'success') {
-            setTimeout(() => {
-                modal.hide();
-            }, 2000);
-        }
+        if (type === 'success') setTimeout(() => modal.hide(), 2000);
     }
 
-    // Переключение между шагами
-    // Переключение между шагами
+    // ─── Состояние ──────────────────────────────────────────────────────────
+
+    const USERNAME_PATTERN = /^[a-zA-Zа-яА-ЯёЁ][a-zA-Zа-яА-ЯёЁ0-9_.\- ]{0,29}$/;
+    let usernameAvailable = false;
+    let usernameTimer    = null;
+    let currentEmail     = '';
+
+    // ─── Переключение шагов ─────────────────────────────────────────────────
+
     function showStep1() {
         $('#registerForm').show();
-        $('.text-center.mb-4').show();        // показать логотип и заголовки
-        $('.auth-footer').show();              // показать ссылки внизу
+        $('#formTitle').show();
+        $('.auth-footer').show();
         $('#verifyStep').hide();
-        $('.text-center.mt-2').hide();
+        $('#username').focus();
     }
 
     function showStep2(email) {
         $('#verifyEmail').text(email);
         $('#registerForm').hide();
-        $('.text-center.mb-4').hide();        // скрыть логотип и заголовки
-        $('.auth-footer').hide();              // скрыть ссылки внизу
+        $('#formTitle').hide();
+        $('.auth-footer').hide();
         $('#verifyStep').show();
         $('#code').val('').focus();
-        $('.text-center.mt-2').show();
     }
 
-    // Глобальная переменная для хранения email
-    let currentEmail = '';
+    // ─── Вспомогательные функции для поля username ──────────────────────────
 
-    $(document).ready(function() {
-        // Обработка формы регистрации (шаг 1)
-        $('#registerForm').on('submit', function(e) {
+    function setUsernameFeedback(text, state) {
+        const colors = { idle: '#6c757d', checking: '#6c757d', ok: '#198754', error: '#dc3545' };
+        const fb = $('#usernameFeedback');
+        fb.css('color', colors[state] || colors.idle).text(text);
+
+        const input = $('#username');
+        input.removeClass('is-valid is-invalid');
+        if (state === 'ok')    input.addClass('is-valid');
+        if (state === 'error') input.addClass('is-invalid');
+    }
+
+    function updateSubmitButton() {
+        const ready = usernameAvailable;
+        $('#registerButton').prop('disabled', !ready);
+        $('#submitHint').toggle(!ready);
+    }
+
+    // ─── Живая проверка username ─────────────────────────────────────────────
+
+    $('#username').on('input', function () {
+        const val = $(this).val().trim();
+        usernameAvailable = false;
+        updateSubmitButton();
+        clearTimeout(usernameTimer);
+
+        if (!val) {
+            setUsernameFeedback('Придумайте уникальное имя — на русском или английском, до 30 символов', 'idle');
+            return;
+        }
+
+        if (!USERNAME_PATTERN.test(val)) {
+            setUsernameFeedback('Только буквы (рус/англ), цифры и символы _ - . Начинается с буквы.', 'error');
+            return;
+        }
+
+        setUsernameFeedback('Проверяем доступность…', 'checking');
+
+        usernameTimer = setTimeout(function () {
+            $.ajax({
+                url: '/api/check-username',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ username: val }),
+                success: function (res) {
+                    if (res.available) {
+                        usernameAvailable = true;
+                        setUsernameFeedback('✓ Отличное имя, оно свободно!', 'ok');
+                    } else {
+                        usernameAvailable = false;
+                        setUsernameFeedback('✗ Такой ник уже есть в базе — придумайте другой', 'error');
+                    }
+                    updateSubmitButton();
+                },
+                error: function (xhr) {
+                    usernameAvailable = false;
+                    if (xhr.status === 429) {
+                        setUsernameFeedback('Слишком много запросов — подождите немного', 'idle');
+                    } else {
+                        setUsernameFeedback('Ошибка соединения с сервером — попробуйте ещё раз', 'error');
+                    }
+                    updateSubmitButton();
+                }
+            });
+        }, 500);
+    });
+
+    // ─── Основная логика ────────────────────────────────────────────────────
+
+    $(document).ready(function () {
+
+        $('#username').focus();
+
+        // ── Восстановление незавершённой регистрации при возврате назад ──────
+        // Если пользователь нажал «назад» после перехода на шаг 2,
+        // sessionStorage содержит email — проверяем, действует ли ещё запись.
+        const savedEmail = sessionStorage.getItem('reg_pending_email');
+        if (savedEmail) {
+            $.ajax({
+                url: '/api/register-status',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ email: savedEmail }),
+                success: function (response) {
+                    if (response.pending) {
+                        // Незавершённая регистрация есть — восстанавливаем шаг 2
+                        currentEmail = response.email;
+                        $('#username').val(response.username);
+                        $('#email').val(response.email);
+                        showStep2(response.email);
+                    } else {
+                        // Запись истекла или уже подтверждена — начинаем заново
+                        sessionStorage.removeItem('reg_pending_email');
+                    }
+                }
+            });
+        }
+
+        // ── Шаг 1: отправка формы регистрации ────────────────────────────────
+        $('#registerForm').on('submit', function (e) {
             e.preventDefault();
 
-            const email = $('#email').val().trim();
-            const username = $('#username').val().trim();
-            const password = $('#password').val();
+            const username        = $('#username').val().trim();
+            const email           = $('#email').val().trim();
+            const password        = $('#password').val();
             const confirmPassword = $('#confirm_password').val();
 
-            // Валидация
-            if (!email || !password || !confirmPassword) {
-                showMessage('Ошибка', 'Заполните все обязательные поля', 'error');
+            if (!username) {
+                setUsernameFeedback('Введите имя пользователя', 'error');
+                $('#username').focus();
                 return;
             }
-
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
+            if (!usernameAvailable) {
+                setUsernameFeedback('✗ Такой ник уже есть в базе — придумайте другой', 'error');
+                $('#username').focus();
+                return;
+            }
+            if (!email) {
+                showMessage('Ошибка', 'Введите email', 'error');
+                return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                 showMessage('Ошибка', 'Введите корректный email', 'error');
                 return;
             }
-
             if (password.length < 6) {
                 showMessage('Ошибка', 'Пароль должен содержать минимум 6 символов', 'error');
                 return;
             }
-
             if (password !== confirmPassword) {
                 showMessage('Ошибка', 'Пароли не совпадают', 'error');
                 return;
             }
-
             if (!$('#terms').is(':checked')) {
-                showMessage('Ошибка', 'Необходимо принять условия использования', 'error');
+                showMessage('Ошибка', 'Необходимо принять политику конфиденциальности', 'error');
                 return;
             }
 
-            // Показываем загрузку
             $('#buttonText').hide();
             $('#loadingSpinner').show();
             $('#registerButton').prop('disabled', true);
 
-            // Отправляем запрос
             $.ajax({
                 url: '/api/register',
                 method: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({
-                    email: email,
-                    username: username || null,
-                    password: password
-                }),
-                success: function(response) {
+                data: JSON.stringify({ email, username, password }),
+                success: function (response) {
                     $('#buttonText').show();
                     $('#loadingSpinner').hide();
-                    $('#registerButton').prop('disabled', false);
+                    updateSubmitButton();
 
                     if (response.success) {
                         currentEmail = email;
+                        // Запоминаем email в sessionStorage —
+                        // при нажатии «назад» в браузере страница восстановит шаг 2
+                        sessionStorage.setItem('reg_pending_email', email);
                         showMessage('Успех', response.message, 'success');
-                        // Переходим ко второму шагу
                         showStep2(email);
                     } else {
-                        showMessage('Ошибка', response.error, 'error');
+                        if (response.error && response.error.toLowerCase().includes('имя')) {
+                            usernameAvailable = false;
+                            setUsernameFeedback('✗ Такой ник уже есть в базе — придумайте другой', 'error');
+                            updateSubmitButton();
+                            $('#username').focus();
+                        } else {
+                            showMessage('Ошибка', response.error, 'error');
+                        }
                     }
                 },
-                error: function() {
+                error: function () {
                     showMessage('Ошибка', 'Произошла ошибка при регистрации. Попробуйте позже.', 'error');
                     $('#buttonText').show();
                     $('#loadingSpinner').hide();
-                    $('#registerButton').prop('disabled', false);
+                    updateSubmitButton();
                 }
             });
         });
 
-        // Обработка формы подтверждения кода (шаг 2)
-        $('#verifyForm').on('submit', function(e) {
+        // ── Шаг 2: подтверждение кода ─────────────────────────────────────────
+        $('#verifyForm').on('submit', function (e) {
             e.preventDefault();
-
             const code = $('#code').val().trim();
             if (!code || code.length !== 6) {
                 showMessage('Ошибка', 'Введите 6-значный код', 'error');
                 return;
             }
 
-            // Показываем загрузку
             $('#verifyButtonText').hide();
             $('#verifyLoadingSpinner').show();
             $('#verifyButton').prop('disabled', true);
@@ -314,26 +400,23 @@
                 url: '/api/verify-email',
                 method: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({
-                    email: currentEmail,
-                    code: code
-                }),
-                success: function(response) {
+                data: JSON.stringify({ email: currentEmail, code }),
+                success: function (response) {
                     $('#verifyButtonText').show();
                     $('#verifyLoadingSpinner').hide();
                     $('#verifyButton').prop('disabled', false);
 
                     if (response.success) {
+                        // Регистрация завершена — чистим sessionStorage
+                        sessionStorage.removeItem('reg_pending_email');
                         showMessage('Успех!', response.message, 'success');
-                        setTimeout(() => {
-                            window.location.href = '/profile';
-                        }, 1500);
+                        setTimeout(() => window.location.href = '/profile', 1500);
                     } else {
                         showMessage('Ошибка', response.error, 'error');
                         $('#code').val('').focus();
                     }
                 },
-                error: function() {
+                error: function () {
                     showMessage('Ошибка', 'Не удалось проверить код. Попробуйте позже.', 'error');
                     $('#verifyButtonText').show();
                     $('#verifyLoadingSpinner').hide();
@@ -342,34 +425,59 @@
             });
         });
 
-        // Повторная отправка кода
-        $('#resendCodeBtn').on('click', function() {
+        // ── Повторная отправка кода ───────────────────────────────────────────
+        $('#resendCodeBtn').on('click', function () {
             if (!currentEmail) return;
-
-            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Отправка...');
-
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Отправка…');
             $.ajax({
                 url: '/api/resend-code',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ email: currentEmail }),
-                success: function(response) {
+                success: function (response) {
                     $('#resendCodeBtn').prop('disabled', false).text('Отправить код повторно');
-                    if (response.success) {
-                        showMessage('Код отправлен', response.message, 'success');
-                    } else {
-                        showMessage('Ошибка', response.error, 'error');
-                    }
+                    showMessage(response.success ? 'Код отправлен' : 'Ошибка',
+                                response.message || response.error,
+                                response.success ? 'success' : 'error');
                 },
-                error: function() {
+                error: function () {
                     $('#resendCodeBtn').prop('disabled', false).text('Отправить код повторно');
                     showMessage('Ошибка', 'Не удалось отправить код. Попробуйте позже.', 'error');
                 }
             });
         });
 
-        // Автофокус на email
-        $('#email').focus();
+        // ── Кнопка «Изменить данные регистрации» ─────────────────────────────
+        // Удаляет незавершённую запись с сервера, чтобы имя/email стали свободны,
+        // и возвращает пользователя на шаг 1 с пустой формой.
+        $('#backToRegisterBtn').on('click', function (e) {
+            e.preventDefault();
+            const emailToCancel = currentEmail;
+
+            // Сразу показываем шаг 1, не ждём ответа сервера
+            sessionStorage.removeItem('reg_pending_email');
+            currentEmail = '';
+            usernameAvailable = false;
+            $('#username').val('').removeClass('is-valid is-invalid');
+            $('#email').val('');
+            $('#password').val('');
+            $('#confirm_password').val('');
+            $('#terms').prop('checked', false);
+            setUsernameFeedback('Придумайте уникальное имя — на русском или английском, до 30 символов', 'idle');
+            updateSubmitButton();
+            showStep1();
+
+            // Удаляем запись в фоне
+            if (emailToCancel) {
+                $.ajax({
+                    url: '/api/register-cancel',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ email: emailToCancel })
+                });
+            }
+        });
+
     });
 </script>
 </body>

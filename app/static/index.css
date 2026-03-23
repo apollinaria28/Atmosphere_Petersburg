@@ -56,7 +56,7 @@ html::-webkit-scrollbar {
     z-index: 1;
 }
 
-/* Навигация (без изменений) */
+/* Навигация */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -257,17 +257,33 @@ html::-webkit-scrollbar {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* ===== ОВЕРЛЕЙ ===== */
+
 .navbar-mobile-overlay {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    /* iOS: корректная высота с учётом адресной строки */
+    height: 100vh;
+    height: 100dvh;
+    height: -webkit-fill-available;
     background: rgba(0, 0, 0, 0.7);
     z-index: 999;
     opacity: 0;
     transition: opacity 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+/* ===== БЛОКИРОВКА СКРОЛЛА СТРАНИЦЫ ПРИ ОТКРЫТОМ МЕНЮ ===== */
+/* Класс добавляется на body через JS при открытии меню */
+body.menu-open {
+    overflow: hidden;
+    /* iOS: без этого страница всё равно скроллится под меню */
+    position: fixed;
+    width: 100%;
 }
 
 /* Контент героя */
@@ -468,7 +484,7 @@ html::-webkit-scrollbar {
     color: #353631;
 }
 
-/* ===== ИЗМЕНЕНИЯ: Фильтры настроения – модалка включается с 1410px ===== */
+/* ===== ФИЛЬТРЫ НАСТРОЕНИЯ ===== */
 .mood-filters-container {
     display: flex;
     flex-wrap: wrap;
@@ -515,7 +531,7 @@ html::-webkit-scrollbar {
     transform: translateY(0);
 }
 
-/* Кнопка вызова модального окна фильтров (по умолчанию скрыта) */
+/* Кнопка вызова модального окна фильтров */
 .mood-filter-toggle {
     display: none;
     align-items: center;
@@ -649,12 +665,8 @@ html::-webkit-scrollbar {
 }
 
 @keyframes loading {
-    0% {
-        background-position: -200% 0;
-    }
-    100% {
-        background-position: 200% 0;
-    }
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
 }
 
 /* Основные карточки мест (список) */
@@ -793,7 +805,6 @@ html::-webkit-scrollbar {
     color: #353631;
 }
 
-/* Кнопка "Подробнее" – всегда справа, не растягивается */
 .btn-place-detail {
     position: relative;
     display: inline-block;
@@ -951,7 +962,7 @@ a.place-heart i {
     color: #70716E;
 }
 
-/* Уведомления – адаптивные отступы */
+/* Уведомления */
 .notification {
     position: fixed;
     top: 30px;
@@ -1139,14 +1150,13 @@ a.place-heart i {
     .hero-title {
         font-size: 48px;
     }
-    /* Случайные места в одну колонку */
+
     #random-places .col-md-4,
     #random-places .col-sm-6 {
         flex: 0 0 100%;
         max-width: 100%;
     }
 
-    /* Корректировка карточек */
     .place-list-item {
         padding: 25px;
     }
@@ -1167,10 +1177,272 @@ a.place-heart i {
         font-size: 14px;
     }
 
-    /* Кнопка подробнее не растягивается */
     .btn-place-detail {
         align-self: flex-end;
         width: auto;
+    }
+
+    /* ── Мобильное меню ── */
+
+    .navbar-desktop-content {
+        display: none !important;
+    }
+
+    .navbar-toggler {
+        display: block;
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        background: none;
+        border: none;
+        padding: 10px;
+        z-index: 1002;
+        cursor: pointer;
+        outline: none !important;
+        box-shadow: none !important;
+        /* iOS: убираем синюю вспышку */
+        -webkit-tap-highlight-color: transparent;
+        tap-highlight-color: transparent;
+        /* iOS: убираем задержку 300мс */
+        touch-action: manipulation;
+    }
+
+    .navbar-toggler-icon {
+        display: block;
+        width: 30px;
+        height: 3px;
+        background-color: #FDFAFA;
+        position: relative;
+        transition: all 0.3s;
+    }
+
+    .navbar-toggler-icon::before,
+    .navbar-toggler-icon::after {
+        content: '';
+        position: absolute;
+        width: 30px;
+        height: 3px;
+        background-color: #FDFAFA;
+        left: 0;
+        transition: all 0.3s;
+    }
+
+    .navbar-toggler-icon::before { top: -8px; }
+    .navbar-toggler-icon::after  { bottom: -8px; }
+
+    .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
+        background-color: transparent;
+    }
+
+    .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::before {
+        transform: rotate(45deg);
+        top: 0;
+    }
+
+    .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::after {
+        transform: rotate(-45deg);
+        bottom: 0;
+    }
+
+    .navbar-toggler:focus,
+    .navbar-toggler:active,
+    .navbar-toggler:hover {
+        outline: none !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: none !important;
+    }
+
+    .navbar-mobile-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+
+    .navbar-mobile-content {
+        display: block !important;
+        position: fixed;
+        top: 0;
+        right: -320px;
+        width: 320px;
+        /* iOS: корректная высота с учётом адресной строки */
+        height: 100vh;
+        height: 100dvh;
+        height: -webkit-fill-available;
+        background: rgba(0, 0, 0, 0.95);
+        padding: 80px 30px 30px;
+        transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1000;
+        overflow-y: auto;
+        /* iOS: плавный инерционный скролл */
+        -webkit-overflow-scrolling: touch;
+        box-shadow: -5px 0 30px rgba(0, 0, 0, 0.3);
+        box-sizing: border-box;
+    }
+
+    .navbar-mobile-content.show {
+        right: 0;
+    }
+
+    .mobile-menu-container {
+        display: flex;
+        flex-direction: column;
+        /* min-height вместо height */
+        min-height: 100%;
+        padding-bottom: 30px;
+    }
+
+    .mobile-user-info {
+        text-align: center;
+        padding-bottom: 25px;
+        border-bottom: 1px solid rgba(253, 250, 250, 0.15);
+        flex-shrink: 0;
+    }
+
+    .mobile-user-avatar {
+        margin-bottom: 15px;
+    }
+
+    .mobile-avatar-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid rgba(253, 250, 250, 0.3);
+    }
+
+    .mobile-avatar-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+        font-size: 32px;
+        margin: 0 auto;
+        border: 3px solid rgba(253, 250, 250, 0.3);
+    }
+
+    .mobile-user-name {
+        color: #FDFAFA;
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .mobile-profile-link {
+        display: inline-flex;
+        align-items: center;
+        color: #FDFAFA;
+        text-decoration: none;
+        padding: 10px 20px;
+        background: rgba(253, 250, 250, 0.1);
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.3s;
+        touch-action: manipulation;
+    }
+
+    .mobile-profile-link:hover {
+        transform: translateY(-2px);
+    }
+
+    .mobile-nav-links {
+        flex-grow: 1;
+        margin-bottom: 30px;
+    }
+
+    .mobile-nav-link {
+        display: block;
+        color: #FDFAFA;
+        text-decoration: none;
+        padding: 15px 0;
+        border-bottom: 1px solid rgba(253, 250, 250, 0.1);
+        transition: all 0.3s;
+        font-size: 18px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mobile-nav-link:last-child {
+        border-bottom: none;
+    }
+
+    .mobile-nav-link:hover {
+        padding-left: 10px;
+        color: #FDFAFA;
+        background: rgba(253, 250, 250, 0.05);
+        border-radius: 6px;
+    }
+
+    .mobile-auth-section {
+        margin-top: auto;
+        flex-shrink: 0;
+        padding-top: 20px;
+        border-top: 1px solid rgba(253, 250, 250, 0.15);
+    }
+
+    .mobile-logout-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 16px;
+        color: #ff4757;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 18px;
+        transition: all 0.3s;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mobile-auth-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .mobile-login-btn,
+    .mobile-register-btn {
+        display: block;
+        text-align: center;
+        padding: 16px;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 18px;
+        transition: all 0.3s;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mobile-login-btn {
+        background: rgba(253, 250, 250, 0.1);
+        color: #FDFAFA;
+        border: 1px solid rgba(253, 250, 250, 0.3);
+    }
+
+    .mobile-register-btn {
+        background: #FDFAFA;
+        color: #353631;
+        border: 1px solid #FDFAFA;
+    }
+}
+
+/* Десктопная версия навигации */
+@media (min-width: 993px) {
+    .navbar-toggler,
+    .navbar-mobile-content,
+    .navbar-mobile-overlay {
+        display: none !important;
+    }
+
+    .navbar-desktop-content {
+        display: flex !important;
     }
 }
 
@@ -1243,7 +1515,6 @@ a.place-heart i {
         font-size: 16px;
     }
 
-    /* Адаптация карточек мест */
     .place-list-item {
         padding: 27px;
         min-height: auto;
@@ -1275,20 +1546,17 @@ a.place-heart i {
         font-size: 14px;
     }
 
-    /* Кнопка подробнее по-прежнему справа */
     .btn-place-detail {
         align-self: flex-end;
         width: auto;
         text-align: right;
     }
 
-    /* Скелетоны */
     .skeleton-content {
         padding-left: 0;
         padding-top: 20px;
     }
 
-    /* Случайные карточки */
     .random-place-card .card-img-top {
         height: 220px;
     }
@@ -1308,7 +1576,6 @@ a.place-heart i {
         min-height: 40px;
     }
 
-    /* Уведомление */
     .notification {
         top: 20px;
         right: 15px;
@@ -1331,6 +1598,21 @@ a.place-heart i {
     }
     .hero-section{
         height: 60vh;
+    }
+
+    /* iOS: на очень маленьких экранах меню на всю ширину */
+    .navbar-mobile-content {
+        width: 100%;
+        right: -100%;
+    }
+
+    .navbar-mobile-content.show {
+        right: 0;
+    }
+
+    .navbar-toggler {
+        right: 15px;
+        top: 15px;
     }
 
     .mb-7 {
@@ -1372,7 +1654,7 @@ a.place-heart i {
     }
 
     .place-title {
-        font-size: 16px;
+        font-size: 18px;
     }
 
     .btn-test{
@@ -1386,10 +1668,6 @@ a.place-heart i {
 
     .filter-prompt {
         font-size: 17px;
-    }
-
-    .place-title {
-        font-size: 18px;
     }
 
     .place-description {
@@ -1466,7 +1744,7 @@ a.place-heart i {
     }
 
     .place-title {
-        font-size: 16px;
+        font-size: 18px;
     }
 
     .btn-test{
@@ -1480,10 +1758,6 @@ a.place-heart i {
 
     .filter-prompt {
         font-size: 17px;
-    }
-
-    .place-title {
-        font-size: 18px;
     }
 
     .place-description {
@@ -1563,7 +1837,7 @@ a.place-heart i {
     }
 
     .place-title {
-        font-size: 16px;
+        font-size: 18px;
     }
 
     .btn-test{
@@ -1577,10 +1851,6 @@ a.place-heart i {
 
     .filter-prompt {
         font-size: 17px;
-    }
-
-    .place-title {
-        font-size: 18px;
     }
 
     .place-description {
@@ -1610,7 +1880,6 @@ a.place-heart i {
     .btn-refresh-icon {
         margin-top: 0px !important;
     }
-    
 }
 
 /* До 375px */
@@ -1672,13 +1941,12 @@ a.place-heart i {
 
     .place-description {
         font-size: 12px;
+        line-height: 1.4;
     }
 
     .place-meta {
         font-size: 11px;
     }
-
-
 
     .btn-place-detail {
         font-size: 13px;
@@ -1785,283 +2053,19 @@ a.place-heart i {
     }
 }
 
-/* Мобильное меню (оставляем без изменений) */
-@media (max-width: 992px) {
-    .navbar-desktop-content {
-        display: none !important;
-    }
-
-    .navbar-toggler {
-        display: block;
-        position: absolute;
-        right: 20px;
-        top: 20px;
-        background: none;
-        border: none;
-        padding: 10px;
-        z-index: 1002;
-        cursor: pointer;
-        outline: none !important;
-        box-shadow: none !important;
-        -webkit-tap-highlight-color: transparent;
-        tap-highlight-color: transparent;
-    }
-
-    .navbar-toggler-icon {
-        display: block;
-        width: 30px;
-        height: 3px;
-        background-color: #FDFAFA;
-        position: relative;
-        transition: all 0.3s;
-    }
-
-    .navbar-toggler-icon::before,
-    .navbar-toggler-icon::after {
-        content: '';
-        position: absolute;
-        width: 30px;
-        height: 3px;
-        background-color: #FDFAFA;
-        left: 0;
-        transition: all 0.3s;
-    }
-
-    .navbar-toggler-icon::before {
-        top: -8px;
-    }
-
-    .navbar-toggler-icon::after {
-        bottom: -8px;
-    }
-
-    .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
-        background-color: transparent;
-    }
-
-    .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::before {
-        transform: rotate(45deg);
-        top: 0;
-    }
-
-    .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::after {
-        transform: rotate(-45deg);
-        bottom: 0;
-    }
-
-    .navbar-toggler:focus,
-    .navbar-toggler:active,
-    .navbar-toggler:hover {
-        outline: none !important;
-        box-shadow: none !important;
-        border: none !important;
-        background: none !important;
-    }
-
-    .navbar-mobile-content {
-        display: block !important;
-        position: fixed;
-        top: 0;
-        right: -320px;
-        width: 320px;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.95);
-        padding: 80px 30px 30px;
-        transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 1000;
-        overflow-y: auto;
-        box-shadow: -5px 0 30px rgba(0, 0, 0, 0.3);
-    }
-
-    .navbar-mobile-content.show {
-        right: 0;
-    }
-
-    .mobile-menu-container {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        padding-bottom: 30px;
-    }
-
-    .mobile-user-info {
-        text-align: center;
-        padding-bottom: 25px;
-        border-bottom: 1px solid rgba(253, 250, 250, 0.15);
-        flex-shrink: 0;
-    }
-
-    .mobile-user-avatar {
-        margin-bottom: 15px;
-    }
-
-    .mobile-avatar-icon {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 3px solid rgba(253, 250, 250, 0.3);
-    }
-
-    .mobile-avatar-circle {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        font-weight: 600;
-        font-size: 32px;
-        margin: 0 auto;
-        border: 3px solid rgba(253, 250, 250, 0.3);
-    }
-
-    .mobile-user-name {
-        color: #FDFAFA;
-        font-size: 20px;
-        font-weight: 600;
-        margin-bottom: 15px;
-    }
-
-    .mobile-profile-link {
-        display: inline-flex;
-        align-items: center;
-        color: #FDFAFA;
-        text-decoration: none;
-        padding: 10px 20px;
-        background: rgba(253, 250, 250, 0.1);
-        border-radius: 8px;
-        font-size: 16px;
-        transition: all 0.3s;
-    }
-
-    .mobile-profile-link:hover {
-        transform: translateY(-2px);
-    }
-
-    .mobile-nav-links {
-        flex-grow: 1;
-        margin-bottom: 30px;
-        overflow-y: auto;
-    }
-
-    .mobile-nav-link {
-        display: block;
-        color: #FDFAFA;
-        text-decoration: none;
-        padding: 15px 0;
-        border-bottom: 1px solid rgba(253, 250, 250, 0.1);
-        transition: all 0.3s;
-        font-size: 18px;
-    }
-
-    .mobile-nav-link:last-child {
-        border-bottom: none;
-    }
-
-    .mobile-nav-link:hover {
-        padding-left: 10px;
-        color: #FDFAFA;
-        background: rgba(253, 250, 250, 0.05);
-        border-radius: 6px;
-    }
-
-    .mobile-auth-section {
-        margin-top: auto;
-        flex-shrink: 0;
-        padding-top: 20px;
-        border-top: 1px solid rgba(253, 250, 250, 0.15);
-    }
-
-    .mobile-logout-link {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        padding: 16px;
-        color: #ff4757;
-        text-decoration: none;
-        border-radius: 10px;
-        font-weight: 500;
-        font-size: 18px;
-        transition: all 0.3s;
-    }
-
-    .mobile-auth-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .mobile-login-btn,
-    .mobile-register-btn {
-        display: block;
-        text-align: center;
-        padding: 16px;
-        text-decoration: none;
-        border-radius: 10px;
-        font-weight: 500;
-        font-size: 18px;
-        transition: all 0.3s;
-    }
-
-    .mobile-login-btn {
-        background: rgba(253, 250, 250, 0.1);
-        color: #FDFAFA;
-        border: 1px solid rgba(253, 250, 250, 0.3);
-    }
-
-    .mobile-register-btn {
-        background: #FDFAFA;
-        color: #353631;
-        border: 1px solid #FDFAFA;
-    }
-}
-
-/* Десктопная версия навигации */
-@media (min-width: 993px) {
-    .navbar-toggler,
-    .navbar-mobile-content,
-    .navbar-mobile-overlay {
-        display: none !important;
-    }
-
-    .navbar-desktop-content {
-        display: flex !important;
-    }
-}
-
-/* Для очень маленьких экранов (мобильное меню) */
-@media (max-width: 576px) {
-    .navbar-mobile-content {
-        width: 100%;
-        right: -100%;
-    }
-
-    .navbar-mobile-content.show {
-        right: 0;
-    }
-
-    .navbar-toggler {
-        right: 15px;
-        top: 15px;
-    }
-}
-
 /* Выравнивание заголовка и кнопки обновления */
 .d-flex.align-items-center .section-title {
-    margin-bottom: 0;               /* убираем нижний отступ Bootstrap */
-    line-height: 1.2;                /* делаем высоту строки предсказуемой */
+    margin-bottom: 0;
+    line-height: 1.2;
 }
 
 .btn-refresh-icon {
-    padding: 4px;                    /* уменьшаем вертикальные отступы */
-    margin-top: 6px;                 /* небольшая корректировка вверх (подберите значение) */
+    padding: 4px;
+    margin-top: 6px;
     margin-bottom: 0;
-    align-self: center;               /* страховка, чтобы кнопка не растягивалась */
+    align-self: center;
 }
+
 /* ========== БАННЕР COOKIE ========== */
 .cookie-banner {
     position: fixed;
@@ -2164,6 +2168,45 @@ a.place-heart i {
 
 .btn-cookie-accept:active {
     transform: translateY(0);
+}
+
+
+
+@media (max-width: 1399px) and (min-width: 993px) {
+    body.logged-out .navbar-desktop-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    body.logged-out .navbar-left {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 12px;
+    }
+
+    body.logged-out .navbar-right {
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+        margin-top: 0;
+        padding-top: 0;
+    }
+
+    body.logged-out .auth-links {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-start;
+        margin-left: 10px;
+    }
+
+    body.logged-out .btn-login,
+    body.logged-out .btn-register {
+        padding: 8px 20px;
+    }
+    .navbar-left .nav-link {
+        font-size: 16px;
+    }
 }
 
 @media (max-width: 768px) {
