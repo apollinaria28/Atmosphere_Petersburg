@@ -332,6 +332,9 @@
                     toggler.setAttribute('aria-expanded', 'true');
                     document.body.classList.add('menu-open');
 
+                    // iOS fix: явно задаём высоту через window.innerHeight
+                    mobileMenu.style.height = window.innerHeight + 'px';
+
                     overlay.style.display = 'block';
                     setTimeout(() => overlay.style.opacity = '1', 10);
 
@@ -344,7 +347,10 @@
                     isMenuOpen = false;
                     toggler.setAttribute('aria-expanded', 'false');
                     mobileMenu.classList.remove('show');
-                    setTimeout(() => mobileMenu.style.display = 'none', 300);
+                    setTimeout(() => {
+                        mobileMenu.style.display = 'none';
+                        mobileMenu.style.height = '';
+                    }, 300);
                     overlay.style.opacity = '0';
                     setTimeout(() => {
                         overlay.style.display = 'none';

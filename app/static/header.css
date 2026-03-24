@@ -421,8 +421,8 @@ body.menu-open {
     .mobile-menu-container {
         display: flex;
         flex-direction: column;
-        /* min-height вместо height — меню не схлопывается если контента мало */
-        min-height: 100%;
+        /* height 100% — занимаем всю высоту меню, кнопка выйти всегда внизу */
+        height: 100%;
         padding-bottom: 30px;
     }
 
@@ -485,7 +485,8 @@ body.menu-open {
 
     .mobile-nav-links {
         flex-grow: 1;
-        margin-bottom: 30px;
+        overflow-y: auto;
+        margin-bottom: 0;
     }
 
     .mobile-nav-link {
