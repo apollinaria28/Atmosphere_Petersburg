@@ -1600,15 +1600,6 @@ a.place-heart i {
         height: 60vh;
     }
 
-    /* iOS: на очень маленьких экранах меню на всю ширину */
-    .navbar-mobile-content {
-        width: 100%;
-        right: -100%;
-    }
-
-    .navbar-mobile-content.show {
-        right: 0;
-    }
 
     .navbar-toggler {
         right: 15px;
