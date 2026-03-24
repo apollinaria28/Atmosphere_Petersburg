@@ -62,7 +62,7 @@ body {
 
 /* Заголовки h1, h2 — используют шрифт Kreadon Medium */
 h1, h2 {
-    font-family: 'Kreadon Medium', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-family: 'Kreadon', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     font-weight: 500 !important;
 }
 
@@ -70,7 +70,7 @@ h1, h2 {
 .hero-section .hero-content .hero-title,
 .container .section-title,
 .test-section .section-title {
-    font-family: 'Kreadon Medium', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-family: 'Kreadon', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     font-weight: 500 !important;
 }
 
