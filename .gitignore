@@ -32,3 +32,8 @@ web_build/
 
 # Uploads
 app/static/uploads/
+# Server-specific
+dump.sql
+*.save
+certbot/
+backups/
