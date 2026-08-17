@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+.env
+backups/
+tests/
+dump.sql
+*.iml
+pyproject.toml
+CLAUDE.md

@@ -17,6 +17,7 @@ def _require(key: str) -> str:
 
 class Config:
     # ── Flask ──────────────────────────────────────────────────
+    # Обязательно задать в .env — без этого сессии небезопасны
     SECRET_KEY = _require('SECRET_KEY')
 
     # ── База данных ────────────────────────────────────────────
@@ -43,7 +44,7 @@ class Config:
     # ── Сессии и безопасность ──────────────────────────────────
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
-    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'true').lower() == 'true'
     PERMANENT_SESSION_LIFETIME = timedelta(days=7)
 
     # ── CORS ───────────────────────────────────────────────────
