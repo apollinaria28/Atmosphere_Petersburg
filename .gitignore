@@ -44,3 +44,6 @@ backups/
 
 # Claude Code local settings
 .claude/
+
+# Local project notes (not for the public repo)
+CLAUDE.md
