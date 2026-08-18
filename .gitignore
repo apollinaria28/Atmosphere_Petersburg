@@ -27,8 +27,12 @@ web_build/
 # IDE
 .vscode/
 .idea/
+*.iml
 *.swp
 *.swo
+
+# Scratch
+tmp/
 
 # Uploads
 app/static/uploads/
@@ -37,3 +41,6 @@ dump.sql
 *.save
 certbot/
 backups/
+
+# Claude Code local settings
+.claude/

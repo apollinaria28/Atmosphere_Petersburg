@@ -1,0 +1,163 @@
+<mxfile host="app.diagrams.net" agent="Claude">
+  <diagram name="Гость — варианты использования" id="guest_uc">
+    <mxGraphModel dx="1821" dy="1025" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1700" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="uc_login" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" value="Авторизоваться" vertex="1">
+          <mxGeometry height="55" width="185" x="162" y="128" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_restore" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" value="Восстановить пароль" vertex="1">
+          <mxGeometry height="55" width="185" x="182" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_register" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" value="Зарегистрироваться" vertex="1">
+          <mxGeometry height="55" width="185" x="185" y="453" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_catalog" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" value="Просмотреть каталог мест" vertex="1">
+          <mxGeometry height="55" width="214" x="188" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_search" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" value="Осуществить поиск и фильтрацию" vertex="1">
+          <mxGeometry height="55" width="245" x="172.5" y="758" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_loginput" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Ввести email и пароль" vertex="1">
+          <mxGeometry height="55" width="200" x="290" y="23" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_enteremail" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Ввести email" vertex="1">
+          <mxGeometry height="55" width="160" x="449" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_confirmcode" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Подтвердить код сброса" vertex="1">
+          <mxGeometry height="55" width="210" x="440" y="265" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_newpass" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Ввести новый пароль" vertex="1">
+          <mxGeometry height="55" width="200" x="429" y="381" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_regdata" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Ввести данные регистрации" vertex="1">
+          <mxGeometry height="55" width="220" x="435" y="478" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_confirmemail" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Подтвердить email" vertex="1">
+          <mxGeometry height="55" width="185" x="450" y="593" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_card" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Просмотреть карточку места" vertex="1">
+          <mxGeometry height="55" width="215" x="445" y="731" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_mood" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Фильтрация по настроению" vertex="1">
+          <mxGeometry height="55" width="210" x="435" y="849" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_gencode" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" value="Сгенерировать код" vertex="1">
+          <mxGeometry height="55" width="195" x="770" y="153" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_sendemail" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" value="Выслать письмо с кодом" vertex="1">
+          <mxGeometry height="55" width="210" x="775" y="311" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_updatepass" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" value="Обновить пароль" vertex="1">
+          <mxGeometry height="55" width="185" x="760" y="478" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_saveuser" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" value="Сохранить пользователя" vertex="1">
+          <mxGeometry height="55" width="210" x="745" y="593" as="geometry" />
+        </mxCell>
+        <mxCell id="e_g_login" edge="1" parent="1" style="endArrow=none;html=1;" target="uc_login">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="75" y="498" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_g_restore" edge="1" parent="1" style="endArrow=none;html=1;" target="uc_restore">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="92" y="508" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_g_register" edge="1" parent="1" style="endArrow=none;html=1;" target="uc_register">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="97" y="536" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_g_catalog" edge="1" parent="1" style="endArrow=none;html=1;" target="uc_catalog">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="99" y="575" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_g_search" edge="1" parent="1" style="endArrow=none;html=1;" target="uc_search">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="92" y="590" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_s_gencode" edge="1" parent="1" style="endArrow=none;html=1;" target="uc_gencode">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1044" y="382" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_s_sendemail" edge="1" parent="1" style="endArrow=none;html=1;" target="uc_sendemail">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1033" y="394" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_s_updatepass" edge="1" parent="1" style="endArrow=none;html=1;" target="uc_updatepass">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1033" y="428" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_s_saveuser" edge="1" parent="1" style="endArrow=none;html=1;" target="uc_saveuser">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1041" y="476" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ei_login_input" edge="1" parent="1" source="uc_login" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;" target="uc_loginput" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_restore_email" edge="1" parent="1" source="uc_restore" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;" target="uc_enteremail" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_restore_confirmcode" edge="1" parent="1" source="uc_restore" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;" target="uc_confirmcode" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_restore_newpass" edge="1" parent="1" source="uc_restore" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;" target="uc_newpass" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_enteremail_gencode" edge="1" parent="1" source="uc_enteremail" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;" target="uc_gencode" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_enteremail_send" edge="1" parent="1" source="uc_enteremail" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;" target="uc_sendemail" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_newpass_update" edge="1" parent="1" source="uc_newpass" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;" target="uc_updatepass" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_reg_data" edge="1" parent="1" source="uc_register" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;" target="uc_regdata" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_reg_confirmemail" edge="1" parent="1" source="uc_register" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;" target="uc_confirmemail" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_regdata_gencode" edge="1" parent="1" source="uc_regdata" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;" target="uc_gencode" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_regdata_send" edge="1" parent="1" source="uc_regdata" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;" target="uc_sendemail" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_confirmemail_save" edge="1" parent="1" source="uc_confirmemail" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;" target="uc_saveuser" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ee_restore_login" edge="1" parent="1" source="uc_restore" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;strokeColor=#9673A6;" target="uc_login" value="«extend»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ee_card_catalog" edge="1" parent="1" source="uc_card" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;strokeColor=#9673A6;" target="uc_catalog" value="«extend»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ee_search_catalog" edge="1" parent="1" source="uc_search" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;strokeColor=#9673A6;" target="uc_catalog" value="«extend»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ee_mood_search" edge="1" parent="1" source="uc_mood" style="dashed=1;endArrow=open;endFill=0;startArrow=none;startFill=0;html=1;fontSize=11;fontStyle=2;align=center;strokeColor=#9673A6;" target="uc_search" value="«extend»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SSXzZjfXExwSC3J_69k0-1" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;strokeColor=#808080;" value="UseCase Guest" vertex="1">
+          <mxGeometry height="919" width="847" x="148" y="6" as="geometry" />
+        </mxCell>
+        <mxCell id="SSXzZjfXExwSC3J_69k0-2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="Гость" vertex="1">
+          <mxGeometry height="60" width="30" x="59" y="508" as="geometry" />
+        </mxCell>
+        <mxCell id="SSXzZjfXExwSC3J_69k0-9" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="Система" vertex="1">
+          <mxGeometry height="60" width="30" x="1036" y="393" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
