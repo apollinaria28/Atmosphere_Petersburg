@@ -1,0 +1,170 @@
+<mxfile host="app.diagrams.net" agent="Claude">
+  <diagram name="Администратор — варианты использования" id="admin_uc">
+    <mxGraphModel dx="1821" dy="1025" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1700" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="uc_catalog_mgmt" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" value="Управление каталогом мест" vertex="1">
+          <mxGeometry height="55" width="205" x="172" y="142" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_edit_place" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Редактировать карточку места" vertex="1">
+          <mxGeometry height="55" width="170" x="338" y="66" as="geometry" />
+        </mxCell>
+        <mxCell id="sys_save_place" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" value="Сохранить изменения места" vertex="1">
+          <mxGeometry height="55" width="210" x="649" y="134" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_moderate" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" value="Модерация предложений пользователей" vertex="1">
+          <mxGeometry height="55" width="220" x="145" y="349" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_view_sug" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Просмотреть список предложений" vertex="1">
+          <mxGeometry height="55" width="168" x="356" y="206" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_review_sug" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Рассмотреть предложение" vertex="1">
+          <mxGeometry height="55" width="152.5" x="439" y="305" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_approve" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Одобрить предложение" vertex="1">
+          <mxGeometry height="55" width="169" x="554" y="435" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_reject_sug" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Отклонить предложение" vertex="1">
+          <mxGeometry height="55" width="132" x="309" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="sys_create_place" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" value="Создать место в каталоге" vertex="1">
+          <mxGeometry height="55" width="205" x="660" y="555" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_reports_mgmt" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" value="Обработка обращений об ошибках" vertex="1">
+          <mxGeometry height="55" width="225" x="172" y="722" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_view_rep" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Просмотреть список обращений" vertex="1">
+          <mxGeometry height="55" width="174" x="234" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_resolve" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Разрешить обращение" vertex="1">
+          <mxGeometry height="55" width="159.5" x="518" y="618.5" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_reject_rep" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Отклонить обращение" vertex="1">
+          <mxGeometry height="55" width="166.5" x="502" y="734" as="geometry" />
+        </mxCell>
+        <mxCell id="sys_status" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" value="Обновить статус обращения" vertex="1">
+          <mxGeometry height="55" width="210" x="550" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_stats" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" value="Просмотр статистики системы" vertex="1">
+          <mxGeometry height="55" width="210" x="128" y="827" as="geometry" />
+        </mxCell>
+        <mxCell id="e_a_cat" edge="1" parent="1" style="endArrow=none;html=1;entryX=0;entryY=1;entryDx=0;entryDy=0;" target="uc_catalog_mgmt">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="70" y="360" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_a_mod" edge="1" parent="1" style="endArrow=none;html=1;" target="uc_moderate">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="90" y="385" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_a_rep" edge="1" parent="1" style="endArrow=none;html=1;entryX=0.318;entryY=0.088;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc_reports_mgmt">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="80" y="450" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_s_save" edge="1" parent="1" style="endArrow=none;html=1;" target="sys_save_place">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="950" y="470" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_s_create" edge="1" parent="1" style="endArrow=none;html=1;" target="sys_create_place">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="940" y="520" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_s_status" edge="1" parent="1" style="endArrow=none;html=1;" target="sys_status">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="960" y="570" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ei_cat_edit" edge="1" parent="1" source="uc_catalog_mgmt" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;" target="uc_edit_place" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_cat_sys" edge="1" parent="1" source="uc_catalog_mgmt" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;" target="sys_save_place" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_mod_view" edge="1" parent="1" source="uc_moderate" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;" target="uc_view_sug" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_mod_review" edge="1" parent="1" source="uc_moderate" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;" target="uc_review_sug" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_mod_app" edge="1" parent="1" source="uc_moderate" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;" target="uc_approve" value="«include»">
+          <mxGeometry relative="1" x="0.3263" y="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ei_mod_rej" edge="1" parent="1" source="uc_moderate" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;" target="uc_reject_sug" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_app_sys" edge="1" parent="1" source="uc_approve" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;" target="sys_create_place" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_rep_view" edge="1" parent="1" source="uc_reports_mgmt" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;" target="uc_view_rep" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_rep_resolve" edge="1" parent="1" source="uc_reports_mgmt" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;" target="uc_resolve" value="«include»">
+          <mxGeometry relative="1" x="-0.1412" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ei_rep_reject" edge="1" parent="1" source="uc_reports_mgmt" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;" target="uc_reject_rep" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ei_rep_sys" edge="1" parent="1" source="uc_reports_mgmt" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;" target="sys_status" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ee_app_review" edge="1" parent="1" source="uc_approve" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;strokeColor=light-dark(#000000,#000000);" target="uc_review_sug" value="«extend»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ee_rej_review" edge="1" parent="1" source="uc_reject_sug" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;strokeColor=light-dark(#000000,#000000);" target="uc_review_sug" value="«extend»">
+          <mxGeometry relative="1" x="0.2725" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ee_resolve_view" edge="1" parent="1" source="uc_resolve" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;strokeColor=light-dark(#000000,#000000);" target="uc_view_rep" value="«extend»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ee_reject_view" edge="1" parent="1" source="uc_reject_rep" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;strokeColor=light-dark(#000000,#000000);" target="uc_view_rep" value="«extend»">
+          <mxGeometry relative="1" x="0.2401" y="-3" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZH6vtaog9QjNtD75yCQ-1" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="Администратор" vertex="1">
+          <mxGeometry height="60" width="30" x="45" y="367" as="geometry" />
+        </mxCell>
+        <mxCell id="WZH6vtaog9QjNtD75yCQ-2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="Авторизованный&lt;div&gt;пользователь&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="30" x="46" y="558.5" as="geometry" />
+        </mxCell>
+        <mxCell id="WZH6vtaog9QjNtD75yCQ-3" edge="1" parent="1" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;" value="Наследует">
+          <mxGeometry relative="1" width="160" as="geometry">
+            <mxPoint x="60" y="460" as="sourcePoint" />
+            <mxPoint x="60" y="550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZH6vtaog9QjNtD75yCQ-5" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="Система" vertex="1">
+          <mxGeometry height="60" width="30" x="945" y="479" as="geometry" />
+        </mxCell>
+        <mxCell id="WZH6vtaog9QjNtD75yCQ-6" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;strokeColor=#808080;" value="UseCase&lt;div&gt;Admin&lt;/div&gt;" vertex="1">
+          <mxGeometry height="872" width="777" x="113" y="54" as="geometry" />
+        </mxCell>
+        <mxCell id="WZH6vtaog9QjNtD75yCQ-7" edge="1" parent="1" source="uc_stats" style="endArrow=none;html=1;rounded=0;exitX=0.27;exitY=0.055;exitDx=0;exitDy=0;exitPerimeter=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="450" y="530" as="sourcePoint" />
+            <mxPoint x="80" y="470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZH6vtaog9QjNtD75yCQ-10" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Редактировать данные предложения" vertex="1">
+          <mxGeometry height="55" width="173" x="580" y="246" as="geometry" />
+        </mxCell>
+        <mxCell id="WZH6vtaog9QjNtD75yCQ-11" edge="1" parent="1" source="uc_review_sug" style="dashed=1;endArrow=open;endFill=0;html=1;fontSize=11;fontStyle=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="WZH6vtaog9QjNtD75yCQ-10" value="«include»">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="621" y="341.5" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
